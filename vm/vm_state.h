@@ -32,7 +32,7 @@ class vm_state {
 	  return vm_state::_instance;
 	}
 	
-	void load_file(string file);
+	void load_file(char* file);
 	void step();
 };
 

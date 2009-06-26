@@ -5,6 +5,7 @@
 #include <fstream>
 #include <assert.h>
 #include <string>
+#include <sys/stat.h>
 
 using namespace std;
 
