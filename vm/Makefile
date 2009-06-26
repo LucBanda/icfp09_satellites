@@ -6,7 +6,7 @@ INCLUDE_FILES = $(shell find include/ -name \*.h)
 BINARIES      = vm
 
 
-OBJECTS = main.o vm_state.o
+OBJECTS = main.o vm_state.o instructions.o
 
 OPTIMIZE= -g
 #OPTIMIZE= -O2
@@ -32,4 +32,5 @@ $(BINARIES) : $(OBJECTS)
 	@g++ $(OBJECTS) -o $@
 
 clean:
-	rm -f $(BINARIES) 
+	rm -f $(BINARIES)
+	rm -f $(OBJECTS)
