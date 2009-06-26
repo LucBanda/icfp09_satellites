@@ -48,18 +48,23 @@ d_type *d_type::parse(uint32_t raw)
 }
 
 void add::execute(){
+  cerr << vm->memory[_arg1] << " + " << vm->memory[_arg2] << endl;
   vm->memory[vm->pc] = vm->memory[_arg1] + vm->memory[_arg2];
+  
 }
 
 void sub::execute(){
+  cerr << vm->memory[_arg1] << " - " << vm->memory[_arg2] << endl;
   vm->memory[vm->pc] = vm->memory[_arg1] - vm->memory[_arg2];
 }
 
 void mult::execute(){
+  cerr << vm->memory[_arg1] << " * " << vm->memory[_arg2] << endl;
   vm->memory[vm->pc] = vm->memory[_arg1] * vm->memory[_arg2];
 }
 
 void div::execute(){
+  cerr << vm->memory[_arg1] << " / " << vm->memory[_arg2] << endl;
   if (vm->memory[_arg2] == 0)
 	vm->memory[vm->pc] = 0;
   else
@@ -67,10 +72,12 @@ void div::execute(){
 }
 
 void output::execute() {
+	cerr << "port "<< _arg1 << " = " << vm->memory[_arg2] << endl;
     vm->output_ports[_arg1] = vm->memory[_arg2];
 }
 
 void phi::execute() {
+  cerr << "phi " << vm->status << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
   if (vm->status)
 	vm->memory[vm->pc] = vm->memory[_arg1];
   else
@@ -78,31 +85,36 @@ void phi::execute() {
 }
 
 void noop::execute() {
+  //cerr << "noop" << endl;
 	vm->memory[vm->pc] = vm->memory[vm->pc];
 }
 
 void cmpz::execute() {
+  cerr << "cmpz" << endl;
 	bool result;
 	double val = vm->memory[_arg1];
 	switch (_immediate) {
-	  case 0: result = val < 0.0; break;
-	  case 1: result = val <= 0.0; break;
-	  case 2: result = val = 0.0; break;
-	  case 3: result = val >= 0.0; break;
-	  case 4: result = val > 0.0; break;
+	  case 0: result = (val < 0.0); break;
+	  case 1: result = (val <= 0.0); break;
+	  case 2: result = (val = 0.0); break;
+	  case 3: result = (val >= 0.0); break;
+	  case 4: result = (val > 0.0); break;
 	  default: cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
 	}
 	vm->status = result;
 }
 
 void vsqrt::execute() {
-	vm->memory[vm->pc] = sqrt(vm->memory[_arg1]);
+  cerr << "sqrt " << vm->memory[_arg1] << endl;
+  vm->memory[vm->pc] = sqrt(vm->memory[_arg1]);
 }
 
 void vcopy::execute() {
+  cerr << "copy " << vm->memory[_arg1] << endl;
   vm->memory[vm->pc] = vm->memory[_arg1];
 }
 
 void input::execute() {
+  cerr << "load port " << _arg1<< endl;
   vm->memory[vm->pc] = vm->input_ports[_arg1];
 }

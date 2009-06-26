@@ -17,25 +17,21 @@ void vm_state::load_file(char* file){
   }
   stat(file, &results);
   frame_number = results.st_size / 12;
-  cerr << "frame number" << frame_number << endl;
+  //cerr << "frame number" << frame_number << endl;
   for (int i = 0; i< frame_number; i++) {
 	if (i %2 == 0) {
 	  uint32_t raw;
 	  binary_file.clear();
 	  binary_file.read(reinterpret_cast<char *> (&memory[i]),8);
-	  cout << hex << memory[i]<<endl;
 	  binary_file.clear();
 	  binary_file.read(reinterpret_cast<char *> (&raw),4);
-	  cout << hex<<raw <<endl;
-	  code[ADDRESS_RANGE] = instruction::parse(raw);
+	  code[i] = instruction::parse(raw);
 	} else {
 	  uint32_t raw;
 	  binary_file.clear();
 	  binary_file.read(reinterpret_cast<char *> (&raw),4);
-	  cout << hex<<raw <<endl;
 	  binary_file.clear();
 	  binary_file.read(reinterpret_cast<char *> (&memory[i]),8);
-	  cout << hex<<memory[i] <<endl;
 	  code[i] = instruction::parse(raw);
 	}
   }
@@ -48,5 +44,8 @@ void vm_state::load_file(char* file){
 
 void vm_state::step() 
 {
-  
+	  code[pc]->execute();
+	  pc++;
+	  if (pc == ADDRESS_RANGE)
+		pc = 0;
 }
