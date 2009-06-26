@@ -1,34 +1,39 @@
-#ifndef VM_STATE
-#define VM_STATE
+#ifndef VM_STATE_H
+#define VM_STATE_H
 
 #include "common.h"
 
 class instruction;
 
-#define ADDRESS_SPACE	1<<14
+#define ADDRESS_RANGE	1<<14
 
 typedef uint16_t address;
 
 class vm_state {
-  private:
+  
+  private :
+	static vm_state *_instance;
+  public:
 	address pc;
 	bool status;
 	
-	static vm_state* _instance;
-	double memory[ADDRESS_SPACE];
-	instruction *code[ADDRESS_SPACE];
-	address input_ports[ADDRESS_SPACE];
-	address output_ports[ADDRESS_SPACE];
+	double memory[ADDRESS_RANGE];
+	instruction *code[ADDRESS_RANGE];
+	address input_ports[ADDRESS_RANGE];
+	address output_ports[ADDRESS_RANGE];
 	
-  public:
+  
 	vm_state();
   
 	
 	static vm_state *instance() {
-	  if (!_instance)
-		_instance = new vm_state();
-	  return _instance;
+	  if (!vm_state::_instance)
+		vm_state::_instance = new vm_state();
+	  return vm_state::_instance;
 	}
+	
+	void load_file(string file);
+	void step();
 };
 
 #endif

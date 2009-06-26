@@ -3,7 +3,6 @@
 
 int main (int argc, char** argv)
 {
-  vm_state vm;
-  cout << "hello world"<<endl; 
-  
+  assert (argv[1]);
+  vm_state::instance()->load_file(string(argv[1]));
 }
