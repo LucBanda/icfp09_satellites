@@ -2,9 +2,13 @@
 #include "vm_state.h"
 #include "instructions.h"
 
-vm_state *vm_state::_instance = NULL;
+vm_state _instance;
+vm_state *vm = &_instance;
 	
-vm_state::vm_state(){}
+vm_state::vm_state(){
+  pc = 0;
+  status = 0;
+}
 
 
 void vm_state::load_file(char* file){

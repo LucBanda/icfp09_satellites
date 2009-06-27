@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <assert.h>
@@ -9,6 +10,5 @@
 
 using namespace std;
 
-#define vm (vm_state::instance())
 
 #endif

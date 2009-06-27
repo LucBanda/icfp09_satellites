@@ -47,9 +47,9 @@ class mult :public d_type {
 	virtual void execute();
 };
 
-class div :public d_type {
+class vdiv :public d_type {
   public:
-	div(address arg1, address arg2) : d_type(arg1, arg2){};
+	vdiv(address arg1, address arg2) : d_type(arg1, arg2){};
 	virtual void execute();
 };
 
@@ -81,9 +81,9 @@ enum cmp_type {
 
 class cmpz :public s_type{
   private:
-	int _immediate;
+	uint8_t _immediate;
   public:
-	cmpz(address arg1, int immediate) : s_type(arg1), _immediate(immediate) {};
+	cmpz(address arg1, uint8_t immediate) : s_type(arg1), _immediate(immediate & 0x7) {};
 	virtual void execute();
 };
 

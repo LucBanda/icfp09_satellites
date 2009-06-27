@@ -14,13 +14,13 @@ s_type *s_type::parse(uint32_t raw)
 {
   int zero = raw >> 28;
   int opcode = (raw >> 24) & 0xf;
-  address address1 = raw & 0x1fff;
+  address address1 = raw & 0x3fff;
   
   assert(zero == 0);
   
   switch (opcode) {
 	case 0: return new noop(address1);
-	case 1: return new cmpz(address1, (raw >> 20)&0xf);
+	case 1: return new cmpz(address1, (raw >> 21)&0x7);
 	case 2: return new vsqrt(address1);
 	case 3: return new vcopy(address1);
 	case 4: return new input(address1);
@@ -32,14 +32,14 @@ s_type *s_type::parse(uint32_t raw)
 d_type *d_type::parse(uint32_t raw) 
 {
   int opcode = (raw >> 28) & 0xf;
-  address address1 = (raw>>14) & 0x1fff;
-  address address2 = raw & 0x1fff;
+  address address1 = (raw>>14) & 0x3fff;
+  address address2 = raw & 0x3fff;
   
   switch (opcode) {
 	case 1: return new add(address1, address2);
 	case 2: return new sub(address1, address2);
 	case 3: return new mult(address1, address2);
-	case 4: return new div(address1, address2);
+	case 4: return new vdiv(address1, address2);
 	case 5: return new output(address1, address2);
 	case 6: return new phi(address1, address2);
 	default: cerr << "opcode " << opcode << "not recognized in d_syle creation with raw = "<< hex << raw<< endl;
@@ -63,7 +63,7 @@ void mult::execute(){
   vm->memory[vm->pc] = vm->memory[_arg1] * vm->memory[_arg2];
 }
 
-void div::execute(){
+void vdiv::execute(){
   cerr << vm->memory[_arg1] << " / " << vm->memory[_arg2] << endl;
   if (vm->memory[_arg2] == 0)
 	vm->memory[vm->pc] = 0;
@@ -77,7 +77,7 @@ void output::execute() {
 }
 
 void phi::execute() {
-  cerr << "phi " << vm->status << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
+  cerr << "phi " << vm->status <<  " " << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
   if (vm->status)
 	vm->memory[vm->pc] = vm->memory[_arg1];
   else
@@ -90,15 +90,15 @@ void noop::execute() {
 }
 
 void cmpz::execute() {
-  cerr << "cmpz" << endl;
+  cerr << "cmpz " ;
 	bool result;
 	double val = vm->memory[_arg1];
 	switch (_immediate) {
-	  case 0: result = (val < 0.0); break;
-	  case 1: result = (val <= 0.0); break;
-	  case 2: result = (val = 0.0); break;
-	  case 3: result = (val >= 0.0); break;
-	  case 4: result = (val > 0.0); break;
+	  case 0: result = (val < 0.0); cerr << "<"; break;
+	  case 1: result = (val <= 0.0); cerr << "<="; break;
+	  case 2: result = (val == 0.0); cerr << "="; break;
+	  case 3: result = (val >= 0.0); cerr << ">="; break;
+	  case 4: result = (val > 0.0); cerr << ">"; break;
 	  default: cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
 	}
 	vm->status = result;
@@ -106,6 +106,7 @@ void cmpz::execute() {
 
 void vsqrt::execute() {
   cerr << "sqrt " << vm->memory[_arg1] << endl;
+  assert (vm->memory[_arg1] >= 0);
   vm->memory[vm->pc] = sqrt(vm->memory[_arg1]);
 }
 
