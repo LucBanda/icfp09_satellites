@@ -8,6 +8,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <math.h>
+#include <sstream>
 
 using namespace std;
 

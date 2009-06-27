@@ -1,5 +1,7 @@
 #include "common.h"
 #include "vm_state.h"
+#include "trace_generator.h"
+#include "controller.h"
 
 int main (int argc, char** argv)
 {
@@ -8,14 +10,14 @@ int main (int argc, char** argv)
 	exit(-1);
   }
 	
-  int instance = atoi(argv[2]);
+  uint32_t instance = atoi(argv[2]);
   
   vm->load_file(argv[1]);
-  char output_name[256];
+  ostringstream output_name;
+  output_name << dec << instance <<".osf"<< endl;
   
-  snprintf(&output_name, "%d.osf", instance);
-  trace_generator trace(output_name, instance);
-  Icontroller controller(&trace);
+  trace_generator trace(instance, (char*)output_name.str().c_str());
+  hohmann controller(&trace);
   uint32_t time_step = 0;
 
   while (controller.step(time_step++)) {

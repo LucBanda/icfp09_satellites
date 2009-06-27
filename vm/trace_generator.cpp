@@ -47,24 +47,24 @@ bool trace_generator::add_command(uint32_t time_step, uint32_t address, double v
 }
 
 void trace_generator::print_file() {
-  fstream binary_file(file,ios::binary|ios::out);
+  fstream binary_file(_output_file,ios::binary|ios::out);
   if (!binary_file.is_open()) {
-	cerr << "unable to open the file : "<< file << endl;
+	cerr << "unable to open the file : "<< _output_file << endl;
 	exit(-1);
   }
   //printing header
-  binary_file.write(&struct_file.magic, 4);
-  binary_file.write(&struct_file.team_id, 4);
-  binary_file.write(&struct_file.scenario_id, 4);
+  binary_file.write((const char*)&file_struct.magic, 4);
+  binary_file.write((const char*)&file_struct.team_id, 4);
+  binary_file.write((const char*)&file_struct.scenario_id, 4);
   uint32_t cur_f_p=0;
   uint32_t cur_pm_p=0;
   
-  while (struct_file.frame[cur_f_p].count !=0) {
-	binary_file.write(&struct_file.frame[cur_f_p].time_step, 4);
-	binary_file.write(&struct_file.frame[cur_f_p].count, 4);
-	for (cur_pm_p = 0; cur_pm_p < struct_file.frame[cur_f_p].count; cur_pm_p++) {
-	  binary_file.write(&struct_file.frame[cur_f_p].port_map[cur_pm_p].address, 4);
-	  binary_file.write(&struct_file.frame[cur_f_p].port_map[cur_pm_p].value, 8);
+  while (file_struct.frame[cur_f_p].count !=0) {
+	binary_file.write((const char*)&file_struct.frame[cur_f_p].time_step, 4);
+	binary_file.write((const char*)&file_struct.frame[cur_f_p].count, 4);
+	for (cur_pm_p = 0; cur_pm_p < file_struct.frame[cur_f_p].count; cur_pm_p++) {
+	  binary_file.write((const char*)&file_struct.frame[cur_f_p].port_map[cur_pm_p].address, 4);
+	  binary_file.write((const char*)&file_struct.frame[cur_f_p].port_map[cur_pm_p].value, 8);
 	}
   }
   
