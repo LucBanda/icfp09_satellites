@@ -6,7 +6,7 @@ INCLUDE_FILES = $(shell find include/ -name \*.h)
 BINARIES      = vm
 
 
-OBJECTS = main.o vm_state.o instructions.o
+OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o
 
 OPTIMIZE= -g
 #OPTIMIZE= -O2
@@ -17,13 +17,13 @@ INCLUDE =
 
 DEPFILES += $(shell find -name \*.d)
 
-all: $(BINARIES)
+all: $(BINARIES) common.h
 
-%.o : %.cpp
+%.o : %.cpp %.h
 	@echo "  [CPP]  $@"
 	@g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
 
-%.o : %.c
+%.o : %.c %.h
 	@echo "  [CC]   $@"
 	@g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
 
