@@ -17,7 +17,7 @@ int main (int argc, char** argv)
   output_name << dec << instance <<".osf"<< endl;
   
   trace_generator trace(instance, (char*)output_name.str().c_str());
-  hohmann controller(&trace);
+  hohmann controller(&trace, instance);
   uint32_t time_step = 0;
 
   while (controller.step(time_step++)) {
@@ -30,10 +30,7 @@ int main (int argc, char** argv)
 	controller.monitor();
 	
 	cout << "\x1b[2J\x1b[H"<< flush;
-	/*cout << "fuel : "<< vm->output_ports[0x1] << endl;
-	cout << "x : "<< vm->output_ports[0x2] << endl;
-	cout << "y : "<< vm->output_ports[0x3] << endl;
-	cout << "radius : " << sqrt((vm->output_ports[0x2] * vm->output_ports[0x2]) + (vm->output_ports[0x3] * vm->output_ports[0x3])) << endl;*/
+
 	
 	cerr << "-------------------------------------" << endl;
   }
