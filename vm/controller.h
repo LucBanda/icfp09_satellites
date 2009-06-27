@@ -25,17 +25,12 @@ class hohmann : public Icontroller {
 	address _delta_vx_addr;
 	address _delta_vy_addr;
 	
-	double last_x;
-	double last_y;
-	double delta_v_x;
-	double delta_v_y;
-	void calculate_action(double *dvx, double *dvy, uint32_t time_step);
 	uint32_t ignition_time;
 	uint32_t time_to_stop;
 	double speed_back_x;
 	double speed_back_y;
-	double last_speed_x;
-	double last_speed_y;
+	
+	void calculate_action(double *dvx, double *dvy, uint32_t time_step);
 	
   public:
 	hohmann(trace_generator *trace, double instance);

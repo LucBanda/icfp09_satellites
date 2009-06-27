@@ -9,7 +9,7 @@ BINARIES      = vm
 OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o
 
 OPTIMIZE= -g
-#OPTIMIZE= -O2
+#OPTIMIZE= -O3
 
 CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC
 
@@ -33,4 +33,5 @@ $(BINARIES) : $(OBJECTS)
 
 clean:
 	rm -f $(BINARIES)
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS) 
+	rm -f *.d

@@ -14,7 +14,9 @@ trace_generator::trace_generator(uint32_t scenario_id, char* output_file)
   file_struct.frame = new struct _frame[MAX_TIME_STEP];
 }
 
-
+trace_generator::~trace_generator() {
+  delete file_struct.frame;
+}
 void trace_generator::next_frame(uint32_t time_step)
 {
   file_struct.frame[current_frame_id].count = current_port_map_id;
@@ -33,7 +35,6 @@ bool trace_generator::add_command(uint32_t time_step, uint32_t address, double v
 {
   if (time_step != file_struct.frame[current_frame_id].time_step)
 	next_frame(time_step);
-  
   if (score) {
 	file_struct.frame[current_frame_id].count = 0;
 	print_file();

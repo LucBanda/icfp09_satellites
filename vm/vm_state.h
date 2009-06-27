@@ -22,13 +22,6 @@ class vm_state {
   
 	vm_state();
   
-	
-/*	static vm_state *instance() {
-	  if (!vm_state::_instance)
-		vm_state::_instance = new vm_state();
-	  return vm_state::_instance;
-	}
-	*/
 	void load_file(char* file);
 	void step();
 };

@@ -17,7 +17,7 @@ int main (int argc, char** argv)
   vm->load_file(argv[1]);
   
   ostringstream output_name;
-  output_name << dec << instance <<".osf"<< endl;
+  output_name << dec << instance <<".osf";
   
   trace_generator trace(instance, (char*)output_name.str().c_str());
   hohmann controller(&trace, (double)instance);
@@ -33,8 +33,9 @@ int main (int argc, char** argv)
 	
 	
 	stop = controller.step(time_step);
-	usleep(1000);
-	cout << "\x1b[2J\x1b[H"<< flush;
+	//cout << time_step;
+	/*usleep(1000);
+	cout << "\x1b[2J\x1b[H"<< flush;*/
 	controller.monitor();
 	time_step ++ ;
 	

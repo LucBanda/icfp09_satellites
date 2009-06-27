@@ -35,6 +35,7 @@ class trace_generator {
 	void next_frame(uint32_t time_step);
   public:
 	trace_generator(uint32_t scenario_id, char* output_file);
+	~trace_generator();
 	bool add_command(uint32_t time_step, uint32_t address, double value, double score);
 	void print_file();
 };
