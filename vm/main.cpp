@@ -12,27 +12,33 @@ int main (int argc, char** argv)
 	
   uint32_t instance = atoi(argv[2]);
   
+  vm_state _vm;
+  vm = &_vm;
   vm->load_file(argv[1]);
+  
   ostringstream output_name;
   output_name << dec << instance <<".osf"<< endl;
   
   trace_generator trace(instance, (char*)output_name.str().c_str());
-  hohmann controller(&trace, instance);
+  hohmann controller(&trace, (double)instance);
+  
   uint32_t time_step = 0;
-
-  while (controller.step(time_step++)) {
+  bool stop;
+  do {
     
 	for (int i=0; i<ADDRESS_RANGE;i++)
 	{
 	  vm->step();
 	}
 	
-	controller.monitor();
 	
+	stop = controller.step(time_step);
+	usleep(1000);
 	cout << "\x1b[2J\x1b[H"<< flush;
-
+	controller.monitor();
+	time_step ++ ;
 	
-	cerr << "-------------------------------------" << endl;
-  }
+	
+  } while (!stop);
   
 }

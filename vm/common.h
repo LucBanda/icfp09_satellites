@@ -12,5 +12,5 @@
 
 using namespace std;
 
-
+#define MU (6.67428E-11 * 6.0E24)
 #endif

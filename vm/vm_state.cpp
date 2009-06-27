@@ -2,8 +2,8 @@
 #include "vm_state.h"
 #include "instructions.h"
 
-vm_state _instance;
-vm_state *vm = &_instance;
+
+vm_state *vm=NULL;
 	
 vm_state::vm_state(){
   pc = 0;

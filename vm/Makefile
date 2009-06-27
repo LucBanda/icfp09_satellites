@@ -17,19 +17,19 @@ INCLUDE =
 
 DEPFILES += $(shell find -name \*.d)
 
-all: $(BINARIES) common.h
+all: $(BINARIES)
 
 %.o : %.cpp %.h
 	@echo "  [CPP]  $@"
-	@g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
+	g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
 
 %.o : %.c %.h
 	@echo "  [CC]   $@"
-	@g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
+	g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
 
 $(BINARIES) : $(OBJECTS)
 	@echo "[LD] $@"
-	@g++ $(OBJECTS) -o $@
+	g++ $(OBJECTS) -o $@
 
 clean:
 	rm -f $(BINARIES)

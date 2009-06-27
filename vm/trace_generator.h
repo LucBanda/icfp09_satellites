@@ -4,7 +4,7 @@
 #define MAGIC 0xCAFEBABE
 #define TEAM_ID 360
 #define MAX_TIME_STEP 3000000
-#define MAX_ACTUATOR  10
+#define MAX_ACTUATOR  5
 
 
 struct _port_value_mapping {
@@ -22,7 +22,7 @@ struct _file_struct {
   uint32_t magic;
   uint32_t team_id;
   uint32_t scenario_id;
-  struct _frame frame[MAX_TIME_STEP];
+  struct _frame *frame;
 };
 
 class trace_generator {

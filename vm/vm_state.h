@@ -5,14 +5,11 @@
 
 class instruction;
 
-#define ADDRESS_RANGE	1<<13
+#define ADDRESS_RANGE	1<<14
 
 typedef uint16_t address;
 
 class vm_state {
-  
-  private :
-	
   public:
 	address pc;
 	bool status;
@@ -36,7 +33,6 @@ class vm_state {
 	void step();
 };
 
-
-extern vm_state _instance;
 extern vm_state *vm;
+
 #endif
