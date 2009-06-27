@@ -1,5 +1,4 @@
 #include "instructions.h"
-#include "math.h"
 
 instruction *instruction::parse(uint32_t raw)
 {

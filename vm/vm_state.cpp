@@ -17,7 +17,7 @@ void vm_state::load_file(char* file){
   fstream binary_file(file,ios::binary|ios::in);
   if (!binary_file.is_open()) {
 	cerr << "unable to open the file : "<< file << endl;
-	return;
+	exit(-1);
   }
   stat(file, &results);
   frame_number = results.st_size / 12;
