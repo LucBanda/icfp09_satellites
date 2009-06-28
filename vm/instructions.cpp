@@ -84,7 +84,6 @@ void phi::execute() {
 }
 
 void noop::execute() {
-  //cerr << "noop" << endl;
 	vm->memory[vm->pc] = vm->memory[vm->pc];
 }
 
@@ -98,7 +97,7 @@ void cmpz::execute() {
 	  case 2: result = (val == 0.0); /*cerr << "=";*/ break;
 	  case 3: result = (val >= 0.0); /*cerr << ">=";*/ break;
 	  case 4: result = (val > 0.0); /*cerr << ">";*/ break;
-	  default: cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
+	  default: result =0; cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
 	}
 	vm->status = result;
 }

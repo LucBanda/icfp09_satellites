@@ -15,6 +15,7 @@ class Icontroller {
   public :
 	Icontroller(trace_generator* trace, double instance) : _trace(trace), _instance(instance){};
 	virtual bool step (uint32_t time_step) = 0;
+	virtual void monitor() = 0;
 };
 
 class hohmann : public Icontroller {

@@ -6,12 +6,12 @@ INCLUDE_FILES = $(shell find include/ -name \*.h)
 BINARIES      = vm
 
 
-OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o
+OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o
 
 OPTIMIZE= -g
 #OPTIMIZE= -O3
 
-CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC
+CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
 
 INCLUDE = 
 
@@ -29,7 +29,7 @@ all: $(BINARIES)
 
 $(BINARIES) : $(OBJECTS)
 	@echo "[LD] $@"
-	g++ $(OBJECTS) -o $@
+	g++ $(OBJECTS) -L/usr/lib `allegro-config --libs` -o $@
 
 clean:
 	rm -f $(BINARIES)

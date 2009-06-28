@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <allegro.h>
+
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
