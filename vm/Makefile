@@ -6,7 +6,7 @@ INCLUDE_FILES = $(shell find include/ -name \*.h)
 BINARIES      = vm
 
 
-OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o
+OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o satellite.o
 
 OPTIMIZE= -g
 #OPTIMIZE= -O3

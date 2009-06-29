@@ -1,7 +1,7 @@
 #include "common.h"
 #include "meet_and_greed.h"
 
-meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(trace, instance) {
+meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(trace) {
   _score_addr = 0x0;
   _fuel_addr = 0x1;
   _vx_addr = 0x2;
@@ -12,7 +12,9 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
   _delta_vx_addr = 0x2;
   _delta_vy_addr = 0x3;
   _instance_addr = 0x3E80;
-  vm->input_ports[_instance_addr] = instance;
+  me = new satellite(0x2, 0x3);
+  target = new satellite(0x4, 0x5);
+  vm->input_ports[_instance_addr] = _instance = instance;
   _trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
   
   max_angular_speed = 0;
@@ -27,12 +29,12 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
 void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step) {
   cout << "\x1b[2J\x1b[H";
   complex<double> my_abs_pos(-vm->output_ports[_vx_addr], -vm->output_ports[_vy_addr]);
-  
-  complex<double> sat_abs_pos = +(my_abs_pos + complex<double>(vm->output_ports[_sat_x_addr], vm->output_ports[_sat_y_addr]));
+  complex<double> sat_pos(vm->output_ports[_sat_x_addr], vm->output_ports[_sat_y_addr]);
+  complex<double> sat_abs_pos = +(my_abs_pos + sat_pos);
   double sat_abs_theta = arg(sat_abs_pos) ;
   
   double my_orbit = abs(my_abs_pos);
-  double target_orbit = abs(sat_abs_pos) - (_instance == 2002) * 200;
+  double target_orbit = abs(sat_abs_pos)/* - (_instance == 2002) * 200*/;
 
   if (rectified) {
       *dvx = 0;
@@ -59,10 +61,10 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
   cout << "arriving angle " << arriving_angle << endl;
   
   int32_t fudge = 0;
-  if ((_instance == 2001) || (_instance == 2004))
+  /*if ((_instance == 2001) || (_instance == 2004))
 	fudge = +1;
   else if (_instance == 2003)
-	fudge = 1;
+	fudge = 1;*/
   double sat_arrival_angle = sat_abs_theta + (time_to_arrive + fudge) * (angular_speed) ;
   while(sat_arrival_angle > M_PI) sat_arrival_angle -=2*M_PI;
   while(sat_arrival_angle < -M_PI) sat_arrival_angle +=2*M_PI;
@@ -95,16 +97,16 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
 	
 	time_to_stop = ignition_time +  M_PI * sqrt(pow(my_orbit + target_orbit,3)/(8*MU));
 	
-  } else if (time_to_stop == 1+time_step+(_instance == 2002)*( - 14) + (_instance == 2003)*(-4)) {
+  } else if (time_to_stop == time_step /*(1+time_step+(_instance == 2002)*( - 14) + (_instance == 2003)*(-4))*/) {
 	  *dvx = speed_back_x ;
 	  *dvy = speed_back_y ;
       time_to_stop = -1;
-  /*} else if ((time_to_stop == -1) && (ignition_time != -1)){
+  } else if ((time_to_stop == -1) && (ignition_time != -1)){
       //vitesse relative
-      complex< double> rel_speed = my_abs_pos - old_my_abs_pos - sat_abs_pos + old_sat_abs_pos;
+      complex< double> rel_speed = my_abs_pos - old_my_abs_pos - (sat_abs_pos - old_sat_abs_pos);
       if (abs(sat_abs_pos - my_abs_pos)<1000) {
-          if (abs(rel_speed) > 100) {
-              rel_speed += polar(1.0, arg(-sat_abs_pos + my_abs_pos));
+          if (abs(rel_speed) > 1.0) {
+              //rel_speed += polar(1.0, arg(-sat_abs_pos + my_abs_pos));
               *dvx = real(-rel_speed);
               *dvy = imag(-rel_speed);
               cout << "setting same speed " << -rel_speed <<","<<abs(rel_speed) <<endl;
@@ -113,14 +115,21 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
               *dvx = 0;
               *dvy = 0;
           }
-      } /*else if (abs(sat_abs_pos - my_abs_pos)<10000) {
-            rel_speed += polar(100.0, arg(sat_abs_pos - my_abs_pos));
-            *dvx = real(-rel_speed);
-            *dvy = imag(-rel_speed);
-            cout << "setting same speed " << -rel_speed <<","<<abs(rel_speed) <<endl;
-            rectified = true;
-            getchar();
-      }*/
+      } else if (abs(sat_abs_pos - my_abs_pos)<20000) {
+		    if ((abs(rel_speed) < 4.5) || (abs(rel_speed) > 5.5)) {
+			  cout << "rel_speed "<< rel_speed << endl;
+			  rel_speed -= polar(5.0, arg(sat_pos));
+			  cout << "rel_speed + polar"<< rel_speed << endl;
+			  *dvx = real(-rel_speed);
+			  *dvy = imag(-rel_speed);
+			  cout << "setting same speed " << -rel_speed <<","<<abs(rel_speed) <<endl;
+			  rectified = true;
+			  getchar();
+			} else {
+			  *dvx = 0;
+              *dvy = 0;
+			}
+      }
   }else {
       *dvx = 0;
       *dvy = 0;
