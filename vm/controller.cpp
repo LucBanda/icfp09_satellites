@@ -1,5 +1,6 @@
 #include "common.h"
 #include "controller.h"
+#include <complex>
 
 hohmann::hohmann(trace_generator *trace, double instance):Icontroller(trace, instance) {
   _score_addr = 0x0;
@@ -21,7 +22,7 @@ void hohmann::calculate_action(double *dvx, double *dvy, uint32_t time_step) {
   
   double x=vm->output_ports[_vx_addr];
   double y=vm->output_ports[_vy_addr];
-  
+  complex<double> my_abs_pos(-x, -y);
   if (time_step == 0) { //ignition asap
 	
 	double my_orbit =  sqrt((x * x) + (y*y));
@@ -30,16 +31,25 @@ void hohmann::calculate_action(double *dvx, double *dvy, uint32_t time_step) {
 	//calculate hohmann transfert function
 	double dv_abs = sqrt(MU/my_orbit)*(sqrt(2.0*target_orbit/(target_orbit+my_orbit))-1.0);
 	
-	*dvx = -dv_abs * cos(atan(x/y));
-	*dvy = dv_abs * sin(atan(x/y));
+	complex<double> speed;
+	if (_instance == 1004)
+	  speed = polar(dv_abs, arg(my_abs_pos) + M_PI/2); //this should be +M_PI/2 for the 1004 as it is couterclock wise
+	else 
+	  speed = polar(dv_abs, arg(my_abs_pos) - M_PI/2); //this should be +M_PI/2 for the 1004 as it is couterclock wise
+	*dvx = real(speed);
+	*dvy = imag(speed);
 	
 	ignition_time = time_step;
 	
 	//vitesse back
 	dv_abs = sqrt(MU/target_orbit)*(1-sqrt(2*my_orbit/(target_orbit+my_orbit)));
+	if (_instance == 1004)
+	  speed = polar(dv_abs, arg(my_abs_pos) - M_PI/2);
+	else
+	  speed = polar(dv_abs, arg(my_abs_pos) + M_PI/2);
+	speed_back_x = real(speed);
+	speed_back_y = imag(speed);
 	
-	speed_back_x = -dv_abs * cos(atan(x/y) + M_PI) ;
-	speed_back_y = dv_abs * sin(atan(x/y) + M_PI) ;
 	
 	time_to_stop = ignition_time + M_PI * sqrt(pow(my_orbit + target_orbit,3)/(8*MU));
 	
