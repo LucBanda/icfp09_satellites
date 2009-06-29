@@ -23,7 +23,7 @@ void hohmann::calculate_action(double *dvx, double *dvy, uint32_t time_step) {
   double x=vm->output_ports[_vx_addr];
   double y=vm->output_ports[_vy_addr];
   complex<double> my_abs_pos(-x, -y);
-  if (time_step == 0) { //ignition asap
+  if (time_step == 1) { //ignition asap
 	
 	double my_orbit =  sqrt((x * x) + (y*y));
 	double target_orbit = vm->output_ports[_target_orbit_addr];

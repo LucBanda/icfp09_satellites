@@ -22,9 +22,11 @@ class meetandgreed : public Icontroller {
 	double speed_back_y;
 
 	complex<double> old_sat_abs_pos;
+    complex<double> old_my_abs_pos;
+    
 	double max_angular_speed;
 	void calculate_action(double *dvx, double *dvy, uint32_t time_step);
-
+    bool rectified;
 	int delay;
   public:
 	meetandgreed(trace_generator *trace, double instance);

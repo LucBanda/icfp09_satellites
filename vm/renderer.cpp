@@ -28,7 +28,7 @@ using namespace std;
 renderer *renderer::_single_renderer = NULL;
 bool renderer::_running = false;
 
-#define SCALE 2E4
+#define SCALE 2E5
 
 double start_radius = 0;
 void renderer::draw(BITMAP* bmp)
@@ -81,7 +81,7 @@ void * renderer::mainLoop(void* params)
 	}
 
 	show_mouse(screen);
-	BITMAP *double_buffer;
+	BITMAP *double_buffer = NULL;
 	enable_hardware_cursor();
 	clear_bitmap(screen);
 	

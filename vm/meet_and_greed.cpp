@@ -19,6 +19,7 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
   time_to_stop = -1;
   ignition_time = -1;
   delay = -1;
+  rectified = false;
 }
 
 
@@ -32,7 +33,15 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
   
   double my_orbit = abs(my_abs_pos);
   double target_orbit = abs(sat_abs_pos) - (_instance == 2002) * 200;
-  
+
+  if (rectified) {
+      *dvx = 0;
+      *dvy = 0;
+      old_my_abs_pos = my_abs_pos;
+      old_sat_abs_pos = sat_abs_pos;
+      rectified = false;
+      return;
+  }
   if (sat_abs_theta * arg(old_sat_abs_pos) < 0) //angle just changed sign
   {
 	old_sat_abs_pos = sat_abs_pos;
@@ -89,11 +98,34 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
   } else if (time_to_stop == 1+time_step+(_instance == 2002)*( - 14) + (_instance == 2003)*(-4)) {
 	  *dvx = speed_back_x ;
 	  *dvy = speed_back_y ;
-  } else {
-	*dvx = 0;
-	*dvy = 0;
+      time_to_stop = -1;
+  /*} else if ((time_to_stop == -1) && (ignition_time != -1)){
+      //vitesse relative
+      complex< double> rel_speed = my_abs_pos - old_my_abs_pos - sat_abs_pos + old_sat_abs_pos;
+      if (abs(sat_abs_pos - my_abs_pos)<1000) {
+          if (abs(rel_speed) > 100) {
+              rel_speed += polar(1.0, arg(-sat_abs_pos + my_abs_pos));
+              *dvx = real(-rel_speed);
+              *dvy = imag(-rel_speed);
+              cout << "setting same speed " << -rel_speed <<","<<abs(rel_speed) <<endl;
+              rectified = true;
+          } else {
+              *dvx = 0;
+              *dvy = 0;
+          }
+      } /*else if (abs(sat_abs_pos - my_abs_pos)<10000) {
+            rel_speed += polar(100.0, arg(sat_abs_pos - my_abs_pos));
+            *dvx = real(-rel_speed);
+            *dvy = imag(-rel_speed);
+            cout << "setting same speed " << -rel_speed <<","<<abs(rel_speed) <<endl;
+            rectified = true;
+            getchar();
+      }*/
+  }else {
+      *dvx = 0;
+      *dvy = 0;
   }
-  
+  old_my_abs_pos = my_abs_pos;
   old_sat_abs_pos = sat_abs_pos;
 }
 
@@ -101,7 +133,8 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
 bool meetandgreed::step(uint32_t time_step) {
   
   if (vm->output_ports[_score_addr]) {
-	return _trace->add_command(time_step, 0, 0, vm->output_ports[_score_addr]);
+	_trace->add_command(time_step, 0, 0, vm->output_ports[_score_addr]);
+    return true;
   }
   
   double dvx, dvy;
@@ -126,9 +159,6 @@ void meetandgreed::monitor() {
 	cout << "abs position" << -complex<double>(vm->output_ports[_vx_addr],  vm->output_ports[_vy_addr]) << endl;
 	cout << "radius : " << sqrt((vm->output_ports[_vx_addr] * vm->output_ports[_vx_addr]) + (vm->output_ports[_vy_addr] * vm->output_ports[_vy_addr])) << endl;
 	cout << "relative distance to target : " << sqrt(pow(vm->output_ports[_sat_x_addr],2) + pow(vm->output_ports[_sat_y_addr],2)) << endl;
-	
-	//cout << "target : " << vm->output_ports[_target_orbit_addr] << endl;
-	/*if (vm->output_ports[_score_addr])*/
 	cout << "score : " << vm->output_ports[_score_addr] << endl;
 	usleep(0);
 }

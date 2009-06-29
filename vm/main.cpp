@@ -30,11 +30,11 @@ int main (int argc, char** argv)
 	controller = new meetandgreed(&trace, (double)instance);
 
   
-  //renderer::getInstance();
+  renderer::getInstance();
   uint32_t time_step = 0;
   bool stop;
   do {
-    
+    time_step++;
 	for (int i=0; i<ADDRESS_RANGE;i++)
 	{
 	  vm->step();
@@ -43,7 +43,6 @@ int main (int argc, char** argv)
 	
 	stop = controller->step(time_step);
 	controller->monitor();
-	time_step ++ ;
 	
 	
   } while (!stop);
