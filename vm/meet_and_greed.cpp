@@ -18,6 +18,7 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
   max_angular_speed = 0;
   time_to_stop = -1;
   ignition_time = -1;
+  delay = -1;
 }
 
 
@@ -30,7 +31,7 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
   double sat_abs_theta = arg(sat_abs_pos) ;
   
   double my_orbit = abs(my_abs_pos);
-  double target_orbit = abs(sat_abs_pos);
+  double target_orbit = abs(sat_abs_pos) - (_instance == 2002) * 200;
   
   if (sat_abs_theta * arg(old_sat_abs_pos) < 0) //angle just changed sign
   {
@@ -44,50 +45,50 @@ void meetandgreed::calculate_action(double *dvx, double *dvy, uint32_t time_step
   
   
   double arriving_angle = arg(-my_abs_pos);
-  double time_to_arrive = M_PI * sqrt(pow(my_orbit + target_orbit,3)/(8*MU));
+  double time_to_arrive = M_PI * sqrt(pow(my_orbit + target_orbit,3)/(8*MU)) - 1;
   
   cout << "arriving angle " << arriving_angle << endl;
   
-  
-  double sat_arrival_angle = sat_abs_theta + (time_to_arrive+1) * angular_speed ;
+  int32_t fudge = 0;
+  if ((_instance == 2001) || (_instance == 2004))
+	fudge = +1;
+  else if (_instance == 2003)
+	fudge = 1;
+  double sat_arrival_angle = sat_abs_theta + (time_to_arrive + fudge) * (angular_speed) ;
   while(sat_arrival_angle > M_PI) sat_arrival_angle -=2*M_PI;
   while(sat_arrival_angle < -M_PI) sat_arrival_angle +=2*M_PI;
   
   cout << "arrival of sat angle " << sat_arrival_angle<< endl;
   
-  bool meeting_point_conditions = (arriving_angle < sat_arrival_angle + 0.001)
-								  && (arriving_angle > sat_arrival_angle - 0.001);
+  bool meeting_point_conditions = (arriving_angle < (sat_arrival_angle + 0.0004))
+							   && (arriving_angle > (sat_arrival_angle - 0.0004));
   
+  cout << "angle " << arg(sat_abs_pos - my_abs_pos) << endl;
   
-  
-  if ((meeting_point_conditions) && (ignition_time == -1) && (time_step != 0)){
+  if ((meeting_point_conditions) && (time_step != 0) && (ignition_time == -1)){
 	cout << "*** ignition ***" << endl;
-	//getchar();
 	
 	//ignition_time
 	double dv_abs = sqrt(MU/my_orbit)*(sqrt(2.0*target_orbit/(target_orbit+my_orbit))-1.0);
-	double x = real(my_abs_pos);
-	double y = imag(my_abs_pos);
 	
 	complex<double> speed = polar(dv_abs, arg(my_abs_pos) - M_PI/2);
 	*dvx = real(speed);
 	*dvy = imag(speed);
 	
 	ignition_time = time_step;
-	
 	//vitesse back
-	dv_abs = sqrt(MU/target_orbit)*(1-sqrt(2*my_orbit/(target_orbit+my_orbit)));
+	dv_abs = sqrt(MU/target_orbit)*(1.0-sqrt(2*my_orbit/(target_orbit+my_orbit)));
 	
 	speed = polar(dv_abs, arg(my_abs_pos) + M_PI/2);
 	
 	speed_back_x = real(speed) ;
 	speed_back_y = imag(speed) ;
 	
-	time_to_stop = ignition_time +  1 + M_PI * sqrt(pow(my_orbit + target_orbit,3)/(8*MU));
-	//getchar();
-  } else if (time_to_stop == time_step) {
-	  *dvx = speed_back_x;
-	  *dvy = speed_back_y;
+	time_to_stop = ignition_time +  M_PI * sqrt(pow(my_orbit + target_orbit,3)/(8*MU));
+	
+  } else if (time_to_stop == 1+time_step+(_instance == 2002)*( - 14) + (_instance == 2003)*(-4)) {
+	  *dvx = speed_back_x ;
+	  *dvy = speed_back_y ;
   } else {
 	*dvx = 0;
 	*dvy = 0;
@@ -125,8 +126,9 @@ void meetandgreed::monitor() {
 	cout << "abs position" << -complex<double>(vm->output_ports[_vx_addr],  vm->output_ports[_vy_addr]) << endl;
 	cout << "radius : " << sqrt((vm->output_ports[_vx_addr] * vm->output_ports[_vx_addr]) + (vm->output_ports[_vy_addr] * vm->output_ports[_vy_addr])) << endl;
 	cout << "relative distance to target : " << sqrt(pow(vm->output_ports[_sat_x_addr],2) + pow(vm->output_ports[_sat_y_addr],2)) << endl;
+	
 	//cout << "target : " << vm->output_ports[_target_orbit_addr] << endl;
 	/*if (vm->output_ports[_score_addr])*/
 	cout << "score : " << vm->output_ports[_score_addr] << endl;
-	usleep(100);
+	usleep(0);
 }

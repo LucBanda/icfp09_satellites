@@ -24,12 +24,13 @@ int main (int argc, char** argv)
   output_name << dec << instance <<".osf";
   
   trace_generator trace(instance, (char*)output_name.str().c_str());
-  if ((instance < 1005) && (instance > 1000))
+  //if ((instance < 1005) && (instance > 1000))
 	controller = new hohmann(&trace, (double)instance);
   if ((instance < 2005) && (instance > 2000))
 	controller = new meetandgreed(&trace, (double)instance);
 
-  renderer::getInstance();
+  
+  //renderer::getInstance();
   uint32_t time_step = 0;
   bool stop;
   do {

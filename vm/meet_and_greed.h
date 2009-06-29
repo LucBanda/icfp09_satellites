@@ -25,13 +25,7 @@ class meetandgreed : public Icontroller {
 	double max_angular_speed;
 	void calculate_action(double *dvx, double *dvy, uint32_t time_step);
 
-	
-	/*friend fstream& operator<<(fstream& out, complex<double>& vec) // input
-	{
-	  out << "( " << real(vec) << " , " << imag(vec) << " ) ";
-	  return out;
-	}*/
-
+	int delay;
   public:
 	meetandgreed(trace_generator *trace, double instance);
 	virtual bool step (uint32_t time_step);

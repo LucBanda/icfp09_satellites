@@ -21,15 +21,15 @@ all: $(BINARIES)
 
 %.o : %.cpp %.h
 	@echo "  [CPP]  $@"
-	g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
+	@g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
 
 %.o : %.c %.h
 	@echo "  [CC]   $@"
-	g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
+	@g++ $(CPPFLAGS) $(INCLUDE) -c -o $@ $<
 
 $(BINARIES) : $(OBJECTS)
 	@echo "[LD] $@"
-	g++ $(OBJECTS) -L/usr/lib `allegro-config --libs` -o $@
+	@g++ $(OBJECTS) -L/usr/lib `allegro-config --libs` -o $@
 
 clean:
 	rm -f $(BINARIES)
