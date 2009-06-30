@@ -2,7 +2,8 @@
 #define RENDERER_H
 
 #include "common.h"
-
+#include "satellite.h"
+#include <vector>
 
 class renderer
 {
@@ -16,7 +17,7 @@ class renderer
 		void init_bitmap(BITMAP **bmp);
 		
 		double _sizeX;
-		
+		vector<satellite *> sats;
 		pthread_mutex_t _map_mutex;
 		
 	public:
@@ -27,6 +28,7 @@ class renderer
 		static void * mainLoop(void* params);
 		void lock();
 		void unlock();
+		void add_sat(satellite* sat);
 		
 		static renderer *getInstance ()
 		{

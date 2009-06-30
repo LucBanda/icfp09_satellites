@@ -1,5 +1,6 @@
 #include "common.h"
 #include "meet_and_greed.h"
+#include "renderer.h"
 
 meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(trace) {
   _score_addr = 0x0;
@@ -10,6 +11,9 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
   _instance_addr = 0x3E80;
   me = new satellite(0x2, 0x3);
   target = new satellite(0x4, 0x5, me);
+  renderer::getInstance()->add_sat(me);
+  renderer::getInstance()->add_sat(target);
+  
   vm->input_ports[_instance_addr] = _instance = instance;
   _trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
 }

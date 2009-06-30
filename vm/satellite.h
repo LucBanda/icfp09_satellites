@@ -49,6 +49,7 @@ class satellite {
 	complex<double> speed(){return _speed;}
 	complex<double> relative_position(){return _relative_position;}
 	complex<double> state(){return _state;}
+	bool main_sat() {return (_main == NULL);}
 	double orbit(){return _orbit;}
 	
 	void update(uint32_t time_step);

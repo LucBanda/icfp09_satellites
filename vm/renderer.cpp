@@ -28,19 +28,45 @@ using namespace std;
 renderer *renderer::_single_renderer = NULL;
 bool renderer::_running = false;
 
-#define SCALE 2E4
+double SCALE = 2E3;
+
+void renderer::add_sat(satellite *sat) {
+  sats.push_back(sat);
+}
 
 double start_radius = 0;
 void renderer::draw(BITMAP* bmp)
 {
 #ifdef ALLEGRO
 	lock();
+
 	rectfill(bmp, 0,0,1000,1000, BACKGROUND_COL);
+	
+	
+	for (vector<satellite *>::iterator it = sats.begin(); it != sats.end(); it++) {
+	  int color;
+	  if ((*it)->main_sat()) {
+		color = ME_COL;
+		if (start_radius ==0)
+		  start_radius = (*it)->orbit();
+	  } else {
+		color = SAT_COL;
+	  }
+	  if ((*it)->main_sat())
+		circle(bmp, 500,500, start_radius/SCALE, CRATER_COL);
+	  else
+		circle(bmp, 500,500, abs((*it)->orbit())/SCALE, CRATER_COL);
+	  circlefill(bmp, 500+real((*it)->position())/(SCALE),  500-imag((*it)->position())/(SCALE) , 4, color);
+	  
+	  if ((*it)->orbit() > SCALE*490)
+		SCALE = (*it)->orbit()/490;
+	}
+	
 	
 	
 	complex<double> my_abs_pos(-vm->output_ports[0x2], -vm->output_ports[0x3]);
 	
-	circlefill(bmp, 500+real(my_abs_pos)/(SCALE),  500-imag(my_abs_pos)/(SCALE) , 4, ME_COL);
+	
 
 	
 	if (start_radius == 0)
@@ -50,8 +76,8 @@ void renderer::draw(BITMAP* bmp)
 	
 	circlefill(bmp, 500+real(sat_abs_pos) / (SCALE),  500-imag(sat_abs_pos) / (SCALE) , 4, SAT_COL);
 	
-	circle(bmp, 500,500, start_radius/SCALE, CRATER_COL);
-	circle(bmp, 500,500, abs(sat_abs_pos)/SCALE, CRATER_COL);
+	
+	
 	unlock();
 #endif
 }
