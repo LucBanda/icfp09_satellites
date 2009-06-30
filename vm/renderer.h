@@ -18,6 +18,7 @@ class renderer
 		double _sizeX;
 		
 		pthread_mutex_t _map_mutex;
+		
 	public:
 
 		renderer():_sizeX(100.0){}

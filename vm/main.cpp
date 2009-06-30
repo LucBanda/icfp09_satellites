@@ -26,7 +26,7 @@ int main (int argc, char** argv)
   trace_generator trace(instance, (char*)output_name.str().c_str());
   if ((instance < 1005) && (instance > 1000))
 	controller = new hohmann(&trace, (double)instance);
-  if ((instance < 2005) && (instance > 2000))
+  if ((instance < 3005) && (instance > 2000))
 	controller = new meetandgreed(&trace, (double)instance);
 
   
@@ -47,4 +47,5 @@ int main (int argc, char** argv)
 	
   } while (!stop);
   
+  renderer::kill();
 }

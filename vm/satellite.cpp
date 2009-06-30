@@ -1,8 +1,18 @@
 #include "common.h"
 #include "satellite.h"
 
+
+double to_range(double in_val) {
+  double val = in_val;
+  while(val > M_PI) val -=2*M_PI;
+  while(val < -M_PI) val +=2*M_PI;
+  return val;
+}
+
 void satellite::update(uint32_t time_step)
 {
+  if ((time_step > 1) && (_state == INIT)) _state = ORBITING;
+  
   _relative_position = complex<double>(vm->output_ports[addr_x], vm->output_ports[addr_y]);
   
   if (_main == NULL)
@@ -12,7 +22,12 @@ void satellite::update(uint32_t time_step)
   _time_step = time_step;
   _speed = _position - _old_position;
   _orbit = abs(_position);
+  if(_main)
+	cout <<"target orbit " << _orbit << endl;
+  else
+	cout <<"my orbit " << _orbit << endl;
   
+  _angular_speed = to_range(arg(_position) - arg(_old_position));
   
   _old_position = _position;
   
@@ -32,13 +47,13 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
 	dv_abs = sqrt(MU/target_orbit)*(1.0-sqrt(2*_orbit/(target_orbit+_orbit)));
 	
 	_speed_back = polar(dv_abs, arg(_speed) + M_PI);
-	_stop_time = _ignition_time +  time_to_travel_to(target_orbit);
+	_stop_time = _ignition_time +  time_to_travel_to(target_orbit) ;
+	*target_position = polar(abs(target_orbit), arg(_position) + M_PI);
 	
 	if (!simulate)
 	  _state = TRAVELLING;
-  cout << "travel_to " << delta_v <<endl;
   } else if (_state == TRAVELLING) {
-	if (_stop_time == _time_step) {
+	if (_stop_time == _time_step+1) {
 	 _state = ORBITING;
 	 delta_v = _speed_back;
 	}
@@ -46,18 +61,48 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
   return delta_v;
 }
 
-/*complex<double> satellite::meet(satellite *target)
+complex<double> satellite::meet(satellite *target)
 {
+  cout <<"state : " <<  _state << endl;
   if (_state == ORBITING) {
-	uint32_t arrival_time = time_step + me->time_to_travel_to(target->orbit());
+	uint32_t arrival_time = time_to_travel_to(target->orbit());
 	complex<double> position_to_arrive;
-    complex<double> needed_delta_v = me->travel_to(target->orbit(), &position_to_arrive);
-	if (abs(position_to_arrive - target->position_at(arrival_time)) < 1000.0) {
-	  me->_state = TRAVELLING;
+    complex<double> needed_delta_v = travel_to(target->orbit(), &position_to_arrive, true);
+	cout << target->orbit() << endl;
+	/*if (abs(position_to_arrive - target->position_at(arrival_time)) < 10000.0)
+	  getchar();*/
+	if (abs(position_to_arrive - target->position_at(arrival_time+1)) < 15000.0) {
+	  _state = TRAVELLING; //validate simulation
 	  return needed_delta_v;
 	}
+  } else if (_state == TRAVELLING){
+	complex<double> action = travel_to(target->orbit());
+	if (_state == ORBITING)
+	  _state = DOCKING;
+	return action;
+  } else if ((_state == DOCKING) || (_state == ADJUSTING)){
+	  if (_state == ADJUSTING) {
+		_state = DOCKING;
+		return complex<double>(0.0,0.0);
+	  }
+	  complex< double> rel_speed = _speed - target->speed();
+      if (abs(target->position() - _position)<1000) {
+		if (abs(rel_speed) > 1.0) {
+			_state = ADJUSTING;
+			return -rel_speed;
+		}
+      } else if (abs(target->position() - _position)<20000) {
+		if ((abs(rel_speed) < 4.5) || (abs(rel_speed) > 5.5)) {
+		  rel_speed -= polar(5.0, arg(target->relative_position()));
+		  _state = ADJUSTING;
+		  return -rel_speed;
+		}
+      }
+  }else {
   }
-}*/
+  
+  return complex<double>(0.0,0.0);
+}
   
 uint32_t satellite::time_to_travel_to(double target_orbit)
 {
@@ -67,5 +112,5 @@ uint32_t satellite::time_to_travel_to(double target_orbit)
 
 complex<double> satellite::position_at(uint32_t time_step_forward)
 {
-  
+  return polar(_orbit, arg(_position) + (time_step_forward+1) * (_angular_speed)) ;
 }

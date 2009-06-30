@@ -5,9 +5,11 @@
 #include "vm_state.h"
 #include <complex>
 
-#define ORBITING				0
-#define ADJUSTING				1
-#define TRAVELLING				2
+#define INIT					0
+#define ORBITING				1
+#define ADJUSTING				2
+#define TRAVELLING				3
+#define DOCKING				4
 
 class satellite {
   private :
@@ -20,6 +22,7 @@ class satellite {
 	complex<double> _speed;
 	complex<double> _speed_back;
 	
+	double _angular_speed;
 	double _orbit;
 	int _state;
 	uint32_t _ignition_time;
@@ -27,8 +30,9 @@ class satellite {
 	uint32_t _stop_time;
 	
   public:
-	satellite(address x, address y, satellite *me=NULL) : _main(me), addr_x(x), addr_y(y), _relative_position(vm->output_ports[x],vm->output_ports[y]), _old_position(0,0), _speed(-1,-1),  _state(ORBITING)
+	satellite(address x, address y, satellite *me=NULL) : _main(me), addr_x(x), addr_y(y), _old_position(0,0), _speed(-1,-1),  _state(INIT)
 	{
+	  _relative_position = complex<double>(vm->output_ports[x],vm->output_ports[y]);
 	  if (me == NULL) {
 		_position = -_relative_position;
 	  } else {
@@ -38,17 +42,19 @@ class satellite {
 	  _time_step = 0;
 	  _stop_time = 0;
 	  
+	  
 	};
 	
 	complex<double> position(){return _position;}
 	complex<double> speed(){return _speed;}
 	complex<double> relative_position(){return _relative_position;}
 	complex<double> state(){return _state;}
+	double orbit(){return _orbit;}
 	
 	void update(uint32_t time_step);
 	
 	complex<double> travel_to(double target_orbit, complex<double> *target_position = NULL, bool simulate = false);
-	complex<double> travel_to(complex<double> target_position);
+	complex<double> meet(satellite *target);
 	uint32_t time_to_travel_to(double target_orbit);
 	complex<double> position_at(uint32_t time_step_forward);
 	
