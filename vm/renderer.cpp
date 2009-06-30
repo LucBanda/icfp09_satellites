@@ -58,12 +58,12 @@ void renderer::draw(BITMAP* bmp)
 		circle(bmp, 500,500, abs((*it)->orbit())/SCALE, CRATER_COL);
 	  circlefill(bmp, 500+real((*it)->position())/(SCALE),  500-imag((*it)->position())/(SCALE) , 4, color);
 	  
-	  if ((*it)->orbit() > SCALE*490)
-		SCALE = (*it)->orbit()/490;
+	  if ((*it)->orbit() > SCALE*500)
+		SCALE = (*it)->orbit()/450;
 	}
 	
 	
-	
+	/*
 	complex<double> my_abs_pos(-vm->output_ports[0x2], -vm->output_ports[0x3]);
 	
 	
@@ -76,7 +76,7 @@ void renderer::draw(BITMAP* bmp)
 	
 	circlefill(bmp, 500+real(sat_abs_pos) / (SCALE),  500-imag(sat_abs_pos) / (SCALE) , 4, SAT_COL);
 	
-	
+	*/
 	
 	unlock();
 #endif

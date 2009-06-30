@@ -8,8 +8,8 @@ BINARIES      = vm
 
 OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o satellite.o
 
-OPTIMIZE= -g
-#OPTIMIZE= -O3
+#OPTIMIZE= -g
+OPTIMIZE= -O3
 
 CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
 
