@@ -28,7 +28,7 @@ using namespace std;
 renderer *renderer::_single_renderer = NULL;
 bool renderer::_running = false;
 
-#define SCALE 2E6
+#define SCALE 2E4
 
 double start_radius = 0;
 void renderer::draw(BITMAP* bmp)
