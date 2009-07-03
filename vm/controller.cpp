@@ -1,13 +1,16 @@
 #include "common.h"
 #include "controller.h"
 #include <complex>
+#include "renderer.h"
 
 hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
   me = new satellite(0x2, 0x3);
   _delta_vx_addr = 0x2;
   _delta_vy_addr = 0x3;
   _instance_addr = 0x3E80;
+  renderer::getInstance()->add_sat(me);
   vm->input_ports[_instance_addr] = _instance = instance;
+  
   _trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
   
 }
@@ -29,6 +32,9 @@ bool hohmann::step(uint32_t time_step) {
 	return _trace->add_command(time_step, 0, 0, vm->output_ports[_score_addr]);
   }
   
+  if (time_step == 1) {
+	  renderer::getInstance()->add_radius(vm->output_ports[0x4]);
+  }
   double dvx, dvy;
   complex<double> action = calculate_action(time_step);
   dvx = real(action);

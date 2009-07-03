@@ -2,8 +2,8 @@
 #include <complex>
 
 #include "renderer.h"
-
 #include "vm_state.h"
+#include "ellipse.h"
 
 
 #define ECRAN_X	1050
@@ -52,36 +52,45 @@ void renderer::draw(BITMAP* bmp)
 	  } else {
 		color = SAT_COL;
 	  }
-	  if ((*it)->main_sat())
-		circle(bmp, 500,500, start_radius/SCALE, CRATER_COL);
-	  else
-		circle(bmp, 500,500, abs((*it)->orbit())/SCALE, CRATER_COL);
+	  
 	  circlefill(bmp, 500+real((*it)->position())/(SCALE),  500-imag((*it)->position())/(SCALE) , 4, color);
 	  
-	  if ((*it)->orbit() > SCALE*500)
-		SCALE = (*it)->orbit()/450;
+	  
+	  
+	  if ((*it)->trajectoire() == NULL) {
+		if ((*it)->main_sat())
+		  circle(bmp, 500,500, start_radius/SCALE, CRATER_COL);
+		else
+		  circle(bmp, 500,500, abs((*it)->orbit())/SCALE, CRATER_COL);
+		if ((*it)->orbit() > SCALE*500)
+		  SCALE = (*it)->orbit()/450;
+	  } else{
+		for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter != (*it)->trajectoire()->_trace.end(); traj_iter++) {
+		  putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
+		  if ((*it)->trajectoire()->is_defined()) {
+			line(bmp, 500+real((*it)->trajectoire()->_apogee)/SCALE,500-imag((*it)->trajectoire()->_apogee)/SCALE,  500+real((*it)->trajectoire()->_perige)/SCALE, 500-imag((*it)->trajectoire()->_perige)/SCALE, CRATER_COL);
+		  }
+		  if (abs(*traj_iter) > SCALE*500)
+			SCALE = abs(*traj_iter)/450;
+		}
+	  }
+	  
+	  
 	}
 	
-	
-	/*
-	complex<double> my_abs_pos(-vm->output_ports[0x2], -vm->output_ports[0x3]);
-	
-	
-
-	
-	if (start_radius == 0)
-	  start_radius = abs(my_abs_pos);
-	
-	complex<double> sat_abs_pos = +(my_abs_pos + complex<double>(vm->output_ports[0x4], vm->output_ports[0x5]));
-	
-	circlefill(bmp, 500+real(sat_abs_pos) / (SCALE),  500-imag(sat_abs_pos) / (SCALE) , 4, SAT_COL);
-	
-	*/
-	
+	for (vector<double>::iterator it = _radius.begin(); it != _radius.end(); it++) {
+	  if (*it > SCALE * 500)
+		SCALE = *it/450;
+	  circle(bmp, 500,500,*it/SCALE, CRATER_COL);
+	}
+	  
 	unlock();
 #endif
 }
 
+void renderer::add_radius(double radius) {
+  _radius.push_back(radius);
+}
 void renderer::init_bitmap(BITMAP **bmp)
 {
 #ifdef ALLEGRO
@@ -131,8 +140,7 @@ void renderer::init()
 {
 #ifdef ALLEGRO
 	_running = true;
-	pthread_create(&_mainthread, NULL, renderer::mainLoop, NULL);;
-	pthread_mutex_init(&_map_mutex, NULL);
+	pthread_create(&_mainthread, NULL, renderer::mainLoop, NULL);
 #endif
 }
 				 // Fonctions de création et destruction du singleton
@@ -140,7 +148,7 @@ void renderer::terminate()
 {
 #ifdef ALLEGRO
 	_running =false;
-	pthread_mutex_destroy(&_map_mutex);
+
 	pthread_join(_mainthread, NULL);
 #endif
 }
@@ -148,9 +156,7 @@ void renderer::terminate()
 
 void renderer::lock()
 {
-	pthread_mutex_lock(&_map_mutex);
 }
 void renderer::unlock()
 {
-	pthread_mutex_unlock(&_map_mutex);
 }

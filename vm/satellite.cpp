@@ -30,6 +30,9 @@ void satellite::update(uint32_t time_step)
   _angular_speed = to_range(arg(_position) - arg(_old_position));
   
   _old_position = _position;
+  if (_trajectoire != NULL) {
+	_trajectoire->add_position(_position, time_step);
+  }
   
 }
 
@@ -48,7 +51,8 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
 	
 	_speed_back = polar(dv_abs, arg(_speed) + M_PI);
 	_stop_time = _ignition_time +  time_to_travel_to(target_orbit) ;
-	*target_position = polar(abs(target_orbit), arg(_position) + M_PI);
+	if (target_position)
+	  *target_position = polar(abs(target_orbit), arg(_position) + M_PI);
 	
 	if (!simulate)
 	  _state = TRAVELLING;

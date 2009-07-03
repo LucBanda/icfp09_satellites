@@ -3,7 +3,9 @@
 
 #include "common.h"
 #include "vm_state.h"
+#include "ellipse.h"
 #include <complex>
+
 
 #define INIT					0
 #define ORBITING				1
@@ -11,8 +13,11 @@
 #define TRAVELLING				3
 #define DOCKING				4
 
+
+
 class satellite {
   private :
+	satellipse *_trajectoire;
 	satellite *_main;
 	address addr_x;
 	address addr_y;
@@ -29,8 +34,10 @@ class satellite {
 	uint32_t _time_step;
 	uint32_t _stop_time;
 	
+	
+	
   public:
-	satellite(address x, address y, satellite *me=NULL) : _main(me), addr_x(x), addr_y(y), _old_position(0,0), _speed(-1,-1),  _state(INIT)
+	satellite(address x, address y, satellite *me=NULL, satellipse* trajet=NULL) : _trajectoire(trajet), _main(me), addr_x(x), addr_y(y), _old_position(0,0), _speed(-1,-1),  _state(INIT)
 	{
 	  _relative_position = complex<double>(vm->output_ports[x],vm->output_ports[y]);
 	  if (me == NULL) {
@@ -49,6 +56,8 @@ class satellite {
 	complex<double> speed(){return _speed;}
 	complex<double> relative_position(){return _relative_position;}
 	complex<double> state(){return _state;}
+	satellipse *trajectoire() {return _trajectoire;}
+	
 	bool main_sat() {return (_main == NULL);}
 	double orbit(){return _orbit;}
 	

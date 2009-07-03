@@ -18,7 +18,7 @@ class renderer
 		
 		double _sizeX;
 		vector<satellite *> sats;
-		pthread_mutex_t _map_mutex;
+		vector<double> _radius;
 		
 	public:
 
@@ -29,6 +29,7 @@ class renderer
 		void lock();
 		void unlock();
 		void add_sat(satellite* sat);
+		void add_radius(double radius);
 		
 		static renderer *getInstance ()
 		{
