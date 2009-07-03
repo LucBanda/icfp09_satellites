@@ -18,6 +18,7 @@ class renderer
 		
 		double _sizeX;
 		vector<satellite *> sats;
+		pthread_mutex_t _main_mutex;
 		vector<double> _radius;
 		
 	public:

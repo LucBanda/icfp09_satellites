@@ -156,7 +156,9 @@ void renderer::terminate()
 
 void renderer::lock()
 {
+  pthread_mutex_lock( &_main_mutex );
 }
 void renderer::unlock()
 {
+  pthread_mutex_lock( &_main_mutex );
 }
