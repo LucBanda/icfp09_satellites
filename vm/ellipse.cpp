@@ -24,7 +24,6 @@ void satellipse::add_position(complex<double> new_position, int time_step){
 		}
 		_great_axe = _apogee - _perige;
 		cout << _apogee << " , " << _perige << " , " << _trace[0] << endl;
-		getchar();
 		_center = polar(abs(_great_axe) /2, arg(_great_axe));
 		
 		for (i=0; i<_period/2; i++) {

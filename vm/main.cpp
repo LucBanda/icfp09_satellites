@@ -34,6 +34,7 @@ int main (int argc, char** argv)
   uint32_t time_step = 0;
   bool stop;
   do {
+	renderer::getInstance()->lock();
     time_step++;
 	for (int i=0; i<ADDRESS_RANGE;i++)
 	{
@@ -42,9 +43,8 @@ int main (int argc, char** argv)
 	
 	
 	stop = controller->step(time_step);
+	renderer::getInstance()->unlock();
 	controller->monitor();
-	
-	
   } while (!stop);
   
   renderer::kill();

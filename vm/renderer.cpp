@@ -140,6 +140,7 @@ void renderer::init()
 {
 #ifdef ALLEGRO
 	_running = true;
+	pthread_mutex_init(&_main_mutex, NULL);
 	pthread_create(&_mainthread, NULL, renderer::mainLoop, NULL);
 #endif
 }
@@ -148,7 +149,7 @@ void renderer::terminate()
 {
 #ifdef ALLEGRO
 	_running =false;
-
+	pthread_mutex_destroy(&_main_mutex);
 	pthread_join(_mainthread, NULL);
 #endif
 }
@@ -160,5 +161,5 @@ void renderer::lock()
 }
 void renderer::unlock()
 {
-  pthread_mutex_lock( &_main_mutex );
+  pthread_mutex_unlock( &_main_mutex );
 }
