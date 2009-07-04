@@ -6,10 +6,10 @@ INCLUDE_FILES = $(shell find include/ -name \*.h)
 BINARIES      = vm
 
 
-OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o satellite.o ellipse.o
+OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o satellite.o ellipse.o clear_sky.o
 
-OPTIMIZE= -g
-#OPTIMIZE= -O3
+#OPTIMIZE= -g
+OPTIMIZE= -O3
 
 CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
 

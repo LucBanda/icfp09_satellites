@@ -21,7 +21,8 @@ class vm_state {
 	
   
 	vm_state();
-  
+	
+	vm_state *clone();
 	void load_file(char* file);
 	void step();
 };

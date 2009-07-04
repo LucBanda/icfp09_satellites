@@ -116,5 +116,9 @@ uint32_t satellite::time_to_travel_to(double target_orbit)
 
 complex<double> satellite::position_at(uint32_t time_step_forward)
 {
+  vm_state *clone= vm->clone();
+  for (int i<0; i<time_step_forward; i++) {
+	clone->step();
+  }
   return polar(_orbit, arg(_position) + (time_step_forward+1) * (_angular_speed)) ;
 }

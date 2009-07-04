@@ -70,9 +70,6 @@ void renderer::draw(BITMAP* bmp)
 		  if (abs(*traj_iter) > SCALE*500)
 			SCALE = abs(*traj_iter)/450;
 		}
-		if ((*it)->trajectoire()->is_defined()) {
-			line(bmp, 500+real((*it)->trajectoire()->_apogee)/SCALE,500-imag((*it)->trajectoire()->_apogee)/SCALE,  500+real((*it)->trajectoire()->_perige)/SCALE, 500-imag((*it)->trajectoire()->_perige)/SCALE, CRATER_COL);
-		  }
 	  }
 	  
 	  

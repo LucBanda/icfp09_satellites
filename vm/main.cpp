@@ -30,23 +30,35 @@ int main (int argc, char** argv)
 	controller = new hohmann(&trace, (double)instance);
   if ((instance < 3005) && (instance > 2000))
 	controller = new meetandgreed(&trace, (double)instance);
-
+  if ((instance < 4005) && (instance > 4000))
+	controller = new clear_sky(&trace, (double)instance);
   
   renderer::getInstance();
   uint32_t time_step = 0;
   bool stop;
+  int count_fps = 0;
+  struct timeval time, saved_time = {0};
+  
   do {
 	renderer::getInstance()->lock();
     time_step++;
-	for (int i=0; i<ADDRESS_RANGE;i++)
-	{
-	  vm->step();
-	}
-	
 	
 	stop = controller->step(time_step);
-	renderer::getInstance()->unlock();
+	
 	controller->monitor();
+	renderer::getInstance()->unlock();
+	
+	count_fps ++;
+	gettimeofday(&time, NULL);
+	cout << "\x1b[2J\x1b[H";
+	//cerr << "\x1b[2J\x1b[H";
+	if (time.tv_sec != saved_time.tv_sec ) {
+	  cerr << count_fps << " FPS" << "\n";
+	  count_fps = 0;
+	  saved_time = time;
+	  }
+
+	  
   } while (!stop);
   
   renderer::kill();

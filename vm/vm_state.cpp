@@ -10,6 +10,15 @@ vm_state::vm_state(){
   status = 0;
 }
 
+vm_state *vm_state::clone() {
+  vm_state *cloned = new vm_state;
+  
+  memcpy(vm->memory, cloned->memory, sizeof(double) * ADDRESS_RANGE);
+  memcpy(vm->output_ports, cloned->output_ports, sizeof(double) * ADDRESS_RANGE);
+  memcpy(vm->input_ports, cloned->input_ports, sizeof(double) * ADDRESS_RANGE);  
+  memcpy(vm->code, cloned->code, sizeof(instruction*) * ADDRESS_RANGE);
+}
+
 
 void vm_state::load_file(char* file){
   int frame_number;
@@ -48,8 +57,11 @@ void vm_state::load_file(char* file){
 
 void vm_state::step() 
 {
-	  code[pc]->execute();
-	  pc++;
-	  if (pc == ADDRESS_RANGE)
-		pc = 0;
+  for (int i=0; i<ADDRESS_RANGE;i++)
+  {
+	code[pc]->execute();
+	pc++;
+	if (pc == ADDRESS_RANGE)
+	  pc = 0;
+  }
 }
