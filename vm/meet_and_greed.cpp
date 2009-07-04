@@ -38,13 +38,14 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
 
 
 complex<double> meetandgreed::calculate_action(uint32_t time_step) {
-  cout << "\x1b[2J\x1b[H";
+
   me->update(time_step);
   target->update(time_step);
   return me->meet(target);
   
 }
   
+
 bool meetandgreed::step(uint32_t time_step) {
   
   if (vm->output_ports[_score_addr]) {

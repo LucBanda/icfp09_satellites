@@ -4,6 +4,8 @@
 #include "controller.h"
 #include "meet_and_greed.h"
 #include "renderer.h"
+#include "sys/time.h"
+#include "clear_sky.h"
 
 int main (int argc, char** argv)
 {

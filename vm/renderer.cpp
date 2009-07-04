@@ -65,14 +65,14 @@ void renderer::draw(BITMAP* bmp)
 		if ((*it)->orbit() > SCALE*500)
 		  SCALE = (*it)->orbit()/450;
 	  } else{
-		for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter != (*it)->trajectoire()->_trace.end(); traj_iter++) {
+		for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+5000) / 5000) {
 		  putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
-		  if ((*it)->trajectoire()->is_defined()) {
-			line(bmp, 500+real((*it)->trajectoire()->_apogee)/SCALE,500-imag((*it)->trajectoire()->_apogee)/SCALE,  500+real((*it)->trajectoire()->_perige)/SCALE, 500-imag((*it)->trajectoire()->_perige)/SCALE, CRATER_COL);
-		  }
 		  if (abs(*traj_iter) > SCALE*500)
 			SCALE = abs(*traj_iter)/450;
 		}
+		if ((*it)->trajectoire()->is_defined()) {
+			line(bmp, 500+real((*it)->trajectoire()->_apogee)/SCALE,500-imag((*it)->trajectoire()->_apogee)/SCALE,  500+real((*it)->trajectoire()->_perige)/SCALE, 500-imag((*it)->trajectoire()->_perige)/SCALE, CRATER_COL);
+		  }
 	  }
 	  
 	  
