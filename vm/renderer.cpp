@@ -47,8 +47,6 @@ void renderer::draw(BITMAP* bmp)
 	  int color;
 	  if ((*it)->main_sat()) {
 		color = ME_COL;
-		if (start_radius ==0)
-		  start_radius = (*it)->orbit();
 	  } else {
 		color = SAT_COL;
 	  }
@@ -57,22 +55,12 @@ void renderer::draw(BITMAP* bmp)
 	  
 	  
 	  
-	  if ((*it)->trajectoire() == NULL) {
-		if ((*it)->main_sat())
-		  circle(bmp, 500,500, start_radius/SCALE, CRATER_COL);
-		else
-		  circle(bmp, 500,500, abs((*it)->orbit())/SCALE, CRATER_COL);
-		if ((*it)->orbit() > SCALE*500)
-		  SCALE = (*it)->orbit()/450;
-	  } else{
-		for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+5000) / 5000) {
-		  putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
-		  if (abs(*traj_iter) > SCALE*500)
-			SCALE = abs(*traj_iter)/450;
-		}
+	  
+	  for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+5000) / 5000) {
+		putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
+		if (abs(*traj_iter) > SCALE*500)
+		  SCALE = abs(*traj_iter)/450;
 	  }
-	  
-	  
 	}
 	
 	for (vector<double>::iterator it = _radius.begin(); it != _radius.end(); it++) {

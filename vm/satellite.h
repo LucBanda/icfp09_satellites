@@ -19,25 +19,24 @@ class satellite {
   private :
 	satellipse *_trajectoire;
 	satellite *_main;
-	address addr_x;
-	address addr_y;
+
 	complex<double> _relative_position;
 	complex<double> _position;
 	complex<double> _old_position;
 	complex<double> _speed;
 	complex<double> _speed_back;
 	
-	double _angular_speed;
 	double _orbit;
 	int _state;
 	uint32_t _ignition_time;
 	uint32_t _time_step;
 	uint32_t _stop_time;
-	
+	complex<double> _target_pos;
 	
 	
   public:
-	satellite(address x, address y, satellite *me=NULL, satellipse* trajet=NULL) : _trajectoire(trajet), _main(me), addr_x(x), addr_y(y), _old_position(0,0), _speed(-1,-1),  _state(INIT)
+		
+	satellite(address x, address y, satellite *me=NULL, satellipse* trajet=NULL) : _trajectoire(trajet), _main(me), _old_position(0,0), _speed(-1,-1),  _state(INIT), addr_x(x), addr_y(y)
 	{
 	  _relative_position = complex<double>(vm->output_ports[x],vm->output_ports[y]);
 	  if (me == NULL) {
@@ -49,8 +48,12 @@ class satellite {
 	  _time_step = 0;
 	  _stop_time = 0;
 	  
+	  _target_pos = complex<double>(0,0);
 	  
 	};
+	
+	address addr_x;
+	address addr_y;
 	
 	complex<double> position(){return _position;}
 	complex<double> speed(){return _speed;}
@@ -67,7 +70,7 @@ class satellite {
 	complex<double> meet(satellite *target);
 	uint32_t time_to_travel_to(double target_orbit);
 	complex<double> position_at(uint32_t time_step_forward);
-	
+	//complex<double> perige_in(uint32_t *time_step_forward);
 };
 
 #endif

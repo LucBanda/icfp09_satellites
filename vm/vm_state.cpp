@@ -13,10 +13,14 @@ vm_state::vm_state(){
 vm_state *vm_state::clone() {
   vm_state *cloned = new vm_state;
   
-  memcpy(vm->memory, cloned->memory, sizeof(double) * ADDRESS_RANGE);
-  memcpy(vm->output_ports, cloned->output_ports, sizeof(double) * ADDRESS_RANGE);
-  memcpy(vm->input_ports, cloned->input_ports, sizeof(double) * ADDRESS_RANGE);  
-  memcpy(vm->code, cloned->code, sizeof(instruction*) * ADDRESS_RANGE);
+  memcpy(cloned->memory,		vm->memory, 		sizeof(double) * ADDRESS_RANGE);
+  memcpy(cloned->output_ports,	vm->output_ports, 	sizeof(double) * ADDRESS_RANGE);
+  memcpy(cloned->input_ports, 	vm->input_ports, 	sizeof(double) * ADDRESS_RANGE);  
+  memcpy(cloned->code, 			vm->code, 			sizeof(instruction*) * ADDRESS_RANGE);
+  cloned->status = vm->status;
+  cloned->pc = vm->pc;
+  
+  return cloned;
 }
 
 
@@ -59,7 +63,7 @@ void vm_state::step()
 {
   for (int i=0; i<ADDRESS_RANGE;i++)
   {
-	code[pc]->execute();
+	code[pc]->execute(this);
 	pc++;
 	if (pc == ADDRESS_RANGE)
 	  pc = 0;

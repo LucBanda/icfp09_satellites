@@ -46,51 +46,51 @@ d_type *d_type::parse(uint32_t raw)
   return NULL;
 }
 
-void add::execute(){
+void add::execute(vm_state *cur_vm){
   //cerr << vm->memory[_arg1] << " + " << vm->memory[_arg2] << endl;
-  vm->memory[vm->pc] = vm->memory[_arg1] + vm->memory[_arg2];
+  cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] + cur_vm->memory[_arg2];
   
 }
 
-void sub::execute(){
+void sub::execute(vm_state *cur_vm){
   //cerr << vm->memory[_arg1] << " - " << vm->memory[_arg2] << endl;
-  vm->memory[vm->pc] = vm->memory[_arg1] - vm->memory[_arg2];
+  cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] - cur_vm->memory[_arg2];
 }
 
-void mult::execute(){
+void mult::execute(vm_state *cur_vm){
   //cerr << vm->memory[_arg1] << " * " << vm->memory[_arg2] << endl;
-  vm->memory[vm->pc] = vm->memory[_arg1] * vm->memory[_arg2];
+  cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] * cur_vm->memory[_arg2];
 }
 
-void vdiv::execute(){
+void vdiv::execute(vm_state *cur_vm){
   //cerr << vm->memory[_arg1] << " / " << vm->memory[_arg2] << endl;
-  if (vm->memory[_arg2] == 0)
-	vm->memory[vm->pc] = 0;
+  if (cur_vm->memory[_arg2] == 0)
+	cur_vm->memory[cur_vm->pc] = 0;
   else
-	vm->memory[vm->pc] = vm->memory[_arg1] / vm->memory[_arg2];
+	cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] / cur_vm->memory[_arg2];
 }
 
-void output::execute() {
+void output::execute(vm_state *cur_vm) {
 	//cerr << "port "<< _arg1 << " = " << vm->memory[_arg2] << endl;
-    vm->output_ports[_arg1] = vm->memory[_arg2];
+    cur_vm->output_ports[_arg1] = cur_vm->memory[_arg2];
 }
 
-void phi::execute() {
+void phi::execute(vm_state *cur_vm) {
   //cerr << "phi " << vm->status <<  " " << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
-  if (vm->status)
-	vm->memory[vm->pc] = vm->memory[_arg1];
+  if (cur_vm->status)
+	cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1];
   else
-	vm->memory[vm->pc] = vm->memory[_arg2];
+	cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg2];
 }
 
-void noop::execute() {
-	vm->memory[vm->pc] = vm->memory[vm->pc];
+void noop::execute(vm_state *cur_vm) {
+	cur_vm->memory[cur_vm->pc] = cur_vm->memory[cur_vm->pc];
 }
 
-void cmpz::execute() {
+void cmpz::execute(vm_state *cur_vm) {
   //cerr << "cmpz " ;
 	bool result;
-	double val = vm->memory[_arg1];
+	double val = cur_vm->memory[_arg1];
 	switch (_immediate) {
 	  case 0: result = (val < 0.0); /*cerr << "<";*/ break;
 	  case 1: result = (val <= 0.0); /*cerr << "<=";*/ break;
@@ -99,21 +99,21 @@ void cmpz::execute() {
 	  case 4: result = (val > 0.0); /*cerr << ">";*/ break;
 	  default: result =0; cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
 	}
-	vm->status = result;
+	cur_vm->status = result;
 }
 
-void vsqrt::execute() {
+void vsqrt::execute(vm_state *cur_vm) {
   //cerr << "sqrt " << vm->memory[_arg1] << endl;
-  assert (vm->memory[_arg1] >= 0);
-  vm->memory[vm->pc] = sqrt(vm->memory[_arg1]);
+  assert (cur_vm->memory[_arg1] >= 0);
+  cur_vm->memory[cur_vm->pc] = sqrt(cur_vm->memory[_arg1]);
 }
 
-void vcopy::execute() {
+void vcopy::execute(vm_state *cur_vm) {
   //cerr << "copy " << vm->memory[_arg1] << endl;
-  vm->memory[vm->pc] = vm->memory[_arg1];
+  cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1];
 }
 
-void input::execute() {
+void input::execute(vm_state *cur_vm) {
   //cerr << "load port " << _arg1<< endl;
-  vm->memory[vm->pc] = vm->input_ports[_arg1];
+  cur_vm->memory[cur_vm->pc] = cur_vm->input_ports[_arg1];
 }

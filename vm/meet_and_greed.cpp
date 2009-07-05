@@ -11,8 +11,8 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
 	_delta_vx_addr = 0x2;
 	_delta_vy_addr = 0x3;
 	_instance_addr = 0x3E80;
-	me = new satellite(0x2, 0x3);
-	target = new satellite(0x4, 0x5, me);
+	me = new satellite(0x2, 0x3, NULL, new satellipse());
+	target = new satellite(0x4, 0x5, me, new satellipse());
 	renderer::getInstance()->add_sat(me);
 	renderer::getInstance()->add_sat(target);
 	
@@ -25,7 +25,7 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
 	_delta_vx_addr = 0x2;
 	_delta_vy_addr = 0x3;
 	_instance_addr = 0x3E80;
-	me = new satellite(0x2, 0x3);
+	me = new satellite(0x2, 0x3, NULL, new satellipse());
 	target = new satellite(0x4, 0x5, me, new satellipse());
 	renderer::getInstance()->add_sat(me);
 	renderer::getInstance()->add_sat(target);

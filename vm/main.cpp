@@ -43,6 +43,8 @@ int main (int argc, char** argv)
 	renderer::getInstance()->lock();
     time_step++;
 	
+	vm->step();
+	
 	stop = controller->step(time_step);
 	
 	controller->monitor();
