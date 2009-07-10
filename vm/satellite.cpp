@@ -26,7 +26,9 @@ void satellite::update(uint32_t time_step)
   
   _old_position = _position;
   
-  
+  if (_time_step > _trajectoire->known_time_steps()) {
+	_trajectoire->add_position(_position, time_step);
+  }
 }
 
 complex<double> satellite::travel_to(double target_orbit, complex<double> *target_position, bool simulate)

@@ -4,7 +4,7 @@
 #include "renderer.h"
 
 hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
-  me = new satellite(0x2, 0x3);
+  me = new satellite(0x2, 0x3, NULL, new satellipse);
   _delta_vx_addr = 0x2;
   _delta_vy_addr = 0x3;
   _instance_addr = 0x3E80;
