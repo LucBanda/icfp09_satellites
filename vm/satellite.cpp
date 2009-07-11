@@ -1,6 +1,6 @@
 #include "common.h"
 #include "satellite.h"
-
+#include "renderer.h"
 
 double to_range(double in_val) {
   double val = in_val;
@@ -123,6 +123,8 @@ complex<double> satellite::position_at(uint32_t time_step_forward)
   if (time_step_forward + _time_step > _trajectoire->known_time_steps()) {
 	uint32_t known_time = _trajectoire->known_time_steps();
 	for (unsigned int i=known_time; i<= time_step_forward + _time_step; i++) {
+	  renderer::getInstance()->unlock();
+	  renderer::getInstance()->lock();
 	  if (vm_clone == NULL)
 		vm_clone = vm->clone();
 	  vm_clone->step();
