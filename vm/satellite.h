@@ -32,7 +32,7 @@ class satellite {
 	uint32_t _time_step;
 	uint32_t _stop_time;
 	complex<double> _target_pos;
-	
+	vm_state *vm_clone;
 	
   public:
 		
@@ -49,7 +49,7 @@ class satellite {
 	  _stop_time = 0;
 	  
 	  _target_pos = complex<double>(0,0);
-	  
+	  vm_clone = NULL;
 	};
 	
 	address addr_x;

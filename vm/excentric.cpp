@@ -10,13 +10,15 @@ excentric::excentric(trace_generator *trace, double instance) :Icontroller(trace
 	_delta_vx_addr = 0x2;
 	_delta_vy_addr = 0x3;
 	_instance_addr = 0x3E80;
+	vm->input_ports[_instance_addr] = _instance = instance;
+	_trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
+	
 	me = new satellite(0x2, 0x3, NULL, new satellipse());
 	target = new satellite(0x4, 0x5, me, new satellipse());
 	renderer::getInstance()->add_sat(me);
 	renderer::getInstance()->add_sat(target);
 	
-	vm->input_ports[_instance_addr] = _instance = instance;
-	_trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
+
 }
 
 complex<double> excentric::calculate_action(uint32_t time_step) {

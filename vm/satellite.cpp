@@ -65,23 +65,29 @@ complex<double> satellite::meet(satellite *target)
 
   if (_state == ORBITING) {
 	
-	double target_orbit = abs(target->position());
-	if (target_orbit == 0)
-	  return complex<double> (0,0);
-	uint32_t arrival_time = time_to_travel_to(target_orbit);
-	complex<double> position_to_arrive;
-    complex<double> needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
-	_target_pos = target->position_at(arrival_time+2);
+	double target_orbit =0;
+	uint32_t arrival_time;
+	complex<double>  position_to_arrive, needed_delta_v, target_pos =  abs(target->position());
 	
-	if (abs(position_to_arrive - _target_pos) < 15000.0) {
+	double diff_in_target_orbit;
+	do {
+	  //diff_in_target_orbit = abs(abs(target_pos) - target_orbit);
+	  target_orbit = abs(target_pos);
+	  if (target_orbit == 0)
+	  return complex<double> (0,0);
+	  arrival_time = time_to_travel_to(target_orbit);
+	  cerr << "target_orbit " << target_orbit << endl;
+	  cerr << "arrival_time" << arrival_time << endl;
+	  needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
+	  target_pos = target->position_at(arrival_time);
+	  cerr << "target_pos " << target_pos << endl;
+	  cerr << "difference in target orbit :" << abs(abs(target_pos) - target_orbit) << endl;
+	} while (abs(abs(target_pos) - target_orbit) > 5000.0);
+	
+	if (abs(position_to_arrive - target_pos) < 15000.0) {
 	  _state = DOCKING; //validate simulation
 	  return needed_delta_v;
 	}
-  } else if (_state == TRAVELLING){
-	complex<double> action = travel_to(abs(_target_pos));
-	if (_state == ORBITING)
-	  _state = DOCKING;
-	return action;
   } else if ((_state == DOCKING) || (_state == ADJUSTING)){
 	  if (_state == ADJUSTING) {
 		_state = DOCKING;
@@ -115,17 +121,17 @@ uint32_t satellite::time_to_travel_to(double target_orbit)
 complex<double> satellite::position_at(uint32_t time_step_forward)
 {
   if (time_step_forward + _time_step > _trajectoire->known_time_steps()) {
-	vm_state *clone= vm->clone();
-	for (unsigned int i=1; i<time_step_forward + 10000; i++) {
-	  clone->step();
+	uint32_t known_time = _trajectoire->known_time_steps();
+	for (unsigned int i=known_time; i<= time_step_forward + _time_step; i++) {
+	  if (vm_clone == NULL)
+		vm_clone = vm->clone();
+	  vm_clone->step();
 	  
 	  if (_main == NULL)
-		_trajectoire->add_position(-complex<double>(clone->output_ports[addr_x], clone->output_ports[addr_y]) , i + _time_step);
+		_trajectoire->add_position(-complex<double>(vm_clone->output_ports[addr_x], vm_clone->output_ports[addr_y]) , i);
 	  else
-		_trajectoire->add_position(-complex<double>(clone->output_ports[_main->addr_x], clone->output_ports[_main->addr_y]) + complex<double>(clone->output_ports[addr_x], clone->output_ports[addr_y]) , i + _time_step);
+		_trajectoire->add_position(-complex<double>(vm_clone->output_ports[_main->addr_x], vm_clone->output_ports[_main->addr_y]) + complex<double>(vm_clone->output_ports[addr_x], vm_clone->output_ports[addr_y]) , i);
 	}
-	
-	delete clone;
 	
   } 
   return _trajectoire->get_pos_at(_time_step + time_step_forward);
