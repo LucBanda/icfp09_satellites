@@ -36,7 +36,6 @@ class renderer
 		{
 			if (NULL == _single_renderer)
 			{
-				std::cout << "creating singleton." << std::endl;
 				_single_renderer =  new renderer();
 				_single_renderer->init();
 			}

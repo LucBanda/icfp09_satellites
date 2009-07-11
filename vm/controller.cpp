@@ -39,7 +39,7 @@ bool hohmann::step(uint32_t time_step) {
   complex<double> action = calculate_action(time_step);
   dvx = real(action);
   dvy = imag(action);
-  cout << action << endl;
+  
   if (dvx != vm->input_ports[_delta_vx_addr] ) //need a change
   {
 	vm->input_ports[_delta_vx_addr] = dvx;

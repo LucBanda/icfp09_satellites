@@ -42,6 +42,7 @@ void renderer::draw(BITMAP* bmp)
 
 	rectfill(bmp, 0,0,1000,1000, BACKGROUND_COL);
 	
+	circlefill(bmp, 500,500, 6.357e6 / SCALE, BOULDER_COL);
 	
 	for (vector<satellite *>::iterator it = sats.begin(); it != sats.end(); it++) {
 	  int color;

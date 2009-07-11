@@ -19,6 +19,7 @@ class Icontroller {
 	Icontroller(trace_generator* trace) : _trace(trace){};
 	virtual bool step (uint32_t time_step) = 0;
 	virtual void monitor() = 0;
+	double get_score() {return vm->output_ports[_score_addr];}
 };
 
 class hohmann : public Icontroller {
@@ -30,5 +31,6 @@ class hohmann : public Icontroller {
 	hohmann(trace_generator *trace, double instance);
 	virtual bool step (uint32_t time_step);
 	virtual void monitor();
+	
 };
 #endif

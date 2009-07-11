@@ -8,63 +8,62 @@
 #include "sys/time.h"
 #include "clear_sky.h"
 
-int main (int argc, char** argv)
+int main (int argc, char** argv) 
 {
-  Icontroller *controller = NULL;
-  
-  if (argc < 3) {
-	cout << "please enter first the problem binary filename and then the scenario id" << endl;
-	exit(-1);
-  }
-  
-  uint32_t instance = atoi(argv[2]);
-  
-  vm_state _vm;
-  vm = &_vm;
-  vm->load_file(argv[1]);
-
-  ostringstream output_name;
-  output_name << dec << instance <<".osf";
-  
-  trace_generator trace(instance, (char*)output_name.str().c_str());
-  if ((instance < 1005) && (instance > 1000))
-	controller = new hohmann(&trace, (double)instance);
-  if ((instance < 2005) && (instance > 2000))
-	controller = new meetandgreed(&trace, (double)instance);
-  if ((instance < 3005) && (instance > 3000))
-	controller = new excentric(&trace, (double)instance);
-  if ((instance < 4005) && (instance > 4000))
-	controller = new clear_sky(&trace, (double)instance);
-  
-  renderer::getInstance();
-  uint32_t time_step = 0;
-  bool stop;
-  int count_fps = 0;
-  struct timeval time, saved_time = {0};
-  
-  do {
-	renderer::getInstance()->lock();
-    time_step++;
+	Icontroller *controller = NULL;
+	char filename[50];
 	
-	vm->step();
+	if (argc < 3) {
+		cerr << "please enter first the problem binary filename and then the scenario id" << endl;
+		exit(-1);
+	}
 	
-	stop = controller->step(time_step);
+	uint32_t instance = atoi(argv[2]);
 	
-	controller->monitor();
-	renderer::getInstance()->unlock();
+	vm_state _vm;
+	vm = &_vm;
+	vm->load_file(argv[1]);
 	
-	count_fps ++;
-	gettimeofday(&time, NULL);
-	cout << "\x1b[2J\x1b[H";
-	//cerr << "\x1b[2J\x1b[H";
-	if (time.tv_sec != saved_time.tv_sec ) {
-	  cerr << count_fps << " FPS" << "\n";
-	  count_fps = 0;
-	  saved_time = time;
-	  }
-
-	  
-  } while (!stop);
-  
-  renderer::kill();
+	sprintf(filename, "%d.osf", instance);
+		
+	trace_generator trace(instance, filename);
+	if ((instance < 1005) && (instance > 1000))
+		controller = new hohmann(&trace, (double)instance);
+	if ((instance < 2005) && (instance > 2000))
+		controller = new meetandgreed(&trace, (double)instance);
+	if ((instance < 3005) && (instance > 3000))
+		controller = new excentric(&trace, (double)instance);
+	if ((instance < 4005) && (instance > 4000))
+		controller = new clear_sky(&trace, (double)instance);
+	
+	renderer::getInstance();
+	uint32_t time_step = 0;
+	bool stop;
+	int count_fps = 0;
+	struct timeval time, saved_time = {0};
+	
+	do {
+		renderer::getInstance()->lock();
+		time_step++;
+		
+		vm->step();
+		
+		stop = controller->step(time_step);
+		
+		controller->monitor();
+		renderer::getInstance()->unlock();
+		
+		count_fps ++;
+		gettimeofday(&time, NULL);
+		cerr << "\x1b[2J\x1b[H";
+		if (time.tv_sec != saved_time.tv_sec ) {
+			cout << count_fps << " FPS" << "\n";
+			count_fps = 0;
+			saved_time = time;
+		}
+	
+		
+	} while (!stop);
+	cout << "score : " << controller->get_score() << endl;
+	renderer::kill();
 }

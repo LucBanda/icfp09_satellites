@@ -23,7 +23,7 @@ complex<double> excentric::calculate_action(uint32_t time_step) {
 
   me->update(time_step);
   target->update(time_step);
-  return complex<double>(0,0);//me->meet(target);
+  return me->meet(target);
   
 }
   
@@ -54,7 +54,7 @@ bool excentric::step(uint32_t time_step) {
 }
 
 void excentric::monitor() {
-  cout << "relative distance to target " << abs(me->position() - target->position()) << endl;
-  cout << "score : " << vm->output_ports[_score_addr] << endl;
+  cerr << "relative distance to target " << abs(me->position() - target->position()) << endl;
+  cerr << "score : " << vm->output_ports[_score_addr] << endl;
 }
 

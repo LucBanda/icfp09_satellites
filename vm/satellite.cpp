@@ -62,7 +62,7 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
 
 complex<double> satellite::meet(satellite *target)
 {
-  cout <<"state : " <<  _state << endl;
+
   if (_state == ORBITING) {
 	
 	double target_orbit = abs(target->position());
@@ -74,7 +74,7 @@ complex<double> satellite::meet(satellite *target)
 	_target_pos = target->position_at(arrival_time+2);
 	
 	if (abs(position_to_arrive - _target_pos) < 15000.0) {
-	  _state = TRAVELLING; //validate simulation
+	  _state = DOCKING; //validate simulation
 	  return needed_delta_v;
 	}
   } else if (_state == TRAVELLING){
