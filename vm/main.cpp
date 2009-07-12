@@ -10,60 +10,84 @@
 
 int main (int argc, char** argv) 
 {
+	double total_score = 0;
 	Icontroller *controller = NULL;
 	char filename[50];
-	
+	bool do_all;
 	if (argc < 3) {
-		cerr << "please enter first the problem binary filename and then the scenario id" << endl;
+		cerr << "please enter first the problem binary path and then the scenario id" << endl;
 		exit(-1);
 	}
+	uint32_t instance;
+	cout << argv[2];
+	if (strcmp(argv[2], "all") != 0) {
+	  instance = atoi(argv[2]);
+	  do_all =false;
+	} else do_all = true;
 	
-	uint32_t instance = atoi(argv[2]);
+	trace_generator *trace;
 	
-	vm_state _vm;
-	vm = &_vm;
-	vm->load_file(argv[1]);
-	
-	sprintf(filename, "%d.osf", instance);
+	for (int i = 1; i < 4;i++) {
+	  for (int j = 1; j<5;j++) {
+		if (do_all) {
+		  instance = i*1000 + j;
+		  }
+		cout << instance << " " << do_all << endl;
+		vm = new vm_state;
+		sprintf(filename, "%s/bin%d.obf", argv[1], instance/1000);
+		vm->load_file(filename);
 		
-	trace_generator trace(instance, filename);
-	if ((instance < 1005) && (instance > 1000))
-		controller = new hohmann(&trace, (double)instance);
-	if ((instance < 2005) && (instance > 2000))
-		controller = new meetandgreed(&trace, (double)instance);
-	if ((instance < 3005) && (instance > 3000))
-		controller = new excentric(&trace, (double)instance);
-	if ((instance < 4005) && (instance > 4000))
-		controller = new clear_sky(&trace, (double)instance);
-	
-	renderer::getInstance();
-	uint32_t time_step = 0;
-	bool stop;
-	int count_fps = 0;
-	struct timeval time, saved_time = {0};
-	
-	do {
-		renderer::getInstance()->lock();
-		time_step++;
+		sprintf(filename, "%d.osf", instance);
+			
+		trace = new trace_generator(instance, filename);
+		if ((instance < 1005) && (instance > 1000))
+			controller = new hohmann(trace, (double)instance);
+		if ((instance < 2005) && (instance > 2000))
+			controller = new meetandgreed(trace, (double)instance);
+		if ((instance < 3005) && (instance > 3000))
+			controller = new excentric(trace, (double)instance);
+		if ((instance < 4005) && (instance > 4000))
+			controller = new clear_sky(trace, (double)instance);
 		
-		vm->step();
+		renderer::getInstance();
+		uint32_t time_step = 0;
+		bool stop = false;
+		int count_fps = 0;
+		struct timeval time, saved_time = {0};
 		
-		stop = controller->step(time_step);
+		do {
+			renderer::getInstance()->lock();
+			time_step++;
+			
+			vm->step();
+			
+			stop = controller->step(time_step);
+			
+			controller->monitor();
+			renderer::getInstance()->unlock();
+			
+			count_fps ++;
+			gettimeofday(&time, NULL);
+			cerr << "\x1b[2J\x1b[H";
+			if (time.tv_sec != saved_time.tv_sec ) {
+				cout << count_fps << " FPS" << "\n";
+				count_fps = 0;
+				saved_time = time;
+			}
 		
-		controller->monitor();
-		renderer::getInstance()->unlock();
-		
-		count_fps ++;
-		gettimeofday(&time, NULL);
-		cerr << "\x1b[2J\x1b[H";
-		if (time.tv_sec != saved_time.tv_sec ) {
-			cout << count_fps << " FPS" << "\n";
-			count_fps = 0;
-			saved_time = time;
-		}
-	
-		
-	} while (!stop);
-	cout << "score : " << controller->get_score() << endl;
-	renderer::kill();
+			
+		} while (!stop);
+		total_score += controller->get_score();
+		cout << "total score : " << total_score << endl;
+		renderer::kill();
+		delete controller;
+		delete trace;
+		delete vm;
+		vm = NULL;
+		trace=NULL;
+		controller = NULL;
+		if (!do_all)
+		  exit(0);
+	  }
+	}
 }

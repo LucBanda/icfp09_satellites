@@ -103,8 +103,7 @@ complex<double> satellite::meet(satellite *target)
 	/*if (arrival_time > 100000)
 	  return complex<double>(0,0);*/
 	
-	if ((abs(position_to_arrive - target_pos) < 15000.0) /*&& (abs(to_range(arg(target_pos - target->position_at(arrival_time-1)) - arg(_speed) + M_PI)) < M_PI/3)*/) {
-	  cout << "angle to arrive" << to_range(arg(target_pos - target->position_at(arrival_time-1)) - arg(_speed) + M_PI) << endl;
+	if ((abs(position_to_arrive - target_pos) < 15000.0)) {
 	  _state = DOCKING; //validate simulation
 	  return needed_delta_v;
 	}

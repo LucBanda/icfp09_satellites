@@ -4,15 +4,15 @@
 #include "renderer.h"
 
 hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
-  me = new satellite(0x2, 0x3, NULL, new satellipse);
+  
   _delta_vx_addr = 0x2;
   _delta_vy_addr = 0x3;
   _instance_addr = 0x3E80;
+  _score_addr = 0;
   vm->input_ports[_instance_addr] = _instance = instance;
-  renderer::getInstance()->add_sat(me);
-
-  
   _trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
+  me = new satellite(0x2, 0x3, NULL, new satellipse);
+  renderer::getInstance()->add_sat(me);
   
 }
 

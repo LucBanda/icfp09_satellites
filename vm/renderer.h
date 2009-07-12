@@ -21,10 +21,11 @@ class renderer
 		pthread_mutex_t _main_mutex;
 		vector<double> _radius;
 		complex<double> position_to_test;
+		double SCALE;
 		
 	public:
 
-		renderer():_sizeX(100.0){}
+		renderer():_sizeX(100.0){ SCALE = 2E3;}
 		~renderer(){}
 
 		static void * mainLoop(void* params);

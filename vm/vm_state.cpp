@@ -8,17 +8,21 @@ vm_state *vm=NULL;
 vm_state::vm_state(){
   pc = 0;
   status = 0;
+  memset(output_ports, 0, sizeof(double) * ADDRESS_RANGE);
+  memset(input_ports, 0, sizeof(double) * ADDRESS_RANGE);
+  memset(memory, 0, sizeof(double) * ADDRESS_RANGE);
+  memset(code, 0, sizeof(instruction *) * ADDRESS_RANGE);
 }
 
 vm_state *vm_state::clone() {
   vm_state *cloned = new vm_state;
   
-  memcpy(cloned->memory,		vm->memory, 		sizeof(double) * ADDRESS_RANGE);
-  memcpy(cloned->output_ports,	vm->output_ports, 	sizeof(double) * ADDRESS_RANGE);
-  memcpy(cloned->input_ports, 	vm->input_ports, 	sizeof(double) * ADDRESS_RANGE);  
-  memcpy(cloned->code, 			vm->code, 			sizeof(instruction*) * ADDRESS_RANGE);
-  cloned->status = vm->status;
-  cloned->pc = vm->pc;
+  memcpy(cloned->memory,		memory, 		sizeof(double) * ADDRESS_RANGE);
+  memcpy(cloned->output_ports,	output_ports, 	sizeof(double) * ADDRESS_RANGE);
+  memcpy(cloned->input_ports, 	input_ports, 	sizeof(double) * ADDRESS_RANGE);  
+  memcpy(cloned->code, 			code, 			sizeof(instruction*) * ADDRESS_RANGE);
+  cloned->status = status;
+  cloned->pc = pc;
   
   return cloned;
 }
@@ -28,6 +32,7 @@ void vm_state::load_file(char* file){
   int frame_number;
   struct stat results;
   fstream binary_file(file,ios::binary|ios::in);
+  
   if (!binary_file.is_open()) {
 	cerr << "unable to open the file : "<< file << endl;
 	exit(-1);
@@ -52,11 +57,14 @@ void vm_state::load_file(char* file){
 	  code[i] = instruction::parse(raw);
 	}
   }
+  binary_file.clear();
+  
   binary_file.close();
   for (int i = frame_number; i<ADDRESS_RANGE; i++) {
 	memory[i] = 0;
 	code[i] = instruction::parse(0);
   }
+  
 }
 
 void vm_state::step() 

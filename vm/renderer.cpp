@@ -28,7 +28,7 @@ using namespace std;
 renderer *renderer::_single_renderer = NULL;
 bool renderer::_running = false;
 
-double SCALE = 2E3;
+
 
 void renderer::add_sat(satellite *sat) {
   sats.push_back(sat);
