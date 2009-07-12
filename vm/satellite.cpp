@@ -29,6 +29,11 @@ void satellite::update(uint32_t time_step)
   if (_time_step > _trajectoire->known_time_steps()) {
 	_trajectoire->add_position(_position, time_step);
   }
+  if (_trajectoire->known_time_steps() > 1) {
+	complex<double> end_speed = _trajectoire->get_pos_at(_trajectoire->known_time_steps()) - _trajectoire->get_pos_at(_trajectoire->known_time_steps()-1);
+	if (abs(end_speed) > abs(_max_speed))
+	  _max_speed = end_speed;
+  }
 }
 
 complex<double> satellite::travel_to(double target_orbit, complex<double> *target_position, bool simulate)
@@ -67,24 +72,39 @@ complex<double> satellite::meet(satellite *target)
 	
 	double target_orbit =0;
 	uint32_t arrival_time;
-	complex<double>  position_to_arrive, needed_delta_v, target_pos =  abs(target->position());
+	complex<double>  position_to_arrive, needed_delta_v;
+	complex<double> target_pos =  target->position();
 	
-	double diff_in_target_orbit;
+	/*if (abs(target->position_at(arrival_time) - target->position_at(arrival_time -1)) < (abs(target->_max_speed) * 0.01)) //move on
+	  return complex<double>(0.0,0.0);*/
+	int i = 0;
 	do {
 	  //diff_in_target_orbit = abs(abs(target_pos) - target_orbit);
+
 	  target_orbit = abs(target_pos);
 	  if (target_orbit == 0)
-	  return complex<double> (0,0);
-	  arrival_time = time_to_travel_to(target_orbit);
+		return complex<double> (0,0);
+	  arrival_time = time_to_travel_to(target_orbit) + 2;
 	  cerr << "target_orbit " << target_orbit << endl;
 	  cerr << "arrival_time" << arrival_time << endl;
 	  needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
 	  target_pos = target->position_at(arrival_time);
 	  cerr << "target_pos " << target_pos << endl;
 	  cerr << "difference in target orbit :" << abs(abs(target_pos) - target_orbit) << endl;
-	} while (abs(abs(target_pos) - target_orbit) > 5000.0);
+	  i++;  
+
+	} while ((abs(abs(target_pos) - target_orbit) > 7500.0) && (i<1000));
 	
-	if (abs(position_to_arrive - target_pos) < 15000.0) {
+	_old_target_pos = target_pos;
+	renderer::getInstance()->add_position(target_pos);
+	renderer::getInstance()->unlock();
+	renderer::getInstance()->lock();
+	
+	/*if (arrival_time > 100000)
+	  return complex<double>(0,0);*/
+	
+	if ((abs(position_to_arrive - target_pos) < 15000.0) /*&& (abs(to_range(arg(target_pos - target->position_at(arrival_time-1)) - arg(_speed) + M_PI)) < M_PI/3)*/) {
+	  cout << "angle to arrive" << to_range(arg(target_pos - target->position_at(arrival_time-1)) - arg(_speed) + M_PI) << endl;
 	  _state = DOCKING; //validate simulation
 	  return needed_delta_v;
 	}
@@ -99,9 +119,9 @@ complex<double> satellite::meet(satellite *target)
 			_state = ADJUSTING;
 			return -rel_speed;
 		}
-      } else if (abs(target->position() - _position)<20000) {
+      } else if (abs(target->position() - _position)<40000) {
 		if ((abs(rel_speed) < 4.5) || (abs(rel_speed) > 5.5)) {
-		  rel_speed -= polar(5.0, arg(target->relative_position()));
+		  rel_speed -= polar(10.0, arg(target->relative_position()));
 		  _state = ADJUSTING;
 		  return -rel_speed;
 		}

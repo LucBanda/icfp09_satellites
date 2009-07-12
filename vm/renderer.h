@@ -20,6 +20,7 @@ class renderer
 		vector<satellite *> sats;
 		pthread_mutex_t _main_mutex;
 		vector<double> _radius;
+		complex<double> position_to_test;
 		
 	public:
 
@@ -31,7 +32,7 @@ class renderer
 		void unlock();
 		void add_sat(satellite* sat);
 		void add_radius(double radius);
-		
+		void add_position(complex<double> position) {position_to_test = position;}
 		static renderer *getInstance ()
 		{
 			if (NULL == _single_renderer)

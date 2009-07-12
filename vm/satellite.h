@@ -33,7 +33,8 @@ class satellite {
 	uint32_t _stop_time;
 	complex<double> _target_pos;
 	vm_state *vm_clone;
-	
+	complex<double> _max_speed;
+	complex<double> _old_target_pos;
   public:
 		
 	satellite(address x, address y, satellite *me=NULL, satellipse* trajet=NULL) : _trajectoire(trajet), _main(me), _old_position(0,0), _speed(-1,-1),  _state(INIT), addr_x(x), addr_y(y)
@@ -49,7 +50,10 @@ class satellite {
 	  _stop_time = 0;
 	  
 	  _target_pos = complex<double>(0,0);
+	  _old_target_pos = complex<double>(0,0);
 	  vm_clone = NULL;
+	  
+	  _max_speed = complex<double>(0,0);
 	};
 	
 	address addr_x;
