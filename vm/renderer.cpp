@@ -141,9 +141,13 @@ void renderer::terminate()
 
 void renderer::lock()
 {
+#ifdef ALLEGRO
   pthread_mutex_lock( &_main_mutex );
+#endif
 }
 void renderer::unlock()
 {
+#ifdef ALLEGRO
   pthread_mutex_unlock( &_main_mutex );
+#endif
 }
