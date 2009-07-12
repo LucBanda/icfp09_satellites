@@ -36,6 +36,11 @@ bool excentric::step(uint32_t time_step) {
 	_trace->add_command(time_step, 0, 0, vm->output_ports[_score_addr]);
     return true;
   }
+    
+  if (time_step == 1) {
+	renderer::getInstance()->set_max_fuel(vm->output_ports[_fuel_addr]);
+  } 
+  renderer::getInstance()->set_fuel(vm->output_ports[_fuel_addr]);
   
   double dvx, dvy;
   complex<double> action = calculate_action(time_step);

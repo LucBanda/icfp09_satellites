@@ -19,7 +19,7 @@
 #define SAT_COL	makecol(200,0,0)
 #define ROVER_COL	HOME_COL
 #define WAYPT_COL	makecol(200,0,0)
-
+#define BLACK		makecol(0,0,0)
 
 #define ALLEGRO
 
@@ -44,6 +44,10 @@ void renderer::draw(BITMAP* bmp)
 	
 	circlefill(bmp, 500,500, 6.357e6 / SCALE, BOULDER_COL);
 	circlefill(bmp, 500 + real(position_to_test)/SCALE,500-imag(position_to_test)/SCALE, 3, BOULDER_COL);
+	
+	rectfill(bmp, 900, 900, 950, 1000, BLACK);
+	rectfill(bmp, 903, 903, 947, 903 + (1-(_fuel/_max_fuel)) * 100, BACKGROUND_COL);
+	
 	
 	for (vector<satellite *>::iterator it = sats.begin(); it != sats.end(); it++) {
 	  int color;

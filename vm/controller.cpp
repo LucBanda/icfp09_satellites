@@ -34,6 +34,11 @@ bool hohmann::step(uint32_t time_step) {
   }
   
   if (time_step == 1) {
+	renderer::getInstance()->set_max_fuel(vm->output_ports[_fuel_addr]);
+  } 
+  renderer::getInstance()->set_fuel(vm->output_ports[_fuel_addr]);
+  
+  if (time_step == 1) {
 	  renderer::getInstance()->add_radius(vm->output_ports[0x4]);
   }
   double dvx, dvy;
