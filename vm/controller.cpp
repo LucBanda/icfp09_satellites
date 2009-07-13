@@ -21,7 +21,7 @@ hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
 complex<double> hohmann::calculate_action(uint32_t time_step) {
   
   me->update(time_step);
-  if (time_step <2) return complex<double>(0,0);
+  //if (time_step <2) return complex<double>(0,0);
   return me->travel_to(vm->output_ports[0x4]);
   
 }
@@ -66,6 +66,5 @@ void hohmann::monitor() {
 	cout << "y : "<< vm->output_ports[_vy_addr] << endl;
 	cout << "radius : " << sqrt((vm->output_ports[_vx_addr] * vm->output_ports[_vx_addr]) + (vm->output_ports[_vy_addr] * vm->output_ports[_vy_addr])) << endl;
 	cout << "target : " << vm->output_ports[_target_orbit_addr] << endl;*/
-	if (vm->output_ports[_score_addr])
-	  cout << "score : " << vm->output_ports[_score_addr] << endl;
+	cerr << "to goal : " << sqrt((vm->output_ports[0x2] * vm->output_ports[0x2]) + (vm->output_ports[0x3] * vm->output_ports[0x3])) - vm->output_ports[0x4] << "\n";
 }

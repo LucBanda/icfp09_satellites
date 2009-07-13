@@ -21,18 +21,49 @@ clear_sky::clear_sky(trace_generator *trace, double instance):Icontroller(trace)
 	
 	vm->input_ports[_instance_addr] = _instance = instance;
 	_trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
+	
+	first_not_checked = -1;
   
 }
 
 
 complex<double> clear_sky::calculate_action(uint32_t time_step) {
 
+
+  int i;
+  complex<double> command = complex<double> (0,0);
+  
+  //update all
   me->update(time_step);
-  for (int i=0; i<10; i++) {
+  for (i=0; i<10; i++) {
 	target[i]->update(time_step);
   }
   fuelling->update(time_step);
-  return complex<double>(0,0);
+  
+  
+  //cout << "state : " << me->state() << "first not checked " << first_not_checked << "checked ? " << vm->output_ports[3*first_not_checked+0x9] << endl;
+  
+  if ((first_not_checked != -1) && ((vm->output_ports[3*first_not_checked+0x9]) == 1.0)) {
+	command = me->set_circular_orbit();
+	  for (i =0;i< 10;i++) {
+	  //  cout << vm->output_ports[3*i+0x9] << " ";
+	  if (vm->output_ports[3*i+0x9] < 1E-20) {
+		first_not_checked = i;
+		break;
+	  }
+	}
+  } else if (first_not_checked == -1) {
+	first_not_checked = 0;
+  } else {
+	//cout << "meet " << first_not_checked << endl;
+	command = me->meet(target[first_not_checked]);
+  }
+  //cout << "to target " << first_not_checked << endl;
+  
+
+	
+  
+  return command;
   
 }
   
@@ -42,6 +73,11 @@ bool clear_sky::step(uint32_t time_step) {
 	_trace->add_command(time_step, 0, 0, vm->output_ports[_score_addr]);
     return true;
   }
+  
+  if (time_step == 1) {
+	renderer::getInstance()->set_max_fuel(vm->output_ports[_fuel_addr]);
+  } 
+  renderer::getInstance()->set_fuel(vm->output_ports[_fuel_addr]);
   
   double dvx, dvy;
   complex<double> action = calculate_action(time_step);
@@ -62,5 +98,20 @@ bool clear_sky::step(uint32_t time_step) {
 }
 
 void clear_sky::monitor() {
-  
+  cerr << "current_radius : " << abs(me->position()) << "\n";
+  cerr << "relative distance to target : " << abs(me->position() - target[first_not_checked]->position()) << "\n";
+  cerr << "score : " << vm->output_ports[_score_addr] << "\n";
+  cerr << "fuel : " << vm->output_ports[_fuel_addr] << "\n";
+  cerr << "state : ";
+  switch (me->state()) {
+	case INIT : cerr << "INIT"; break;
+	case ORBITING : cerr << "ORBITING"; break;
+	case TRAVELLING : cerr << "TRAVELLING"; break;
+	case DOCKING : cerr << "DOCKING"; break;
+	case ADJUSTING : cerr << "ADJUSTING"; break;
+	case ELLIPTIC : cerr << "ELLIPTIC"; break;
+	case STABILIZE : cerr << "STABILIZE"; break;
+	default: cerr << "unknown"; break;
+  }
+  cerr << "\n";
 }

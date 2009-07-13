@@ -75,24 +75,15 @@ complex<double> satellite::meet(satellite *target)
 	complex<double>  position_to_arrive, needed_delta_v;
 	complex<double> target_pos =  target->position();
 	
-	/*if (abs(target->position_at(arrival_time) - target->position_at(arrival_time -1)) < (abs(target->_max_speed) * 0.01)) //move on
-	  return complex<double>(0.0,0.0);*/
 	int i = 0;
 	do {
-	  //diff_in_target_orbit = abs(abs(target_pos) - target_orbit);
-
 	  target_orbit = abs(target_pos);
 	  if (target_orbit == 0)
 		return complex<double> (0,0);
 	  arrival_time = time_to_travel_to(target_orbit) + 2;
-	  cerr << "target_orbit " << target_orbit << endl;
-	  cerr << "arrival_time" << arrival_time << endl;
 	  needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
 	  target_pos = target->position_at(arrival_time);
-	  cerr << "target_pos " << target_pos << endl;
-	  cerr << "difference in target orbit :" << abs(abs(target_pos) - target_orbit) << endl;
 	  i++;  
-
 	} while ((abs(abs(target_pos) - target_orbit) > 7500.0) && (i<1000));
 	
 	_old_target_pos = target_pos;
@@ -100,11 +91,10 @@ complex<double> satellite::meet(satellite *target)
 	renderer::getInstance()->unlock();
 	renderer::getInstance()->lock();
 	
-	/*if (arrival_time > 100000)
-	  return complex<double>(0,0);*/
-	
+	cout << (abs(position_to_arrive - target_pos)) << endl;
 	if ((abs(position_to_arrive - target_pos) < 15000.0)) {
 	  _state = DOCKING; //validate simulation
+	  getchar();
 	  return needed_delta_v;
 	}
   } else if ((_state == DOCKING) || (_state == ADJUSTING)){
@@ -113,24 +103,33 @@ complex<double> satellite::meet(satellite *target)
 		return complex<double>(0.0,0.0);
 	  }
 	  complex< double> rel_speed = _speed - target->speed();
-      if (abs(target->position() - _position)<1000) {
+      if (abs(target->position() - _position)<500) {
 		if (abs(rel_speed) > 1.0) {
-			_state = ADJUSTING;
-			return -rel_speed;
+		  _state = ELLIPTIC;
+		  return -rel_speed;
 		}
       } else if (abs(target->position() - _position)<40000) {
-		if ((abs(rel_speed) < 4.5) || (abs(rel_speed) > 5.5)) {
-		  rel_speed -= polar(10.0, arg(target->relative_position()));
+		if ((abs(rel_speed) < 19.5) || (abs(rel_speed) > 20.5)) {
+		  rel_speed -= polar(20.0, arg(target->relative_position()));
 		  _state = ADJUSTING;
+		  
 		  return -rel_speed;
 		}
       }
-  }else {
   }
   
   return complex<double>(0.0,0.0);
 }
+
+complex<double> satellite::set_circular_orbit() {
   
+	_state = ORBITING;
+	_old_target_pos = 0;
+	complex<double> pos_in_2 = position_at(2);
+	
+	return polar(sqrt(MU / abs(pos_in_2)), arg(pos_in_2) - M_PI/2) - (pos_in_2 - position_at(1));
+}
+
 uint32_t satellite::time_to_travel_to(double target_orbit)
 {
     return M_PI * sqrt(pow(abs(_position) + target_orbit,3)/(8*MU)) - 1;
@@ -157,10 +156,3 @@ complex<double> satellite::position_at(uint32_t time_step_forward)
   } 
   return _trajectoire->get_pos_at(_time_step + time_step_forward);
 }
-
-/*complex<double> stellite::perige_in(uint32_t *time_step_forward) {
-  vm_state *clone= vm->clone();
-  for (int i=0; i<time_step_forward; i++) {
-	clone->step();
-  }
-}*/

@@ -61,7 +61,20 @@ bool excentric::step(uint32_t time_step) {
 }
 
 void excentric::monitor() {
-  cerr << "relative distance to target " << abs(me->position() - target->position()) << endl;
-  cerr << "score : " << vm->output_ports[_score_addr] << endl;
+  cerr << "current_radius : " << abs(me->position()) << "\n";
+  cerr << "relative distance to target : " << abs(me->position() - target->position()) << "\n";
+  cerr << "score : " << vm->output_ports[_score_addr] << "\n";
+  cerr << "fuel : " << vm->output_ports[_fuel_addr] << "\n";
+  cerr << "state : ";
+  switch (me->state()) {
+	case INIT : cerr << "INIT"; break;
+	case ORBITING : cerr << "ORBITING"; break;
+	case TRAVELLING : cerr << "TRAVELLING"; break;
+	case DOCKING : cerr << "DOCKING"; break;
+	case ADJUSTING : cerr << "ADJUSTING"; break;
+	case ELLIPTIC : cerr << "ELLIPTIC"; break;
+	case STABILIZE : cerr << "STABILIZE"; break;
+	default: cerr << "unknown"; break;
+  }
 }
 

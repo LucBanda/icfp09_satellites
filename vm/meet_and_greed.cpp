@@ -19,9 +19,6 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
 	target = new satellite(0x4, 0x5, me, new satellipse());
 	renderer::getInstance()->add_sat(me);
 	renderer::getInstance()->add_sat(target);
-	
-
-  
 }
 
 

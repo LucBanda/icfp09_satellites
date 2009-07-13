@@ -9,10 +9,12 @@
 
 #define INIT					0
 #define ORBITING				1
-#define ADJUSTING				2
-#define TRAVELLING				3
-#define DOCKING				4
 
+#define TRAVELLING				2
+#define DOCKING					3
+#define ADJUSTING				4
+#define ELLIPTIC				5
+#define STABILIZE				6
 
 
 class satellite {
@@ -62,7 +64,9 @@ class satellite {
 	complex<double> position(){return _position;}
 	complex<double> speed(){return _speed;}
 	complex<double> relative_position(){return _relative_position;}
-	complex<double> state(){return _state;}
+	int state(){return _state;}
+	complex<double> set_circular_orbit();
+	
 	satellipse *trajectoire() {return _trajectoire;}
 	
 	bool main_sat() {return (_main == NULL);}

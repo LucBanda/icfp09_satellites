@@ -62,13 +62,12 @@ int main (int argc, char** argv)
 			vm->step();
 			
 			stop = controller->step(time_step);
-			
+			cerr << "\x1b[2J\x1b[H";
 			controller->monitor();
 			renderer::getInstance()->unlock();
 			
 			count_fps ++;
 			gettimeofday(&time, NULL);
-			cerr << "\x1b[2J\x1b[H";
 			if (time.tv_sec != saved_time.tv_sec ) {
 				cout << count_fps << " FPS" << "\n";
 				count_fps = 0;
@@ -78,7 +77,7 @@ int main (int argc, char** argv)
 			
 		} while (!stop);
 		total_score += controller->get_score();
-		cout << "total score : " << total_score << endl;
+		cout << "score : " << controller->get_score() << " (" << total_score << " )" << endl;
 		renderer::kill();
 		delete controller;
 		delete trace;
