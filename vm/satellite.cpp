@@ -91,10 +91,10 @@ complex<double> satellite::meet(satellite *target)
 	renderer::getInstance()->unlock();
 	renderer::getInstance()->lock();
 	
-	cout << (abs(position_to_arrive - target_pos)) << endl;
+
 	if ((abs(position_to_arrive - target_pos) < 15000.0)) {
 	  _state = DOCKING; //validate simulation
-	  getchar();
+
 	  return needed_delta_v;
 	}
   } else if ((_state == DOCKING) || (_state == ADJUSTING)){
