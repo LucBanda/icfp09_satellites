@@ -78,6 +78,7 @@ class satellite {
 	complex<double> meet(satellite *target);
 	uint32_t time_to_travel_to(double target_orbit);
 	complex<double> position_at(uint32_t time_step_forward);
+	complex<double> step_forward(uint32_t step);
 	//complex<double> perige_in(uint32_t *time_step_forward);
 };
 

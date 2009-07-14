@@ -43,13 +43,13 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
 
 	double dv_abs = sqrt(MU/abs(_position))*(sqrt(2.0*target_orbit/(target_orbit+abs(_position)))-1.0);
 	
-	delta_v =  polar(dv_abs, arg(_speed));
+	delta_v =  polar(dv_abs, arg(_position) - M_PI/2);
 	_ignition_time = _time_step;
 
 	//vitesse back
 	dv_abs = sqrt(MU/target_orbit)*(1.0-sqrt(2*abs(_position)/(target_orbit+abs(_position))));
 	
-	_speed_back = polar(dv_abs, arg(_speed) + M_PI);
+	_speed_back = polar(dv_abs, arg(_position) + M_PI/2);
 	_stop_time = _ignition_time +  time_to_travel_to(target_orbit) ;
 	if (target_position)
 	  *target_position = polar(abs(target_orbit), arg(_position) + M_PI);
@@ -93,10 +93,16 @@ complex<double> satellite::meet(satellite *target)
 	
 
 	if ((abs(position_to_arrive - target_pos) < 15000.0)) {
-	  _state = DOCKING; //validate simulation
+	  _state = TRAVELLING; //validate simulation
 
 	  return needed_delta_v;
 	}
+  } else if ((_state == TRAVELLING)) {
+      complex<double> command = travel_to(0, NULL, false);
+      if (abs(command) > 1E-15) {
+	  _state = ADJUSTING;
+      }
+      return command;
   } else if ((_state == DOCKING) || (_state == ADJUSTING)){
 	  if (_state == ADJUSTING) {
 		_state = DOCKING;
@@ -108,7 +114,7 @@ complex<double> satellite::meet(satellite *target)
 		  _state = ELLIPTIC;
 		  return -rel_speed;
 		}
-      } else if (abs(target->position() - _position)<40000) {
+      } else  {
 		if ((abs(rel_speed) < 19.5) || (abs(rel_speed) > 20.5)) {
 		  rel_speed -= polar(20.0, arg(target->relative_position()));
 		  _state = ADJUSTING;
@@ -133,6 +139,22 @@ complex<double> satellite::set_circular_orbit() {
 uint32_t satellite::time_to_travel_to(double target_orbit)
 {
     return M_PI * sqrt(pow(abs(_position) + target_orbit,3)/(8*MU)) - 1;
+  
+}
+complex<double> satellite::step_forward(uint32_t step) {
+  vm_state *clone;
+  clone = vm->clone();
+  for (int i = 0; i< step; i++) {
+	clone->step();
+  }
+  complex<double> pos;
+  if (_main == NULL)
+	pos = -complex<double>(clone->output_ports[addr_x], clone->output_ports[addr_y]);
+  else
+	pos = -complex<double>(clone->output_ports[_main->addr_x], clone->output_ports[_main->addr_y]) + complex<double>(clone->output_ports[addr_x], clone->output_ports[addr_y]);
+  
+  delete clone;  
+  return pos;
   
 }
 
