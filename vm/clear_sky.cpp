@@ -12,7 +12,7 @@ clear_sky::clear_sky(trace_generator *trace, double instance):Icontroller(trace)
 	_instance_addr = 0x3E80;
 	me = new satellite(0x2, 0x3, NULL, new satellipse());
 	fuelling = new satellite(0x4,0x5, me, new satellipse());
-	for (int i = 0; i<11; i++) {
+	for (int i = 0; i<10; i++) {
 	  target[i] = new satellite(3*i+0x7, 3*i+0x8, me, new satellipse());
 	  renderer::getInstance()->add_sat(target[i]);
 	}
