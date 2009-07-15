@@ -43,13 +43,19 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
 
 	double dv_abs = sqrt(MU/abs(_position))*(sqrt(2.0*target_orbit/(target_orbit+abs(_position)))-1.0);
 	
-	delta_v =  polar(dv_abs, arg(_position) - M_PI/2);
+	if (abs(arg(_position) - M_PI/2 - arg(_speed)) < M_PI/2)
+		delta_v =  polar(dv_abs, arg(_position) - M_PI/2);
+	else
+		delta_v =  polar(dv_abs, arg(_position) + M_PI/2);
 	_ignition_time = _time_step;
 
 	//vitesse back
 	dv_abs = sqrt(MU/target_orbit)*(1.0-sqrt(2*abs(_position)/(target_orbit+abs(_position))));
 	
-	_speed_back = polar(dv_abs, arg(_position) + M_PI/2);
+	if (abs(arg(_position) - M_PI/2 - arg(_speed)) < M_PI/2)
+		_speed_back = polar(dv_abs, arg(_position) + M_PI/2);
+	else
+		_speed_back = polar(dv_abs, arg(_position) - M_PI/2);
 	_stop_time = _ignition_time +  time_to_travel_to(target_orbit) ;
 	if (target_position)
 	  *target_position = polar(abs(target_orbit), arg(_position) + M_PI);
@@ -65,7 +71,7 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
   return delta_v;
 }
 
-complex<double> satellite::meet(satellite *target)
+complex<double> satellite::meet(satellite *target, bool track_target)
 {
 
   if (_state == ORBITING) {
@@ -84,7 +90,7 @@ complex<double> satellite::meet(satellite *target)
 	  needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
 	  target_pos = target->position_at(arrival_time);
 	  i++;  
-	} while ((abs(abs(target_pos) - target_orbit) > 7500.0) && (i<1000));
+	} while ((abs(abs(target_pos) - target_orbit) > 10000.0) && (i<1000));
 	
 	_old_target_pos = target_pos;
 	renderer::getInstance()->add_position(target_pos);
@@ -92,7 +98,7 @@ complex<double> satellite::meet(satellite *target)
 	renderer::getInstance()->lock();
 	
 
-	if ((abs(position_to_arrive - target_pos) < 15000.0)) {
+	if ((abs(position_to_arrive - target_pos) < 40000.0)) {
 	  _state = TRAVELLING; //validate simulation
 
 	  return needed_delta_v;
@@ -100,9 +106,9 @@ complex<double> satellite::meet(satellite *target)
   } else if ((_state == TRAVELLING)) {
       complex<double> command = travel_to(0, NULL, false);
       if (abs(command) > 1E-15) {
-	  _state = ADJUSTING;
+	  _state = DOCKING;
       }
-      return command;
+      return complex<double>(0,0);
   } else if ((_state == DOCKING) || (_state == ADJUSTING)){
 	  if (_state == ADJUSTING) {
 		_state = DOCKING;
@@ -112,10 +118,12 @@ complex<double> satellite::meet(satellite *target)
       if (abs(target->position() - _position)<500) {
 		if (abs(rel_speed) > 1.0) {
 		  _state = ELLIPTIC;
-		  return -rel_speed;
+		  if (track_target)
+			  return -rel_speed;
 		}
+		
       } else  {
-		if ((abs(rel_speed) < 19.5) || (abs(rel_speed) > 20.5)) {
+		if ((abs(rel_speed) < 19.5) || (abs(rel_speed) > 20.5) || (abs(arg(rel_speed) - arg(_speed)) < M_PI/2))  {
 		  rel_speed -= polar(20.0, arg(target->relative_position()));
 		  _state = ADJUSTING;
 		  
@@ -129,11 +137,16 @@ complex<double> satellite::meet(satellite *target)
 
 complex<double> satellite::set_circular_orbit() {
   
-	_state = ORBITING;
-	_old_target_pos = 0;
-	complex<double> pos_in_2 = position_at(2);
 	
-	return polar(sqrt(MU / abs(pos_in_2)), arg(pos_in_2) - M_PI/2) - (pos_in_2 - position_at(1));
+	_old_target_pos = 0;
+	complex<double> pos2, pos1 = _trajectoire->get_pos_at(_time_step - 2);
+	pos2 = _trajectoire->get_pos_at(_time_step - 1);
+	complex<double> lspeed = _position - pos2;
+	if (abs(lspeed) < abs( pos2 - pos1)) {
+	    _state = ORBITING;
+	    return polar(sqrt(MU / abs(_position)), arg(_position) - M_PI/2) - (_position-pos2);
+	}
+	return complex<double>(0,0);
 }
 
 uint32_t satellite::time_to_travel_to(double target_orbit)

@@ -27,7 +27,7 @@ int main (int argc, char** argv)
 	
 	trace_generator *trace;
 	
-	for (int i = 1; i < 4;i++) {
+	for (int i = 1; i < 5;i++) {
 	  for (int j = 1; j<5;j++) {
 		if (do_all) {
 		  instance = i*1000 + j;
@@ -53,6 +53,7 @@ int main (int argc, char** argv)
 		uint32_t time_step = 0;
 		bool stop = false;
 		int count_fps = 0;
+		int count = 0;
 		struct timeval time, saved_time = {0};
 		
 		do {
@@ -69,15 +70,15 @@ int main (int argc, char** argv)
 			count_fps ++;
 			gettimeofday(&time, NULL);
 			if (time.tv_sec != saved_time.tv_sec ) {
-				cout << count_fps << " FPS" << "\n";
+				cout << count_fps << " FPS ( " << count << " )\n";
 				count_fps = 0;
 				saved_time = time;
 			}
 		
-			
+			count ++;
 		} while (!stop);
 		total_score += controller->get_score();
-		cout << "score : " << controller->get_score() << " (" << total_score << " )" << endl;
+		cout << "score : " << controller->get_score() << " (" << total_score << " ) total step : " << count << endl;
 		renderer::kill();
 		delete controller;
 		delete trace;

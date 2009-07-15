@@ -75,7 +75,7 @@ class satellite {
 	void update(uint32_t time_step);
 	
 	complex<double> travel_to(double target_orbit, complex<double> *target_position = NULL, bool simulate = false);
-	complex<double> meet(satellite *target);
+	complex<double> meet(satellite *target, bool track_target = true);
 	uint32_t time_to_travel_to(double target_orbit);
 	complex<double> position_at(uint32_t time_step_forward);
 	complex<double> step_forward(uint32_t step);

@@ -45,6 +45,7 @@ complex<double> clear_sky::calculate_action(uint32_t time_step) {
   
   if ((first_not_checked != -1) && ((vm->output_ports[3*first_not_checked+0x9]) == 1.0)) {
 	command = me->set_circular_orbit();
+	  if (abs(command) < 1E-20) return command;
 	  for (i =0;i< 10;i++) {
 	  //  cout << vm->output_ports[3*i+0x9] << " ";
 	  if (vm->output_ports[3*i+0x9] < 1E-20) {
@@ -56,7 +57,7 @@ complex<double> clear_sky::calculate_action(uint32_t time_step) {
 	first_not_checked = 0;
   } else {
 	//cout << "meet " << first_not_checked << endl;
-	command = me->meet(target[first_not_checked]);
+	command = me->meet(target[first_not_checked], false);
   }
   //cout << "to target " << first_not_checked << endl;
   

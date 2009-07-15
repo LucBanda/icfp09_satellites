@@ -17,10 +17,10 @@ vm_state::vm_state(){
 vm_state *vm_state::clone() {
   vm_state *cloned = new vm_state;
   
-  memcpy(cloned->memory,		memory, 		sizeof(double) * ADDRESS_RANGE);
+  memcpy(cloned->memory,	memory, 	sizeof(double) * ADDRESS_RANGE);
   memcpy(cloned->output_ports,	output_ports, 	sizeof(double) * ADDRESS_RANGE);
   memcpy(cloned->input_ports, 	input_ports, 	sizeof(double) * ADDRESS_RANGE);  
-  memcpy(cloned->code, 			code, 			sizeof(instruction*) * ADDRESS_RANGE);
+  memcpy(cloned->code, 		code,		sizeof(instruction*) * ADDRESS_RANGE);
   cloned->status = status;
   cloned->pc = pc;
   
