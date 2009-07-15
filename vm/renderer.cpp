@@ -6,7 +6,7 @@
 #include "ellipse.h"
 
 
-#define ECRAN_X	1050
+#define ECRAN_X	800
 #define ECRAN_Y	800
 #define MODE    GFX_AUTODETECT_WINDOWED
 
