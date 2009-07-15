@@ -43,16 +43,17 @@ complex<double> satellite::travel_to(double target_orbit, complex<double> *targe
 
 	double dv_abs = sqrt(MU/abs(_position))*(sqrt(2.0*target_orbit/(target_orbit+abs(_position)))-1.0);
 	
-	if (abs(arg(_position) - M_PI/2 - arg(_speed)) < M_PI/2)
+	if (abs(to_range(arg(_position) - M_PI/2 - arg(_speed))) < M_PI/2)
 		delta_v =  polar(dv_abs, arg(_position) - M_PI/2);
-	else
+	else {
 		delta_v =  polar(dv_abs, arg(_position) + M_PI/2);
+	}
 	_ignition_time = _time_step;
 
 	//vitesse back
 	dv_abs = sqrt(MU/target_orbit)*(1.0-sqrt(2*abs(_position)/(target_orbit+abs(_position))));
 	
-	if (abs(arg(_position) - M_PI/2 - arg(_speed)) < M_PI/2)
+	if (abs(to_range(arg(_position) - M_PI/2 - arg(_speed))) < M_PI/2)
 		_speed_back = polar(dv_abs, arg(_position) + M_PI/2);
 	else
 		_speed_back = polar(dv_abs, arg(_position) - M_PI/2);
