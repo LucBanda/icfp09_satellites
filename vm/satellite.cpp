@@ -119,10 +119,10 @@ complex<double> satellite::meet(satellite *target, bool track_target)
       if (abs(target->position() - _position)<500) {
 		if (abs(rel_speed) > 1.0) {
 		  _state = ELLIPTIC;
-		  if (track_target)
-			  return -rel_speed;
 		}
-		
+		if (track_target) {
+		  return -rel_speed;
+		}
       } else  {
 		if ((abs(rel_speed) < 19.5) || (abs(rel_speed) > 20.5) || (abs(arg(rel_speed) - arg(_speed)) < M_PI/2))  {
 		  rel_speed -= polar(20.0, arg(target->relative_position()));
