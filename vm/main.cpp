@@ -7,19 +7,19 @@
 #include "renderer.h"
 #include "sys/time.h"
 #include "clear_sky.h"
+#include "bin.h"
 
 int main (int argc, char** argv) 
 {
 	double total_score = 0;
 	Icontroller *controller = NULL;
-	char filename[50];
+	char input_file_name[50], filename[50];
 	bool do_all;
 	if (argc < 3) {
 		cerr << "please enter first the problem binary path and then the scenario id" << endl;
 		exit(-1);
 	}
 	uint32_t instance;
-	cout << argv[2];
 	if (strcmp(argv[2], "all") != 0) {
 	  instance = atoi(argv[2]);
 	  do_all =false;
@@ -32,22 +32,29 @@ int main (int argc, char** argv)
 		if (do_all) {
 		  instance = i*1000 + j;
 		  }
-		cout << instance << " " << do_all << endl;
-		vm = new vm_state;
-		sprintf(filename, "%s/bin%d.obf", argv[1], instance/1000);
-		vm->load_file(filename);
+		vm = new vm_state(instance);
+		sprintf(input_file_name, "%s/bin%d.obf", argv[1], instance/1000);
+		vm->load_file(input_file_name);
 		
 		sprintf(filename, "%d.osf", instance);
 			
 		trace = new trace_generator(instance, filename);
+		
 		if ((instance < 1005) && (instance > 1000))
 			controller = new hohmann(trace, (double)instance);
 		if ((instance < 2005) && (instance > 2000))
 			controller = new meetandgreed(trace, (double)instance);
 		if ((instance < 3005) && (instance > 3000))
 			controller = new excentric(trace, (double)instance);
-		if ((instance < 4005) && (instance > 4000))
+		if ((instance < 4005) && (instance > 4000)) {
+#ifndef GENERATE
+			delete vm;
+			vm = new bin_4;
+			vm->load_file(input_file_name);
+#endif
 			controller = new clear_sky(trace, (double)instance);
+			
+		}
 		
 		renderer::getInstance();
 		uint32_t time_step = 0;
@@ -61,8 +68,12 @@ int main (int argc, char** argv)
 			time_step++;
 			
 			vm->step();
-			
+#ifdef GENERATE
+			delete vm;
+			return 0;
+#endif			
 			stop = controller->step(time_step);
+
 			cerr << "\x1b[2J\x1b[H";
 			controller->monitor();
 			renderer::getInstance()->unlock();

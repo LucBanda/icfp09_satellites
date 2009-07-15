@@ -1,5 +1,7 @@
 #include "instructions.h"
 
+
+
 instruction *instruction::parse(uint32_t raw)
 {
   int opcode = raw>>28;
@@ -46,24 +48,32 @@ d_type *d_type::parse(uint32_t raw)
   return NULL;
 }
 
-void add::execute(vm_state *cur_vm){
-  //cerr << vm->memory[_arg1] << " + " << vm->memory[_arg2] << endl;
+void add::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"] + memory["<<_arg2<<"];" << endl;
+#endif
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] + cur_vm->memory[_arg2];
   
 }
 
-void sub::execute(vm_state *cur_vm){
-  //cerr << vm->memory[_arg1] << " - " << vm->memory[_arg2] << endl;
+void sub::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"] - memory["<<_arg2<<"];" << endl;
+#endif
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] - cur_vm->memory[_arg2];
 }
 
-void mult::execute(vm_state *cur_vm){
-  //cerr << vm->memory[_arg1] << " * " << vm->memory[_arg2] << endl;
+void mult::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"] * memory["<<_arg2<<"];" << endl;
+#endif
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] * cur_vm->memory[_arg2];
 }
 
-void vdiv::execute(vm_state *cur_vm){
-  //cerr << vm->memory[_arg1] << " / " << vm->memory[_arg2] << endl;
+void vdiv::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = (memory["<<_arg2<<"] == 0)? 0 : memory["<<_arg1<<"] / memory["<<_arg2<<"];" << endl;
+#endif
   if (cur_vm->memory[_arg2] == 0)
 	cur_vm->memory[cur_vm->pc] = 0;
   else
@@ -71,11 +81,17 @@ void vdiv::execute(vm_state *cur_vm){
 }
 
 void output::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "output_ports["<<_arg1<<"] = memory["<<_arg2<<"];"<< endl;
+#endif
 	//cerr << "port "<< _arg1 << " = " << vm->memory[_arg2] << endl;
     cur_vm->output_ports[_arg1] = cur_vm->memory[_arg2];
 }
 
 void phi::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "if (status) memory["<<cur_vm->pc<<"]= memory["<<_arg1<<"]; else memory["<< cur_vm->pc << "] = memory["<<_arg2<<"];" << endl;
+#endif
   //cerr << "phi " << vm->status <<  " " << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
   if (cur_vm->status)
 	cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1];
@@ -88,32 +104,54 @@ void noop::execute(vm_state *cur_vm) {
 }
 
 void cmpz::execute(vm_state *cur_vm) {
-  //cerr << "cmpz " ;
+#ifdef GENERATE
+  cout << "status = (memory["<<_arg1<<"] ";
+#endif
 	bool result;
 	double val = cur_vm->memory[_arg1];
+#ifdef GENERATE
 	switch (_immediate) {
-	  case 0: result = (val < 0.0); /*cerr << "<";*/ break;
-	  case 1: result = (val <= 0.0); /*cerr << "<=";*/ break;
-	  case 2: result = (val == 0.0); /*cerr << "=";*/ break;
-	  case 3: result = (val >= 0.0); /*cerr << ">=";*/ break;
-	  case 4: result = (val > 0.0); /*cerr << ">";*/ break;
+	  case 0: result = (val < 0.0); cout << "< "; break;
+	  case 1: result = (val <= 0.0); cout << "<="; break;
+	  case 2: result = (val == 0.0); cout << "== "; break;
+	  case 3: result = (val >= 0.0); cout << ">= "; break;
+	  case 4: result = (val > 0.0); cout << "> "; break;
 	  default: result =0; cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
 	}
+	cout <<" 0);" << endl;
+#else
+	switch (_immediate) {
+	  case 0: result = (val < 0.0); break;
+	  case 1: result = (val <= 0.0); break;
+	  case 2: result = (val == 0.0); break;
+	  case 3: result = (val >= 0.0); break;
+	  case 4: result = (val > 0.0); break;
+	  default: result =0; cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
+	}
+#endif
 	cur_vm->status = result;
 }
 
 void vsqrt::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = sqrt(memory["<<_arg1<<"]);" << endl;
+#endif
   //cerr << "sqrt " << vm->memory[_arg1] << endl;
-  assert (cur_vm->memory[_arg1] >= 0);
   cur_vm->memory[cur_vm->pc] = sqrt(cur_vm->memory[_arg1]);
 }
 
 void vcopy::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"];" << endl;
+#endif
   //cerr << "copy " << vm->memory[_arg1] << endl;
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1];
 }
 
 void input::execute(vm_state *cur_vm) {
+#ifdef GENERATE
+  cout << "memory["<<cur_vm->pc<<"] = input_ports["<<_arg1<<"];" << endl;
+#endif
   //cerr << "load port " << _arg1<< endl;
   cur_vm->memory[cur_vm->pc] = cur_vm->input_ports[_arg1];
 }

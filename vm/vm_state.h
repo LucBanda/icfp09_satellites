@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+//#define GENERATE
+
 class instruction;
 
 #define ADDRESS_RANGE	1<<14
@@ -20,11 +22,11 @@ class vm_state {
 	double output_ports[ADDRESS_RANGE];
 	
   
-	vm_state();
-	
-	vm_state *clone();
+	vm_state(int instance = 0);
+	virtual ~vm_state();
+	virtual vm_state *clone();
 	void load_file(char* file);
-	void step();
+	virtual void step();
 };
 
 extern vm_state *vm;

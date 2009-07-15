@@ -5,13 +5,22 @@
 
 vm_state *vm=NULL;
 	
-vm_state::vm_state(){
+vm_state::vm_state(int instance){
   pc = 0;
   status = 0;
   memset(output_ports, 0, sizeof(double) * ADDRESS_RANGE);
   memset(input_ports, 0, sizeof(double) * ADDRESS_RANGE);
   memset(memory, 0, sizeof(double) * ADDRESS_RANGE);
   memset(code, 0, sizeof(instruction *) * ADDRESS_RANGE);
+#ifdef GENERATE
+  cout << "#include \"bin.h\"\n#ifndef GENERATE \nvoid bin_"<<instance/1000<<"::step() {" << endl;
+#endif
+}
+
+vm_state::~vm_state() {
+#ifdef GENERATE
+  cout << "}\n#endif" << endl;
+#endif
 }
 
 vm_state *vm_state::clone() {
