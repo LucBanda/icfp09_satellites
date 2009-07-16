@@ -40,12 +40,32 @@ int main (int argc, char** argv)
 			
 		trace = new trace_generator(instance, filename);
 		
-		if ((instance < 1005) && (instance > 1000))
+		if ((instance < 1005) && (instance > 1000)) {
+#ifndef GENERATE
+			delete vm;
+			vm = new bin_1;
+			vm->load_file(input_file_name);
+#endif
 			controller = new hohmann(trace, (double)instance);
-		if ((instance < 2005) && (instance > 2000))
+}			
+		if ((instance < 2005) && (instance > 2000)) {
+#ifndef GENERATE
+			delete vm;
+			vm = new bin_2;
+			vm->load_file(input_file_name);
+#endif
+
 			controller = new meetandgreed(trace, (double)instance);
-		if ((instance < 3005) && (instance > 3000))
+		}
+		if ((instance < 3005) && (instance > 3000)) {
+#ifndef GENERATE
+			delete vm;
+			vm = new bin_3;
+			vm->load_file(input_file_name);
+#endif
+		  
 			controller = new excentric(trace, (double)instance);
+		}
 		if ((instance < 4005) && (instance > 4000)) {
 #ifndef GENERATE
 			delete vm;

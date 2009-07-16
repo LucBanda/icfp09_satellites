@@ -12,8 +12,9 @@ clear_sky::clear_sky(trace_generator *trace, double instance):Icontroller(trace)
 	_instance_addr = 0x3E80;
 	me = new satellite(0x2, 0x3, NULL, new satellipse());
 	fuelling = new satellite(0x4,0x5, me, new satellipse());
-	for (int i = 0; i<10; i++) {
+	for (int i = 0; i<11; i++) {
 	  target[i] = new satellite(3*i+0x7, 3*i+0x8, me, new satellipse());
+	  if (i!=10)
 	  renderer::getInstance()->add_sat(target[i]);
 	}
 	renderer::getInstance()->add_sat(me);
@@ -35,7 +36,7 @@ complex<double> clear_sky::calculate_action(uint32_t time_step) {
   
   //update all
   me->update(time_step);
-  for (i=0; i<10; i++) {
+  for (i=0; i<11; i++) {
 	target[i]->update(time_step);
   }
   fuelling->update(time_step);
@@ -46,7 +47,7 @@ complex<double> clear_sky::calculate_action(uint32_t time_step) {
   if ((first_not_checked != -1) && ((vm->output_ports[3*first_not_checked+0x9]) == 1.0)) {
 	command = me->set_circular_orbit();
 	  if (abs(command) < 1E-20) return command;
-	  for (i =0;i< 10;i++) {
+	  for (i =0;i< 11;i++) {
 	  //  cout << vm->output_ports[3*i+0x9] << " ";
 	  if (vm->output_ports[3*i+0x9] < 1E-20) {
 		first_not_checked = i;
