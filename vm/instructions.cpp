@@ -90,7 +90,7 @@ void output::execute(vm_state *cur_vm) {
 
 void phi::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "if (status) memory["<<cur_vm->pc<<"]= memory["<<_arg1<<"]; else memory["<< cur_vm->pc << "] = memory["<<_arg2<<"];" << endl;
+  cout << "if (lstatus) memory["<<cur_vm->pc<<"]= memory["<<_arg1<<"]; else memory["<< cur_vm->pc << "] = memory["<<_arg2<<"];" << endl;
 #endif
   //cerr << "phi " << vm->status <<  " " << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
   if (cur_vm->status)
@@ -105,7 +105,7 @@ void noop::execute(vm_state *cur_vm) {
 
 void cmpz::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "status = (memory["<<_arg1<<"] ";
+  cout << "lstatus = (memory["<<_arg1<<"] ";
 #endif
 	bool result;
 	double val = cur_vm->memory[_arg1];

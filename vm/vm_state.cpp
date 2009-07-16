@@ -13,13 +13,13 @@ vm_state::vm_state(int instance){
   memset(memory, 0, sizeof(double) * ADDRESS_RANGE);
   memset(code, 0, sizeof(instruction *) * ADDRESS_RANGE);
 #ifdef GENERATE
-  cout << "#include \"bin.h\"\n#ifndef GENERATE \nvoid bin_"<<instance/1000<<"::step() {" << endl;
+  cout << "#include \"bin.h\"\n#ifndef GENERATE \nvoid bin_"<<instance/1000<<"::step() {\nbool lstatus = status;" << endl;
 #endif
 }
 
 vm_state::~vm_state() {
 #ifdef GENERATE
-  cout << "}\n#endif" << endl;
+  cout << "status = lstatus;\n}\n#endif" << endl;
 #endif
 }
 
