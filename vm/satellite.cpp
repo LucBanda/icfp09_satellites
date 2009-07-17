@@ -77,29 +77,44 @@ complex<double> satellite::meet(satellite *target, bool track_target)
 
   if (_state == ORBITING) {
 	
-	double target_orbit =0;
+	
 	uint32_t arrival_time;
 	complex<double>  position_to_arrive, needed_delta_v;
 	complex<double> target_pos =  target->position();
-	
-	int i = 0;
-	do {
-	  target_orbit = abs(target_pos);
-	  if (target_orbit == 0)
+	double target_orbit =abs(target_pos);
+	if (target_orbit == 0)
 		return complex<double> (0,0);
-	  arrival_time = time_to_travel_to(target_orbit) + 2;
-	  needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
-	  target_pos = target->position_at(arrival_time);
-	  i++;  
-	} while ((abs(abs(target_pos) - target_orbit) > 10000.0) && (i<1000));
+	uint32_t t = 0;
+	bool forward = true;
+	int factor = time_to_travel_to(target_orbit);
+	do {
+		
+		target_pos = target->position_at(t);
+		target_orbit = abs(target_pos);
+		
+		if (t > time_to_travel_to(target_orbit)) {
+			if (forward)
+				factor /= 2;
+			t-=factor;
+			forward = false;
+		} else {
+			if (!forward)
+				factor /=2;
+			t+=factor;
+			forward = true;
+		}
+	if (t < 0) return complex<double> (0,0);
+	} while (factor);
 	
+	needed_delta_v = travel_to(target_orbit, &position_to_arrive, true);
+
 	_old_target_pos = target_pos;
 	renderer::getInstance()->add_position(target_pos);
 	renderer::getInstance()->unlock();
 	renderer::getInstance()->lock();
 	
 
-	if ((abs(position_to_arrive - target_pos) < 40000.0)) {
+	if ((abs(position_to_arrive - target_pos) < 4000.0)) {
 	  _state = TRAVELLING; //validate simulation
 
 	  return needed_delta_v;
