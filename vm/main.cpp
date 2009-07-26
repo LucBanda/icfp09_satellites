@@ -89,8 +89,10 @@ int main (int argc, char** argv)
 			
 			vm->step();
 #ifdef GENERATE
-			delete vm;
-			return 0;
+			if (time_step > 2) {
+				delete vm;
+				return 0;
+			} else {renderer::getInstance()->unlock(); continue;}
 #endif			
 			stop = controller->step(time_step);
 

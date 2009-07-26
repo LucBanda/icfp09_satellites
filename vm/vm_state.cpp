@@ -12,6 +12,12 @@ vm_state::vm_state(int instance){
   memset(input_ports, 0, sizeof(double) * ADDRESS_RANGE);
   memset(memory, 0, sizeof(double) * ADDRESS_RANGE);
   memset(code, 0, sizeof(instruction *) * ADDRESS_RANGE);
+  pass = 0;
+  min_global = 1<<14;
+  max_global = 0;
+  min_out_port = 1<<14;
+  max_out_port = 0;
+  
 #ifdef GENERATE
   cout << "#include \"bin.h\"\n#ifndef GENERATE \nvoid bin_"<<instance/1000<<"::step() {\nbool lstatus = status;" << endl;
 #endif
@@ -32,11 +38,12 @@ vm_state *vm_state::clone() {
   memcpy(cloned->code, 		code,		sizeof(instruction*) * ADDRESS_RANGE);
   cloned->status = status;
   cloned->pc = pc;
-  
+  cloned->min_global = min_global;
+  cloned->max_global = max_global;
+  cloned->min_out_port = min_out_port;
+  cloned->max_out_port = max_out_port;
   return cloned;
 }
-
-
 void vm_state::load_file(char* file){
   int frame_number;
   struct stat results;
@@ -85,4 +92,16 @@ void vm_state::step()
 	if (pc == ADDRESS_RANGE)
 	  pc = 0;
   }
+
+  if (pass == 0) {
+	  cout << "double ";
+	  for (int j=0; j < ADDRESS_RANGE; j++) {
+		  if (first_written[j]) {
+			  cout << "local_"<<j<<",";
+		  }
+	  }
+	  cout << "dummy;"<<endl;
+  }
+
+  pass++;
 }

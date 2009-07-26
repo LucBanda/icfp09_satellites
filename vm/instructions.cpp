@@ -11,7 +11,7 @@ instruction *instruction::parse(uint32_t raw)
 	return d_type::parse(raw);
 }
 
-s_type *s_type::parse(uint32_t raw) 
+s_type *s_type::parse(uint32_t raw)
 {
   int zero = raw >> 28;
   int opcode = (raw >> 24) & 0xf;
@@ -48,9 +48,22 @@ d_type *d_type::parse(uint32_t raw)
   return NULL;
 }
 
+
+#define print(cur_vm, addr) (cur_vm->first_read[addr]? "memory[": "local_") << addr << (cur_vm->first_read[addr]? "]" : "")
+
 void add::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"] + memory["<<_arg2<<"];" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_written[_arg2])
+			cur_vm->first_read[_arg2] = 1;
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+		cout << print(cur_vm, cur_vm->pc) << "="<< print(cur_vm, _arg1) <<" + " << print(cur_vm, _arg2) << ";"<<endl;
+	}
 #endif
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] + cur_vm->memory[_arg2];
   
@@ -58,21 +71,51 @@ void add::execute(vm_state *cur_vm) {
 
 void sub::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"] - memory["<<_arg2<<"];" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_written[_arg2])
+			cur_vm->first_read[_arg2] = 1;
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+	  cout << print(cur_vm, cur_vm->pc)<<" = " << print(cur_vm, _arg1)<<" - "<<print(cur_vm, _arg2) << ";" << endl;
+	}
 #endif
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] - cur_vm->memory[_arg2];
 }
 
 void mult::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"] * memory["<<_arg2<<"];" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_written[_arg2])
+			cur_vm->first_read[_arg2] = 1;
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+		cout << print(cur_vm, cur_vm->pc)<<" = " << print(cur_vm, _arg1)<<" * "<<print(cur_vm, _arg2) << ";" << endl;
+	}
 #endif
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1] * cur_vm->memory[_arg2];
 }
 
 void vdiv::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = (memory["<<_arg2<<"] == 0)? 0 : memory["<<_arg1<<"] / memory["<<_arg2<<"];" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_written[_arg2])
+			cur_vm->first_read[_arg2] = 1;
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+		cout << print(cur_vm, cur_vm->pc)<<" = ("<< print(cur_vm, _arg2) << " == 0)? 0 : "<< print(cur_vm, _arg1)<<" / "<<print(cur_vm, _arg2) << ";" << endl;
+	}
 #endif
   if (cur_vm->memory[_arg2] == 0)
 	cur_vm->memory[cur_vm->pc] = 0;
@@ -82,7 +125,16 @@ void vdiv::execute(vm_state *cur_vm) {
 
 void output::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "output_ports["<<_arg1<<"] = memory["<<_arg2<<"];"<< endl;
+  if (cur_vm->pass == 0) {
+	  if (!cur_vm->first_written[_arg2])
+		 cur_vm-> first_read[_arg2] = 1;
+	  if (_arg1 < cur_vm->min_out_port)
+		  cur_vm->min_out_port = _arg1;
+	  if (_arg1 > cur_vm->max_out_port)
+		  cur_vm->max_out_port = _arg1;
+  } else if (cur_vm->pass == 1) {
+	  cout << "output_ports["<<_arg1<<"] = "<< print(cur_vm, _arg2) << ";"<< endl;
+	}
 #endif
 	//cerr << "port "<< _arg1 << " = " << vm->memory[_arg2] << endl;
     cur_vm->output_ports[_arg1] = cur_vm->memory[_arg2];
@@ -90,7 +142,14 @@ void output::execute(vm_state *cur_vm) {
 
 void phi::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "if (lstatus) memory["<<cur_vm->pc<<"]= memory["<<_arg1<<"]; else memory["<< cur_vm->pc << "] = memory["<<_arg2<<"];" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_written[_arg2])
+			cur_vm->first_read[_arg2] = 1;
+	} else if (cur_vm->pass == 1) {
+	  cout << "if (lstatus) "<< print(cur_vm, cur_vm->pc) << "= " << print(cur_vm, _arg1) << "; else " << print(cur_vm, cur_vm->pc) << "= " << print(cur_vm, _arg2) << ";" << endl;
+	}
 #endif
   //cerr << "phi " << vm->status <<  " " << (double)(vm->status ?  vm->memory[_arg1] : vm->memory[_arg2] )<< endl;
   if (cur_vm->status)
@@ -104,21 +163,28 @@ void noop::execute(vm_state *cur_vm) {
 }
 
 void cmpz::execute(vm_state *cur_vm) {
-#ifdef GENERATE
-  cout << "lstatus = (memory["<<_arg1<<"] ";
-#endif
+
 	bool result;
 	double val = cur_vm->memory[_arg1];
 #ifdef GENERATE
-	switch (_immediate) {
-	  case 0: result = (val < 0.0); cout << "< "; break;
-	  case 1: result = (val <= 0.0); cout << "<="; break;
-	  case 2: result = (val == 0.0); cout << "== "; break;
-	  case 3: result = (val >= 0.0); cout << ">= "; break;
-	  case 4: result = (val > 0.0); cout << "> "; break;
-	  default: result =0; cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
+
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+	} else if (cur_vm->pass == 1) {
+		  cout << "lstatus = (" << print(cur_vm, _arg1);
+
+
+		switch (_immediate) {
+		  case 0: result = (val < 0.0); cout << "< "; break;
+		  case 1: result = (val <= 0.0); cout << "<="; break;
+		  case 2: result = (val == 0.0); cout << "== "; break;
+		  case 3: result = (val >= 0.0); cout << ">= "; break;
+		  case 4: result = (val > 0.0); cout << "> "; break;
+		  default: result =0; cerr<<"unknown immediate address in cmpz : " << _immediate << endl;
+		}
+		cout <<" 0);" << endl;
 	}
-	cout <<" 0);" << endl;
 #else
 	switch (_immediate) {
 	  case 0: result = (val < 0.0); break;
@@ -134,7 +200,15 @@ void cmpz::execute(vm_state *cur_vm) {
 
 void vsqrt::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = sqrt(memory["<<_arg1<<"]);" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+		cout << print(cur_vm, cur_vm->pc)<<" = sqrt(" << print(cur_vm, _arg1)<<");"<< endl;
+	}
 #endif
   //cerr << "sqrt " << vm->memory[_arg1] << endl;
   cur_vm->memory[cur_vm->pc] = sqrt(cur_vm->memory[_arg1]);
@@ -142,7 +216,15 @@ void vsqrt::execute(vm_state *cur_vm) {
 
 void vcopy::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = memory["<<_arg1<<"];" << endl;
+  if (cur_vm->pass == 0) {
+	  	if (!cur_vm->first_written[_arg1])
+			cur_vm->first_read[_arg1] = 1;
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+		cout << print(cur_vm, cur_vm->pc)<<" = " << print(cur_vm, _arg1)<< ";" << endl;
+  }
 #endif
   //cerr << "copy " << vm->memory[_arg1] << endl;
   cur_vm->memory[cur_vm->pc] = cur_vm->memory[_arg1];
@@ -150,7 +232,13 @@ void vcopy::execute(vm_state *cur_vm) {
 
 void input::execute(vm_state *cur_vm) {
 #ifdef GENERATE
-  cout << "memory["<<cur_vm->pc<<"] = input_ports["<<_arg1<<"];" << endl;
+	if (cur_vm->pass == 0) {
+		if (!cur_vm->first_read[cur_vm->pc])
+			cur_vm->first_written[cur_vm->pc] = 1;
+		
+	} else if (cur_vm->pass == 1) {
+		cout << print(cur_vm, cur_vm->pc)<<" = input_ports["<<_arg1<<"];" << endl;
+  }
 #endif
   //cerr << "load port " << _arg1<< endl;
   cur_vm->memory[cur_vm->pc] = cur_vm->input_ports[_arg1];

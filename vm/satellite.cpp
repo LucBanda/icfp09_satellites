@@ -78,7 +78,6 @@ complex<double> satellite::meet(satellite *target, bool track_target)
   if (_state == ORBITING) {
 	
 	
-	uint32_t arrival_time;
 	complex<double>  position_to_arrive, needed_delta_v;
 	complex<double> target_pos =  target->position();
 	double target_orbit =abs(target_pos);
@@ -173,7 +172,7 @@ uint32_t satellite::time_to_travel_to(double target_orbit)
 complex<double> satellite::step_forward(uint32_t step) {
   vm_state *clone;
   clone = vm->clone();
-  for (int i = 0; i< step; i++) {
+  for (uint32_t i = 0; i< step; i++) {
 	clone->step();
   }
   complex<double> pos;
