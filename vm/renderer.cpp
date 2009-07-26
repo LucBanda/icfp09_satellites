@@ -38,8 +38,8 @@ double start_radius = 0;
 void renderer::draw(BITMAP* bmp)
 {
 #ifdef ALLEGRO
+	
 	lock();
-
 	rectfill(bmp, 0,0,1000,1000, BACKGROUND_COL);
 	
 	circlefill(bmp, 500,500, 6.357e6 / SCALE, BOULDER_COL);
@@ -47,6 +47,7 @@ void renderer::draw(BITMAP* bmp)
 	
 	rectfill(bmp, 900, 900, 950, 1000, BLACK);
 	rectfill(bmp, 903, 903, 947, 903 + (1-(_fuel/_max_fuel)) * 100, BACKGROUND_COL);
+	
 	
 	
 	for (vector<satellite *>::iterator it = sats.begin(); it != sats.end(); it++) {
@@ -59,7 +60,7 @@ void renderer::draw(BITMAP* bmp)
 	  
 	  circlefill(bmp, 500+real((*it)->position())/(SCALE),  500-imag((*it)->position())/(SCALE) , 4, color);
 	  
-	  for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+5000) / 5000) {
+	  for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+10000) / 10000) {
 		putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
 		if (abs(*traj_iter) > SCALE*500)
 		  SCALE = abs(*traj_iter)/450;
