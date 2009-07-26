@@ -49,17 +49,28 @@ d_type *d_type::parse(uint32_t raw)
 }
 
 
-#define print(cur_vm, addr) (cur_vm->first_read[addr]? "memory[": "local_") << addr << (cur_vm->first_read[addr]? "]" : "")
+#define print(cur_vm, addr) (((cur_vm->state[addr] & READ) && !(cur_vm->state[addr] & WRITE))? \
+							"const_" : \
+							(((cur_vm->state[addr] & FIRST_READ)? \
+							"memory[": \
+							"local_"))) \
+							<< addr << \
+							(((cur_vm->state[addr] & FIRST_READ) && (cur_vm->state[addr] & WRITE))?\
+							"]" :\
+							"")
 
 void add::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_written[_arg2])
-			cur_vm->first_read[_arg2] = 1;
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
+		cur_vm->state[_arg1] |= READ;
+		cur_vm->state[_arg2] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[_arg2] & FIRST_WRITE))
+			cur_vm->state[_arg2] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
 		cout << print(cur_vm, cur_vm->pc) << "="<< print(cur_vm, _arg1) <<" + " << print(cur_vm, _arg2) << ";"<<endl;
@@ -72,13 +83,15 @@ void add::execute(vm_state *cur_vm) {
 void sub::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_written[_arg2])
-			cur_vm->first_read[_arg2] = 1;
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
-		
+		cur_vm->state[_arg1] |= READ;
+		cur_vm->state[_arg2] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[_arg2] & FIRST_WRITE))
+			cur_vm->state[_arg2] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 	} else if (cur_vm->pass == 1) {
 	  cout << print(cur_vm, cur_vm->pc)<<" = " << print(cur_vm, _arg1)<<" - "<<print(cur_vm, _arg2) << ";" << endl;
 	}
@@ -89,12 +102,15 @@ void sub::execute(vm_state *cur_vm) {
 void mult::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_written[_arg2])
-			cur_vm->first_read[_arg2] = 1;
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
+		cur_vm->state[_arg1] |= READ;
+		cur_vm->state[_arg2] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[_arg2] & FIRST_WRITE))
+			cur_vm->state[_arg2] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
 		cout << print(cur_vm, cur_vm->pc)<<" = " << print(cur_vm, _arg1)<<" * "<<print(cur_vm, _arg2) << ";" << endl;
@@ -106,12 +122,15 @@ void mult::execute(vm_state *cur_vm) {
 void vdiv::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_written[_arg2])
-			cur_vm->first_read[_arg2] = 1;
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
+		cur_vm->state[_arg1] |= READ;
+		cur_vm->state[_arg2] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[_arg2] & FIRST_WRITE))
+			cur_vm->state[_arg2] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
 		cout << print(cur_vm, cur_vm->pc)<<" = ("<< print(cur_vm, _arg2) << " == 0)? 0 : "<< print(cur_vm, _arg1)<<" / "<<print(cur_vm, _arg2) << ";" << endl;
@@ -126,8 +145,9 @@ void vdiv::execute(vm_state *cur_vm) {
 void output::execute(vm_state *cur_vm) {
 #ifdef GENERATE
   if (cur_vm->pass == 0) {
-	  if (!cur_vm->first_written[_arg2])
-		 cur_vm-> first_read[_arg2] = 1;
+		cur_vm->state[_arg1] |= READ;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
 	  if (_arg1 < cur_vm->min_out_port)
 		  cur_vm->min_out_port = _arg1;
 	  if (_arg1 > cur_vm->max_out_port)
@@ -143,10 +163,15 @@ void output::execute(vm_state *cur_vm) {
 void phi::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_written[_arg2])
-			cur_vm->first_read[_arg2] = 1;
+		cur_vm->state[_arg1] |= READ;
+		cur_vm->state[_arg2] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[_arg2] & FIRST_WRITE))
+			cur_vm->state[_arg2] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 	} else if (cur_vm->pass == 1) {
 	  cout << "if (lstatus) "<< print(cur_vm, cur_vm->pc) << "= " << print(cur_vm, _arg1) << "; else " << print(cur_vm, cur_vm->pc) << "= " << print(cur_vm, _arg2) << ";" << endl;
 	}
@@ -169,8 +194,9 @@ void cmpz::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
+		cur_vm->state[_arg1] |= READ;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
 	} else if (cur_vm->pass == 1) {
 		  cout << "lstatus = (" << print(cur_vm, _arg1);
 
@@ -201,10 +227,12 @@ void cmpz::execute(vm_state *cur_vm) {
 void vsqrt::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
+		cur_vm->state[_arg1] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
 		cout << print(cur_vm, cur_vm->pc)<<" = sqrt(" << print(cur_vm, _arg1)<<");"<< endl;
@@ -217,10 +245,12 @@ void vsqrt::execute(vm_state *cur_vm) {
 void vcopy::execute(vm_state *cur_vm) {
 #ifdef GENERATE
   if (cur_vm->pass == 0) {
-	  	if (!cur_vm->first_written[_arg1])
-			cur_vm->first_read[_arg1] = 1;
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
+	  cur_vm->state[_arg1] |= READ;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
+			cur_vm->state[_arg1] |= FIRST_READ;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
 		cout << print(cur_vm, cur_vm->pc)<<" = " << print(cur_vm, _arg1)<< ";" << endl;
@@ -233,8 +263,9 @@ void vcopy::execute(vm_state *cur_vm) {
 void input::execute(vm_state *cur_vm) {
 #ifdef GENERATE
 	if (cur_vm->pass == 0) {
-		if (!cur_vm->first_read[cur_vm->pc])
-			cur_vm->first_written[cur_vm->pc] = 1;
+		cur_vm->state[cur_vm->pc] |= WRITE;
+		if (!(cur_vm->state[cur_vm->pc] & FIRST_READ))
+			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
 		cout << print(cur_vm, cur_vm->pc)<<" = input_ports["<<_arg1<<"];" << endl;

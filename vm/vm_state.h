@@ -9,6 +9,13 @@ class instruction;
 
 #define ADDRESS_RANGE	1<<14
 #define instance_port 16000
+
+#define FIRST_READ     0x1
+#define FIRST_WRITE    0x2
+#define READ           0x4
+#define WRITE          0x8
+#define ACCESSED       0xB
+
 typedef uint16_t address;
 
 class vm_state {
@@ -23,8 +30,8 @@ class vm_state {
 	double input_ports_1;
 	double input_ports_16000;
 	
-	int first_read[ADDRESS_RANGE];
-	int first_written[ADDRESS_RANGE];
+	int state[ADDRESS_RANGE];
+	
 
 	
 	int pass;

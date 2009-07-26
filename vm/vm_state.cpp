@@ -85,23 +85,31 @@ void vm_state::load_file(char* file){
 
 void vm_state::step() 
 {
-  for (int i=0; i<ADDRESS_RANGE;i++)
-  {
-	code[pc]->execute(this);
-	pc++;
-	if (pc == ADDRESS_RANGE)
-	  pc = 0;
-  }
+	int j;
+	for (int i=0; i<ADDRESS_RANGE;i++)
+	{
+		code[pc]->execute(this);
+		pc++;
+		if (pc == ADDRESS_RANGE)
+			pc = 0;
+	}
 
-  if (pass == 0) {
-	  cout << "double ";
-	  for (int j=0; j < ADDRESS_RANGE; j++) {
-		  if (first_written[j]) {
-			  cout << "local_"<<j<<",";
-		  }
-	  }
-	  cout << "dummy;"<<endl;
-  }
+	if (pass == 0) {
+		cout << "double ";
+		for ( j=0; j < ADDRESS_RANGE; j++) {
+			if (state[j] & FIRST_WRITE) {
+				cout << "local_"<<j<<",";
+			}
+		}
+		cout << "local_dummy;"<<endl;
+		
+		cout << "const double ";
+		for (j = 0; j< ADDRESS_RANGE; j++) {
+			if ((state[j] & READ) && !(state[j] & WRITE))
+				cout << "const_"<<j<<"="<<memory[j]<<",";
+		}
+		cout << "const_dummy=0;"<<endl;
+	}
 
   pass++;
 }
