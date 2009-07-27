@@ -19,7 +19,7 @@ int main (int argc, char** argv)
 		cerr << "please enter first the problem binary path and then the scenario id" << endl;
 		exit(-1);
 	}
-	uint32_t instance;
+	uint32_t instance=1001;
 	if (strcmp(argv[2], "all") != 0) {
 	  instance = atoi(argv[2]);
 	  do_all =false;
