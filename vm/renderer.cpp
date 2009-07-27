@@ -60,7 +60,10 @@ void renderer::draw(BITMAP* bmp)
 	  
 	  circlefill(bmp, 500+real((*it)->position())/(SCALE),  500-imag((*it)->position())/(SCALE) , 4, color);
 	  
-	  for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+10000) / 10000) {
+	  if (abs((*it)->position()) > SCALE*500)
+		  SCALE = abs((*it)->position())/450;
+	  
+	  for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+500) / 500) {
 		putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
 		if (abs(*traj_iter) > SCALE*500)
 		  SCALE = abs(*traj_iter)/450;
