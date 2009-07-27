@@ -66,5 +66,5 @@ void hohmann::monitor() {
 	cout << "y : "<< vm->output_ports[_vy_addr] << endl;
 	cout << "radius : " << sqrt((vm->output_ports[_vx_addr] * vm->output_ports[_vx_addr]) + (vm->output_ports[_vy_addr] * vm->output_ports[_vy_addr])) << endl;
 	cout << "target : " << vm->output_ports[_target_orbit_addr] << endl;*/
-	cerr << "to goal : " << sqrt((vm->output_ports[0x2] * vm->output_ports[0x2]) + (vm->output_ports[0x3] * vm->output_ports[0x3])) - vm->output_ports[0x4] << "\n";
+	//cerr << "to goal : " << sqrt((vm->output_ports[0x2] * vm->output_ports[0x2]) + (vm->output_ports[0x3] * vm->output_ports[0x3])) - vm->output_ports[0x4] << "\n";
 }

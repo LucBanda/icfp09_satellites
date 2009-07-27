@@ -96,8 +96,8 @@ int main (int argc, char** argv)
 #endif			
 			stop = controller->step(time_step);
 
-			cerr << "\x1b[2J\x1b[H";
-			controller->monitor();
+			//cerr << "\x1b[2J\x1b[H";
+			//controller->monitor();
 			renderer::getInstance()->unlock();
 			
 			count_fps ++;
@@ -111,7 +111,7 @@ int main (int argc, char** argv)
 			count ++;
 		} while (!stop);
 		total_score += controller->get_score();
-		cout << "score : " << controller->get_score() << " (" << total_score << " ) total step : " << count << endl;
+		cout << "score : " << controller->get_score() << " (" << total_score << " ) total step : " << count << "\n";
 		renderer::kill();
 		delete controller;
 		delete trace;

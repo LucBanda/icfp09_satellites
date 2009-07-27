@@ -100,7 +100,7 @@ bool clear_sky::step(uint32_t time_step) {
 }
 
 void clear_sky::monitor() {
-  cerr << "current_radius : " << abs(me->position()) << "\n";
+  /*cerr << "current_radius : " << abs(me->position()) << "\n";
   cerr << "relative distance to target : " << abs(me->position() - target[first_not_checked]->position()) << "\n";
   cerr << "score : " << vm->output_ports[_score_addr] << "\n";
   cerr << "fuel : " << vm->output_ports[_fuel_addr] << "\n";
@@ -115,5 +115,5 @@ void clear_sky::monitor() {
 	case STABILIZE : cerr << "STABILIZE"; break;
 	default: cerr << "unknown"; break;
   }
-  cerr << "\n";
+  cerr << "\n";*/
 }

@@ -21,7 +21,7 @@
 #define WAYPT_COL	makecol(200,0,0)
 #define BLACK		makecol(0,0,0)
 
-#define ALLEGRO
+//#define ALLEGRO
 
 
 using namespace std;

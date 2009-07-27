@@ -62,7 +62,7 @@ bool meetandgreed::step(uint32_t time_step) {
 }
 
 void meetandgreed::monitor() {
-  cerr << "relative distance to target " << abs(me->position() - target->position()) << endl;
-  cerr << "score : " << vm->output_ports[_score_addr] << endl;
+  /*cerr << "relative distance to target " << abs(me->position() - target->position()) << endl;
+  cerr << "score : " << vm->output_ports[_score_addr] << endl;*/
 }
 
