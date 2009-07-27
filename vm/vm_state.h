@@ -43,7 +43,7 @@ class vm_state {
 	double input_ports[ADDRESS_RANGE];
 	double output_ports[ADDRESS_RANGE];
 	
-  
+	double _instance;
 	vm_state(int instance = 0);
 	virtual ~vm_state();
 	virtual vm_state *clone();

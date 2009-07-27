@@ -145,9 +145,9 @@ void vdiv::execute(vm_state *cur_vm) {
 void output::execute(vm_state *cur_vm) {
 #ifdef GENERATE
   if (cur_vm->pass == 0) {
-		cur_vm->state[_arg1] |= READ;
-		if (!(cur_vm->state[_arg1] & FIRST_WRITE))
-			cur_vm->state[_arg1] |= FIRST_READ;
+		cur_vm->state[_arg2] |= READ;
+		if (!(cur_vm->state[_arg2] & FIRST_WRITE))
+			cur_vm->state[_arg2] |= FIRST_READ;
 	  if (_arg1 < cur_vm->min_out_port)
 		  cur_vm->min_out_port = _arg1;
 	  if (_arg1 > cur_vm->max_out_port)

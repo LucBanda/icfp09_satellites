@@ -12,14 +12,15 @@ vm_state::vm_state(int instance){
   memset(input_ports, 0, sizeof(double) * ADDRESS_RANGE);
   memset(memory, 0, sizeof(double) * ADDRESS_RANGE);
   memset(code, 0, sizeof(instruction *) * ADDRESS_RANGE);
+  memset(state,0, sizeof(int) * ADDRESS_RANGE);
   pass = 0;
   min_global = 1<<14;
   max_global = 0;
   min_out_port = 1<<14;
   max_out_port = 0;
-  
+  _instance = instance;
 #ifdef GENERATE
-  cout << "#include \"bin.h\"\n#ifndef GENERATE \nvoid bin_"<<instance/1000<<"::step() {\nbool lstatus = status;" << endl;
+  
 #endif
 }
 
@@ -95,6 +96,10 @@ void vm_state::step()
 	}
 
 	if (pass == 0) {
+		cout << "#include \"bin.h\"\n#ifndef GENERATE \n"                         \
+		<< _instance/1000<<"::"<<_instance/1000<< "(){}" << endl;
+		cout <<"void bin_"<<_instance/1000<<"::step() {\nbool lstatus = status;" << endl;
+		
 		cout << "double ";
 		for ( j=0; j < ADDRESS_RANGE; j++) {
 			if (state[j] & FIRST_WRITE) {
