@@ -9,7 +9,7 @@ clear_sky::clear_sky(trace_generator *trace, double instance):Icontroller(trace)
 	_fuel_addr = 0x1;
 	_delta_vx_addr = 0x2;
 	_delta_vy_addr = 0x3;
-	_instance_addr = 0x3E80;
+	_instance_addr = 0x1;
 	me = new satellite(0x2, 0x3, NULL, new satellipse());
 	fuelling = new satellite(0x4,0x5, me, new satellipse());
 	for (int i = 0; i<11; i++) {
@@ -33,14 +33,14 @@ complex<double> clear_sky::calculate_action(uint32_t time_step) {
 
   int i;
   complex<double> command = complex<double> (0,0);
-  
+
   //update all
   me->update(time_step);
   for (i=0; i<11; i++) {
 	target[i]->update(time_step);
   }
   fuelling->update(time_step);
-  
+
   
   //cout << "state : " << me->state() << "first not checked " << first_not_checked << "checked ? " << vm->output_ports[3*first_not_checked+0x9] << endl;
   
@@ -63,7 +63,7 @@ complex<double> clear_sky::calculate_action(uint32_t time_step) {
   //cout << "to target " << first_not_checked << endl;
   
 
-	
+
   
   return command;
   

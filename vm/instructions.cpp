@@ -54,9 +54,9 @@ d_type *d_type::parse(uint32_t raw)
 							(((cur_vm->state[addr] & FIRST_READ)? \
 							"memory[": \
 							"local_"))) \
-							<< addr << \
+							<< addr<< \
 							(((cur_vm->state[addr] & FIRST_READ) && (cur_vm->state[addr] & WRITE))?\
-							"]" :\
+							"-min_global]" :\
 							"")
 
 void add::execute(vm_state *cur_vm) {
@@ -268,7 +268,7 @@ void input::execute(vm_state *cur_vm) {
 			cur_vm->state[cur_vm->pc] |= FIRST_WRITE;
 		
 	} else if (cur_vm->pass == 1) {
-		cout << print(cur_vm, cur_vm->pc)<<" = input_ports["<<_arg1<<"];" << endl;
+		cout << print(cur_vm, cur_vm->pc)<<" = input_ports["<<((_arg1==16000)?1:_arg1) <<"];" << endl;
   }
 #endif
   //cerr << "load port " << _arg1<< endl;

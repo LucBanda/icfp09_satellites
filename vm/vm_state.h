@@ -25,12 +25,8 @@ class vm_state {
 	address max_global;
 	address min_out_port;
 	address max_out_port;
-
-	double input_ports_0;
-	double input_ports_1;
-	double input_ports_16000;
 	
-	int state[ADDRESS_RANGE];
+	int *state;
 	
 
 	
@@ -38,13 +34,15 @@ class vm_state {
 	address pc;
 	bool status;
 	
-	double memory[ADDRESS_RANGE];
-	instruction *code[ADDRESS_RANGE];
-	double input_ports[ADDRESS_RANGE];
-	double output_ports[ADDRESS_RANGE];
+	double *memory;
+	instruction **code;
+	double *input_ports;
+	double *output_ports;
 	
-	double _instance;
-	vm_state(int instance = 0);
+	int _instance;
+	vm_state(int instance);
+	vm_state();
+	
 	virtual ~vm_state();
 	virtual vm_state *clone();
 	void load_file(char* file);

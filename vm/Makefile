@@ -1,17 +1,13 @@
-INSTALL_PATH = $(shell /home/users/ref_designs/Software/platform)
-#INSTALL_PATH = /tmp
-
 INCLUDE_FILES = $(shell find include/ -name \*.h)
 
 BINARIES      = vm
-
 
 OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o satellite.o ellipse.o clear_sky.o excentric.o bin4.o bin3.o bin2.o bin1.o
 
 #OPTIMIZE= -g
 OPTIMIZE= -O3
 
-CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
+CPPFLAGS  = $(flag) -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
 
 INCLUDE = 
 
@@ -30,7 +26,6 @@ all: $(BINARIES)
 $(BINARIES) : $(OBJECTS)
 	@echo "[LD] $@"
 	@g++ $(OBJECTS) -L/usr/lib `allegro-config --libs` -o $@
-
 
 clean:
 	rm -f $(BINARIES)

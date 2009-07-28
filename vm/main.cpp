@@ -32,17 +32,19 @@ int main (int argc, char** argv)
 		if (do_all) {
 		  instance = i*1000 + j;
 		  }
+#ifdef GENERATE
 		vm = new vm_state(instance);
 		sprintf(input_file_name, "%s/bin%d.obf", argv[1], instance/1000);
 		vm->load_file(input_file_name);
-		
+#else		
+	sprintf(input_file_name, "%s/bin%d.obf", argv[1], instance/1000);
+#endif
 		sprintf(filename, "%d.osf", instance);
 			
 		trace = new trace_generator(instance, filename);
 		
 		if ((instance < 1005) && (instance > 1000)) {
 #ifndef GENERATE
-			delete vm;
 			vm = new bin_1;
 			vm->load_file(input_file_name);
 #endif
@@ -50,7 +52,7 @@ int main (int argc, char** argv)
 }			
 		if ((instance < 2005) && (instance > 2000)) {
 #ifndef GENERATE
-			delete vm;
+			
 			vm = new bin_2;
 			vm->load_file(input_file_name);
 #endif
@@ -59,7 +61,7 @@ int main (int argc, char** argv)
 		}
 		if ((instance < 3005) && (instance > 3000)) {
 #ifndef GENERATE
-			delete vm;
+			
 			vm = new bin_3;
 			vm->load_file(input_file_name);
 #endif
@@ -68,7 +70,7 @@ int main (int argc, char** argv)
 		}
 		if ((instance < 4005) && (instance > 4000)) {
 #ifndef GENERATE
-			delete vm;
+			
 			vm = new bin_4;
 			vm->load_file(input_file_name);
 #endif

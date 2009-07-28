@@ -7,7 +7,7 @@ hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
   
   _delta_vx_addr = 0x2;
   _delta_vy_addr = 0x3;
-  _instance_addr = 0x3E80;
+  _instance_addr = 0x1;
   _score_addr = 0;
   vm->input_ports[_instance_addr] = _instance = instance;
   _trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
