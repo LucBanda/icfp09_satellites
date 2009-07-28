@@ -27,6 +27,19 @@ clear_sky::clear_sky(trace_generator *trace, double instance):Icontroller(trace)
   
 }
 
+clear_sky::~clear_sky() {
+	
+	delete me->_trajectoire;
+	delete me;
+	for (int i = 0; i< 11; i++) {
+	
+		delete target[i]->_trajectoire;
+		delete target[i];
+	}
+	
+	delete fuelling->_trajectoire;
+	delete fuelling;
+}
 
 complex<double> clear_sky::calculate_action(uint32_t time_step) {
 

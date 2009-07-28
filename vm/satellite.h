@@ -19,7 +19,6 @@
 
 class satellite {
   private :
-	satellipse *_trajectoire;
 	satellite *_main;
 
 	complex<double> _relative_position;
@@ -39,7 +38,7 @@ class satellite {
 	complex<double> _old_target_pos;
   public:
 		
-	satellite(address x, address y, satellite *me=NULL, satellipse* trajet=NULL) : _trajectoire(trajet), _main(me), _old_position(0,0), _speed(-1,-1),  _state(INIT), addr_x(x), addr_y(y)
+	satellite(address x, address y, satellite *me=NULL, satellipse* trajet=NULL) :  _main(me), _old_position(0,0), _speed(-1,-1),  _state(INIT), addr_x(x), addr_y(y), _trajectoire(trajet)
 	{
 	  _relative_position = complex<double>(vm->output_ports[x],vm->output_ports[y]);
 	  if (me == NULL) {
@@ -61,6 +60,8 @@ class satellite {
 	address addr_x;
 	address addr_y;
 	
+	
+	
 	complex<double> position(){return _position;}
 	complex<double> speed(){return _speed;}
 	complex<double> relative_position(){return _relative_position;}
@@ -68,7 +69,7 @@ class satellite {
 	complex<double> set_circular_orbit();
 	
 	satellipse *trajectoire() {return _trajectoire;}
-	
+	satellipse *_trajectoire;
 	bool main_sat() {return (_main == NULL);}
 	double orbit(){return _orbit;}
 	

@@ -15,7 +15,7 @@ trace_generator::trace_generator(uint32_t scenario_id, char* output_file)
 }
 
 trace_generator::~trace_generator() {
-  delete file_struct.frame;
+  delete (file_struct.frame);
 }
 void trace_generator::next_frame(uint32_t time_step)
 {

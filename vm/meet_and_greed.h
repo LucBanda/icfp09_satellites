@@ -18,6 +18,7 @@ class meetandgreed : public Icontroller {
 	complex<double> calculate_action(uint32_t time_step);
   public:
 	meetandgreed(trace_generator *trace, double instance);
+	~meetandgreed();
 	virtual bool step (uint32_t time_step);
 	virtual void monitor();
 };

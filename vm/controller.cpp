@@ -16,6 +16,11 @@ hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
   
 }
 
+hohmann::~hohmann() {
+	
+	delete me->_trajectoire;
+	delete me;
+}
 
 
 complex<double> hohmann::calculate_action(uint32_t time_step) {

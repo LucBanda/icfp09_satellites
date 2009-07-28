@@ -46,7 +46,6 @@ vm_state::~vm_state() {
 		free(state);
 	if (code)
 		free(code);
-	cout << "test" << endl;
 }
 
 vm_state *vm_state::clone() {

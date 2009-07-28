@@ -21,6 +21,16 @@ excentric::excentric(trace_generator *trace, double instance) :Icontroller(trace
 
 }
 
+excentric::~excentric() {
+	
+	delete me->_trajectoire;
+	delete me;
+	
+	delete target->_trajectoire;
+	delete target;
+}
+
+
 complex<double> excentric::calculate_action(uint32_t time_step) {
 
   me->update(time_step);

@@ -21,6 +21,7 @@ class clear_sky : public Icontroller {
 	  
   public:
 	clear_sky(trace_generator *trace, double instance);
+	~clear_sky();
 	virtual bool step (uint32_t time_step);
 	virtual void monitor();
 };

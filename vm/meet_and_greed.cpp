@@ -21,6 +21,14 @@ meetandgreed::meetandgreed(trace_generator *trace, double instance):Icontroller(
 	renderer::getInstance()->add_sat(target);
 }
 
+meetandgreed::~meetandgreed() {
+	
+	delete me->_trajectoire;
+	delete me;
+	
+	delete target->_trajectoire;
+	delete target;
+}
 
 complex<double> meetandgreed::calculate_action(uint32_t time_step) {
 

@@ -15,6 +15,7 @@ class excentric : public Icontroller {
 	complex<double> calculate_action(uint32_t time_step);
   public:
 	excentric(trace_generator *trace, double instance);
+	~excentric();
 	virtual bool step (uint32_t time_step);
 	virtual void monitor();
 };
