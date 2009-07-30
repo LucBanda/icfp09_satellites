@@ -101,6 +101,7 @@ void * renderer::mainLoop(void* params)
 #ifdef ALLEGRO
 	allegro_init();             /* initialise the Allegro library */
 
+	install_keyboard();
 	install_mouse();
 	if (set_gfx_mode(MODE,ECRAN_X,ECRAN_Y,0,0)!=0) {
 
@@ -113,7 +114,14 @@ void * renderer::mainLoop(void* params)
 	clear_bitmap(screen);
 	
 	
-	while (_running){ 
+	while (_running){
+		if (keypressed()) {
+			char key_pressed = readkey();
+			if ((key_pressed & 0xff) == '-')
+				_single_renderer->m_timer++;
+			else if (((key_pressed & 0xff) == '+')&&(_single_renderer->m_timer > 0) )
+				_single_renderer->m_timer--;
+		}
 		usleep(100000);
 		_single_renderer->init_bitmap(&double_buffer);	
 		_single_renderer->draw(double_buffer);

@@ -84,7 +84,7 @@ int main (int argc, char** argv)
 		int count_fps = 0;
 		int count = 0;
 		struct timeval time, saved_time = {0};
-		
+
 		do {
 			renderer::getInstance()->lock();
 			time_step++;
@@ -101,6 +101,10 @@ int main (int argc, char** argv)
 			//cerr << "\x1b[2J\x1b[H";
 			//controller->monitor();
 			renderer::getInstance()->unlock();
+			
+			int timer = renderer::getInstance()->get_timer();
+			if (timer != 0)
+			usleep(renderer::getInstance()->get_timer() * 10 - 10);
 			
 			count_fps ++;
 			gettimeofday(&time, NULL);
