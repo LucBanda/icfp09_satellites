@@ -115,12 +115,17 @@ void * renderer::mainLoop(void* params)
 	
 	
 	while (_running){
+		
 		if (keypressed()) {
 			char key_pressed = readkey();
 			if ((key_pressed & 0xff) == '-')
 				_single_renderer->m_timer++;
 			else if (((key_pressed & 0xff) == '+')&&(_single_renderer->m_timer > 0) )
 				_single_renderer->m_timer--;
+			else if ((key_pressed & 0xff) == 'f') {
+				_single_renderer->fps_toggle = !_single_renderer->fps_toggle;
+			}
+			clear_keybuf();
 		}
 		usleep(100000);
 		_single_renderer->init_bitmap(&double_buffer);	
@@ -149,8 +154,9 @@ void renderer::terminate()
 {
 #ifdef ALLEGRO
 	_running =false;
-	pthread_mutex_destroy(&_main_mutex);
 	pthread_join(_mainthread, NULL);
+	pthread_mutex_destroy(&_main_mutex);
+	
 #endif
 }
 

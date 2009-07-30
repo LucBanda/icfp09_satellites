@@ -106,19 +106,22 @@ int main (int argc, char** argv)
 			if (timer != 0)
 			usleep(renderer::getInstance()->get_timer() * 10 - 10);
 			
-			count_fps ++;
-			gettimeofday(&time, NULL);
-			if (time.tv_sec != saved_time.tv_sec ) {
-				cout << count_fps << " FPS ( " << count << " )\n";
-				count_fps = 0;
-				saved_time = time;
-			}
-		
-			count ++;
+			if (renderer::getInstance()->get_fps_toggle()) {
+				count_fps ++;
+				gettimeofday(&time, NULL);
+				if (time.tv_sec != saved_time.tv_sec ) {
+					cout << count_fps << " FPS ( " << count << " )\n";
+					count_fps = 0;
+					saved_time = time;
+				}
+			
+				count ++;
+			} else count = 0;
 		} while (!stop);
 		total_score += controller->get_score();
 		cout << "score : " << controller->get_score() << " (" << total_score << " ) total step : " << count << "\n";
 		renderer::kill();
+		usleep(10);
 		delete controller;
 		delete trace;
 		delete vm;

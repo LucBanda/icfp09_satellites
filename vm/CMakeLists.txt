@@ -1,31 +1,32 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT (icfp09)
 
-set(DEBUG OFF CACHE BOOL "")
-set(ALLEGRO ON CACHE BOOL "")
-set(GENERATE OFF CACHE BOOL "")
+set(CONFIG_DEBUG OFF CACHE BOOL "")
+set(CONFIG_ALLEGRO ON CACHE BOOL "")
+set(CONFIG_GENERATE OFF CACHE BOOL "")
+set(CONFIG_START_SLOW 10 CACHE INT "")
 
-if(DEBUG)
+if(CONFIG_DEBUG)
 	add_definitions(-g)
-else(DEBUG)
+else(CONFIG_DEBUG)
 	add_definitions(-O3)
-endif(DEBUG)
+endif(CONFIG_DEBUG)
 
 
-if(ALLEGRO)
+if(CONFIG_ALLEGRO)
 	add_definitions(-DALLEGRO)
-endif(ALLEGRO)
+endif(CONFIG_ALLEGRO)
 
 
-if(GENERATE)
+if(CONFIG_GENERATE)
 	add_definitions(-DGENERATE)
-endif(GENERATE)
+endif(CONFIG_GENERATE)
 
 include_directories (.)
 link_directories(/usr/lib /usr/bin)
 
 
-add_definitions( -MD -MP -Wall -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC)
+add_definitions( -DSTART_TIMER=${CONFIG_START_SLOW} -MD -MP -Wall -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC)
 add_executable (vm main.cpp vm_state.cpp instructions.cpp trace_generator.cpp controller.cpp meet_and_greed.cpp renderer.cpp satellite.cpp ellipse.cpp clear_sky.cpp excentric.cpp bin4.cpp bin3.cpp bin2.cpp bin1.cpp)
 
 target_link_libraries(vm alleg-4.2.2)
