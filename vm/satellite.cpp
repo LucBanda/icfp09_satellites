@@ -109,8 +109,6 @@ complex<double> satellite::meet(satellite *target, bool track_target)
 
 	_old_target_pos = target_pos;
 	renderer::getInstance()->add_position(target_pos);
-	renderer::getInstance()->unlock();
-	renderer::getInstance()->lock();
 	
 
 	if ((abs(position_to_arrive - target_pos) < 4000.0)) {
@@ -191,8 +189,6 @@ complex<double> satellite::position_at(uint32_t time_step_forward)
   if (time_step_forward + _time_step > _trajectoire->known_time_steps()) {
 	uint32_t known_time = _trajectoire->known_time_steps();
 	for (unsigned int i=known_time; i<= time_step_forward + _time_step; i++) {
-	  renderer::getInstance()->unlock();
-	  renderer::getInstance()->lock();
 	  if (vm_clone == NULL)
 		vm_clone = vm->clone();
 	  vm_clone->step();
