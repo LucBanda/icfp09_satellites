@@ -4,10 +4,24 @@ BINARIES      = vm
 
 OBJECTS = main.o vm_state.o instructions.o trace_generator.o controller.o meet_and_greed.o renderer.o satellite.o ellipse.o clear_sky.o excentric.o bin4.o bin3.o bin2.o bin1.o
 
-#OPTIMIZE= -g
-OPTIMIZE= -O3
+ifeq ($(debug),1)
+OPTIMIZE = -g
+else
+OPTIMIZE = -O3
+endif
 
-CPPFLAGS  = $(flag) -MD -MP -Wall $(OPTIMIZE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
+ifeq ($(generate),1)
+GENERATE = -DGENERATE
+endif
+
+ifeq ($(allegro),1)
+ALLEGRO = -DALLEGRO
+endif
+
+
+CPPFLAGS  = -MD -MP -Wall $(OPTIMIZE) $(ALLEGRO) $(GENERATE) -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC 
+
+
 
 INCLUDE = 
 
