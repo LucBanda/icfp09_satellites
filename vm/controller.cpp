@@ -9,6 +9,7 @@ hohmann::hohmann(trace_generator *trace, double instance) : Icontroller(trace) {
   _delta_vy_addr = 0x3;
   _instance_addr = 0x1;
   _score_addr = 0;
+  _fuel_addr = 0x1;
   vm->input_ports[_instance_addr] = _instance = instance;
   _trace->add_command(0, _instance_addr, _instance, vm->output_ports[_score_addr]);
   me = new satellite(0x2, 0x3, NULL, new satellipse);
