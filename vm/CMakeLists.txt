@@ -29,4 +29,4 @@ link_directories(/usr/lib /usr/bin)
 add_definitions( -DSTART_TIMER=${CONFIG_START_SLOW} -MD -MP -Wall -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC)
 add_executable (vm main.cpp vm_state.cpp instructions.cpp trace_generator.cpp controller.cpp meet_and_greed.cpp renderer.cpp satellite.cpp ellipse.cpp clear_sky.cpp excentric.cpp bin4.cpp bin3.cpp bin2.cpp bin1.cpp)
 
-target_link_libraries(vm alleg-4.2.2)
+target_link_libraries(vm alleg pthread)
