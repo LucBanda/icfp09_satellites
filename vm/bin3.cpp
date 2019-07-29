@@ -1,22 +1,51 @@
 #include "bin.h"
 #ifndef GENERATE 
-bin_3::bin_3(){
-min_out_port = 0;
-max_out_port = 5;
-output_ports = (double*)malloc(sizeof(double) * (max_out_port - min_out_port+1));
-min_global = 389;
-max_global = 410;
-memory = (double*)malloc(sizeof(double) * (max_global - min_global+1));
-input_ports = (double*)malloc(sizeof(double) * 4);
-status = 0;
- memset(output_ports, 0, sizeof(double) * (max_out_port - min_out_port +1));
- 		memset(input_ports, 0, sizeof(double) * 4);
- 		memset(memory, 0, sizeof(double) * (max_global-min_global+1));
+bin_3::bin_3(int instance){
+
+	_instance = instance;
+	min_out_port = 0;
+	max_out_port = 5;
+	min_global = 389;
+	max_global = 410;
+	output_ports = (double*)malloc(sizeof(double) * (max_out_port - min_out_port+1));
+	memory = (double*)malloc(sizeof(double) * (max_global - min_global+1));
+	input_ports = (double*)malloc(sizeof(double) * 4);
+	delta_vx_addr = 0x2;
+	delta_vy_addr = 0x3;
+	instance_addr = 0x1;
+	score_addr = 0;
+	fuel_addr = 0x1;
+	pos_x_addr = 0x2;
+	pos_y_addr = 0x3;
+	pos_target_x_addr = 0x4;
+	pos_target_y_addr = 0x5;
+	reset();
 }
+
+bin_3::~bin_3()
+{
+	free(memory);
+	free(output_ports);
+	free(input_ports);
+}
+
+vector<satellite> bin_3::get_targets()
+{
+	double x = output_ports[pos_x_addr];
+	double y = output_ports[pos_y_addr];
+	double target_x = - output_ports[pos_target_x_addr] + x;
+	double target_y = - output_ports[pos_target_y_addr] + y;
+
+	vector<satellite> target;
+	satellite sat(target_x, target_y);
+	target.push_back(sat);
+	return target;
+}
+
 void bin_3::step() {
 bool lstatus = status;
-double local_1,local_4,local_5,local_7,local_8,local_9,local_11,local_12,local_14,local_16,local_19,local_20,local_22,local_24,local_25,local_26,local_30,local_31,local_33,local_35,local_37,local_40,local_42,local_44,local_46,local_48,local_49,local_51,local_52,local_53,local_54,local_56,local_59,local_62,local_64,local_66,local_67,local_69,local_70,local_71,local_72,local_73,local_74,local_75,local_77,local_80,local_81,local_82,local_83,local_84,local_85,local_86,local_87,local_88,local_91,local_94,local_97,local_99,local_100,local_101,local_102,local_103,local_106,local_107,local_109,local_111,local_112,local_114,local_116,local_117,local_119,local_121,local_122,local_124,local_125,local_127,local_128,local_130,local_131,local_133,local_134,local_136,local_138,local_139,local_140,local_141,local_143,local_145,local_148,local_151,local_153,local_155,local_157,local_159,local_161,local_162,local_163,local_164,local_165,local_166,local_167,local_168,local_169,local_170,local_171,local_172,local_173,local_174,local_177,local_180,local_183,local_185,local_187,local_189,local_191,local_193,local_194,local_195,local_196,local_197,local_198,local_199,local_200,local_201,local_204,local_206,local_209,local_211,local_213,local_214,local_215,local_216,local_217,local_218,local_219,local_220,local_221,local_222,local_225,local_227,local_229,local_231,local_233,local_235,local_237,local_239,local_241,local_242,local_243,local_244,local_245,local_246,local_247,local_248,local_249,local_250,local_251,local_252,local_253,local_254,local_256,local_257,local_259,local_260,local_261,local_262,local_263,local_264,local_265,local_266,local_267,local_268,local_269,local_270,local_271,local_272,local_273,local_274,local_275,local_276,local_277,local_278,local_279,local_282,local_284,local_286,local_288,local_290,local_291,local_292,local_293,local_294,local_295,local_296,local_297,local_298,local_299,local_300,local_301,local_302,local_303,local_304,local_305,local_306,local_307,local_308,local_309,local_310,local_311,local_312,local_314,local_316,local_318,local_320,local_322,local_324,local_326,local_328,local_330,local_331,local_333,local_334,local_336,local_337,local_338,local_339,local_340,local_341,local_343,local_345,local_346,local_349,local_350,local_351,local_355,local_356,local_357,local_358,local_359,local_361,local_362,local_364,local_365,local_366,local_368,local_369,local_371,local_373,local_374,local_375,local_376,local_377,local_378,local_379,local_381,local_dummy;
-const double const_0=1,const_2=30,const_3=0,const_15=2,const_17=1000,const_27=0,const_28=8.357e+06,const_29=3004,const_34=3003,const_38=-6.357e+06,const_39=3002,const_43=3001,const_57=7.357e+06,const_60=6.357e+07,const_76=6.67428e-11,const_78=6e+24,const_89=-10328.9,const_92=-2242.09,const_95=-7614.57,const_104=6.457e+06,const_105=2004,const_110=2003,const_115=2002,const_120=2001,const_146=6.357e+06,const_149=6.557e+06,const_175=-6922.34,const_178=-4719.32,const_181=-7814.93,const_202=7614.57,const_207=-224.209,const_223=7875.22,const_280=1,const_347=50000,const_352=4,const_353=25,const_354=45,const_360=900,const_372=6.357e+06,const_382=0,const_dummy=0;
+double local_1,local_4,local_5,local_7,local_8,local_9,local_11,local_12,local_14,local_16,local_19,local_20,local_22,local_24,local_25,local_26,local_30,local_31,local_33,local_35,local_37,local_40,local_42,local_44,local_46,local_48,local_49,local_51,local_52,local_53,local_54,local_56,local_59,local_62,local_64,local_66,local_67,local_69,local_70,local_71,local_72,local_73,local_74,local_75,local_77,local_80,local_81,local_82,local_83,local_84,local_85,local_86,local_87,local_88,local_91,local_94,local_97,local_99,local_100,local_101,local_102,local_103,local_106,local_107,local_109,local_111,local_112,local_114,local_116,local_117,local_119,local_121,local_122,local_124,local_125,local_127,local_128,local_130,local_131,local_133,local_134,local_136,local_138,local_139,local_140,local_141,local_143,local_145,local_148,local_151,local_153,local_155,local_157,local_159,local_161,local_162,local_163,local_164,local_165,local_166,local_167,local_168,local_169,local_170,local_171,local_172,local_173,local_174,local_177,local_180,local_183,local_185,local_187,local_189,local_191,local_193,local_194,local_195,local_196,local_197,local_198,local_199,local_200,local_201,local_204,local_206,local_209,local_211,local_213,local_214,local_215,local_216,local_217,local_218,local_219,local_220,local_221,local_222,local_225,local_227,local_229,local_231,local_233,local_235,local_237,local_239,local_241,local_242,local_243,local_244,local_245,local_246,local_247,local_248,local_249,local_250,local_251,local_252,local_253,local_254,local_256,local_257,local_259,local_260,local_261,local_262,local_263,local_264,local_265,local_266,local_267,local_268,local_269,local_270,local_271,local_272,local_273,local_274,local_275,local_276,local_277,local_278,local_279,local_282,local_284,local_286,local_288,local_290,local_291,local_292,local_293,local_294,local_295,local_296,local_297,local_298,local_299,local_300,local_301,local_302,local_303,local_304,local_305,local_306,local_307,local_308,local_309,local_310,local_311,local_312,local_314,local_316,local_318,local_320,local_322,local_324,local_326,local_328,local_330,local_331,local_333,local_334,local_336,local_337,local_338,local_339,local_340,local_341,local_343,local_345,local_346,local_349,local_350,local_351,local_355,local_356,local_357,local_358,local_359,local_361,local_362,local_364,local_365,local_366,local_368,local_369,local_371,local_373,local_374,local_375,local_376,local_377,local_378,local_379,local_381;
+const double const_0=1,const_2=30,const_3=0,const_15=2,const_17=1000,const_27=0,const_28=8.357e+06,const_29=3004,const_34=3003,const_38=-6.357e+06,const_39=3002,const_43=3001,const_57=7.357e+06,const_60=6.357e+07,const_76=6.67428e-11,const_78=6e+24,const_89=-10328.9,const_92=-2242.09,const_95=-7614.57,const_104=6.457e+06,const_105=2004,const_110=2003,const_115=2002,const_120=2001,const_146=6.357e+06,const_149=6.557e+06,const_175=-6922.34,const_178=-4719.32,const_181=-7814.93,const_202=7614.57,const_207=-224.209,const_223=7875.22,const_280=1,const_347=50000,const_352=4,const_353=25,const_354=45,const_360=900,const_372=6.357e+06,const_382=0;
 local_1 = memory[410-min_global];
 local_4 = memory[389-min_global];
 local_5 = local_4 - const_3;

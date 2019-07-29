@@ -1,22 +1,60 @@
 #include "bin.h"
 #ifndef GENERATE 
-bin_2::bin_2(){
-min_out_port = 0;
-max_out_port = 5;
-output_ports = (double*)malloc(sizeof(double) * (max_out_port - min_out_port+1));
-min_global = 379;
-max_global = 400;
-memory = (double*)malloc(sizeof(double) * (max_global - min_global+1));
-input_ports = (double*)malloc(sizeof(double) * 4);
-status = 0;
- memset(output_ports, 0, sizeof(double) * (max_out_port - min_out_port +1));
- 		memset(input_ports, 0, sizeof(double) * 4);
- 		memset(memory, 0, sizeof(double) * (max_global-min_global+1));
+bin_2::bin_2(int instance)
+{
+	_instance = instance;
+	min_out_port = 0;
+	max_out_port = 5;
+	min_global = 379;
+	max_global = 400;
+	output_ports = (double*)malloc(sizeof(double) * (max_out_port - min_out_port+1));
+	memory = (double*)malloc(sizeof(double) * (max_global - min_global+1));
+	input_ports = (double*)malloc(sizeof(double) * 4);
+	delta_vx_addr = 0x2;
+	delta_vy_addr = 0x3;
+	instance_addr = 0x1;
+	score_addr = 0;
+	fuel_addr = 0x1;
+	pos_x_addr = 0x2;
+	pos_y_addr = 0x3;
+	pos_target_x_addr = 0x4;
+	pos_target_y_addr = 0x5;
+	reset();
 }
+
+bin_2::~bin_2()
+{
+	free(memory);
+	free(output_ports);
+	free(input_ports);
+}
+
+/*double bin_2::get_radius()
+{
+	double x = output_ports[pos_x_addr];
+	double y = output_ports[pos_y_addr];
+	double target_x = - output_ports[pos_target_x_addr] + x;
+	double target_y = - output_ports[pos_target_y_addr] + y;
+	return sqrt(target_x*target_x + target_y*target_y);
+}*/
+
+vector<satellite> bin_2::get_targets()
+{
+	double x = output_ports[pos_x_addr];
+	double y = output_ports[pos_y_addr];
+	double target_x = - output_ports[pos_target_x_addr] + x;
+	double target_y = - output_ports[pos_target_y_addr] + y;
+
+	vector<satellite> target;
+	satellite sat(target_x, target_y);
+	target.push_back(sat);
+	return target;
+}
+
 void bin_2::step() {
 bool lstatus = status;
-double local_1,local_4,local_5,local_7,local_8,local_9,local_11,local_12,local_14,local_16,local_19,local_20,local_22,local_24,local_25,local_26,local_30,local_31,local_33,local_35,local_37,local_40,local_42,local_44,local_46,local_48,local_49,local_51,local_52,local_53,local_54,local_56,local_59,local_62,local_64,local_66,local_67,local_69,local_70,local_71,local_72,local_73,local_74,local_75,local_77,local_80,local_81,local_82,local_83,local_84,local_85,local_86,local_87,local_88,local_91,local_94,local_97,local_99,local_100,local_101,local_102,local_103,local_105,local_106,local_108,local_109,local_110,local_112,local_113,local_114,local_116,local_117,local_118,local_120,local_122,local_124,local_126,local_128,local_130,local_131,local_132,local_133,local_135,local_137,local_140,local_143,local_145,local_147,local_149,local_151,local_153,local_154,local_155,local_156,local_157,local_158,local_159,local_160,local_161,local_162,local_163,local_164,local_165,local_166,local_168,local_171,local_174,local_176,local_178,local_180,local_182,local_184,local_185,local_186,local_187,local_188,local_189,local_190,local_191,local_192,local_195,local_197,local_200,local_202,local_204,local_205,local_206,local_207,local_208,local_209,local_210,local_211,local_212,local_213,local_216,local_218,local_220,local_222,local_224,local_226,local_228,local_230,local_232,local_233,local_234,local_235,local_236,local_237,local_238,local_239,local_240,local_241,local_242,local_243,local_244,local_245,local_247,local_248,local_250,local_251,local_252,local_253,local_254,local_255,local_256,local_257,local_258,local_259,local_260,local_261,local_262,local_263,local_264,local_265,local_266,local_267,local_268,local_269,local_270,local_273,local_275,local_277,local_279,local_281,local_282,local_283,local_284,local_285,local_286,local_287,local_288,local_289,local_290,local_291,local_292,local_293,local_294,local_295,local_296,local_297,local_298,local_299,local_300,local_301,local_302,local_303,local_305,local_307,local_309,local_311,local_313,local_315,local_317,local_319,local_321,local_322,local_324,local_325,local_327,local_328,local_329,local_330,local_331,local_332,local_334,local_336,local_337,local_340,local_341,local_342,local_345,local_346,local_347,local_348,local_349,local_351,local_352,local_354,local_355,local_356,local_358,local_359,local_361,local_363,local_364,local_365,local_366,local_367,local_368,local_369,local_371,local_dummy;
-const double const_0=1,const_2=30,const_3=0,const_15=2,const_17=1000,const_27=0,const_28=8.357e+06,const_29=2004,const_34=2003,const_38=-6.357e+06,const_39=2002,const_43=2001,const_57=7.357e+06,const_60=6.357e+07,const_76=6.67428e-11,const_78=6e+24,const_89=-7377.81,const_92=-2491.21,const_95=-6922.34,const_104=6.457e+06,const_138=6.357e+06,const_141=6.557e+06,const_169=-4719.32,const_172=-7814.93,const_193=6922.34,const_198=-249.121,const_214=7875.22,const_271=1,const_338=50000,const_343=25,const_344=45,const_350=900,const_362=6.357e+06,const_372=0,const_dummy=0;
+double local_1,local_4,local_5,local_7,local_8,local_9,local_11,local_12,local_14,local_16,local_19,local_20,local_22,local_24,local_25,local_26,local_30,local_31,local_33,local_35,local_37,local_40,local_42,local_44,local_46,local_48,local_49,local_51,local_52,local_53,local_54,local_56,local_59,local_62,local_64,local_66,local_67,local_69,local_70,local_71,local_72,local_73,local_74,local_75,local_77,local_80,local_81,local_82,local_83,local_84,local_85,local_86,local_87,local_88,local_91,local_94,local_97,local_99,local_100,local_101,local_102,local_103,local_105,local_106,local_108,local_109,local_110,local_112,local_113,local_114,local_116,local_117,local_118,local_120,local_122,local_124,local_126,local_128,local_130,local_131,local_132,local_133,local_135,local_137,local_140,local_143,local_145,local_147,local_149,local_151,local_153,local_154,local_155,local_156,local_157,local_158,local_159,local_160,local_161,local_162,local_163,local_164,local_165,local_166,local_168,local_171,local_174,local_176,local_178,local_180,local_182,local_184,local_185,local_186,local_187,local_188,local_189,local_190,local_191,local_192,local_195,local_197,local_200,local_202,local_204,local_205,local_206,local_207,local_208,local_209,local_210,local_211,local_212,local_213,local_216,local_218,local_220,local_222,local_224,local_226,local_228,local_230,local_232,local_233,local_234,local_235,local_236,local_237,local_238,local_239,local_240,local_241,local_242,local_243,local_244,local_245,local_247,local_248,local_250,local_251,local_252,local_253,local_254,local_255,local_256,local_257,local_258,local_259,local_260,local_261,local_262,local_263,local_264,local_265,local_266,local_267,local_268,local_269,local_270,local_273,local_275,local_277,local_279,local_281,local_282,local_283,local_284,local_285,local_286,local_287,local_288,local_289,local_290,local_291,local_292,local_293,local_294,local_295,local_296,local_297,local_298,local_299,local_300,local_301,local_302,local_303,local_305,local_307,local_309,local_311,local_313,local_315,local_317,local_319,local_321,local_322,local_324,local_325,local_327,local_328,local_329,local_330,local_331,local_332,local_334,local_336,local_337,local_340,local_341,local_342,local_345,local_346,local_347,local_348,local_349,local_351,local_352,local_354,local_355,local_356,local_358,local_359,local_361,local_363,local_364,local_365,local_366,local_367,local_368,local_369,local_371;
+const double const_0=1,const_2=30,const_3=0,const_15=2,const_17=1000,const_27=0,const_28=8.357e+06,const_29=2004,const_34=2003,const_38=-6.357e+06,const_39=2002,const_43=2001,const_57=7.357e+06,const_60=6.357e+07,const_76=6.67428e-11,const_78=6e+24,const_89=-7377.81,const_92=-2491.21,const_95=-6922.34,const_104=6.457e+06,const_138=6.357e+06,const_141=6.557e+06,const_169=-4719.32,const_172=-7814.93,const_193=6922.34,const_198=-249.121,const_214=7875.22,const_271=1,const_338=50000,const_343=25,const_344=45,const_350=900,const_362=6.357e+06,const_372=0;
 local_1 = memory[400-min_global];
 local_4 = memory[379-min_global];
 local_5 = local_4 - const_3;
@@ -385,5 +423,7 @@ memory[398-min_global] = local_24;
 memory[399-min_global] = local_22;
 memory[400-min_global] = local_14;
 status = lstatus;
+
+vm_state::step();
 }
 #endif

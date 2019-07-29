@@ -1,22 +1,42 @@
 #include "bin.h"
 #ifndef GENERATE 
-bin_1::bin_1(){
-min_out_port = 0;
-max_out_port = 4;
-output_ports = (double*)malloc(sizeof(double) * (max_out_port - min_out_port+1));
-min_global = 248;
-max_global = 265;
-memory = (double*)malloc(sizeof(double) * (max_global - min_global+1));
-input_ports = (double*)malloc(sizeof(double) * 4);
-status = 0;
- memset(output_ports, 0, sizeof(double) * (max_out_port - min_out_port +1));
- 		memset(input_ports, 0, sizeof(double) * 4);
- 		memset(memory, 0, sizeof(double) * (max_global-min_global+1));
+bin_1::bin_1(int instance)
+{
+	_instance = instance;
+	min_out_port = 0;
+	max_out_port = 4;
+	min_global = 248;
+	max_global = 265;
+	output_ports = (double*)malloc(sizeof(double) * (max_out_port - min_out_port+1));
+	memory = (double*)malloc(sizeof(double) * (max_global - min_global+1));
+	input_ports = (double*)malloc(sizeof(double) * 4);
+	delta_vx_addr = 0x2;
+	delta_vy_addr = 0x3;
+	instance_addr = 0x1;
+	score_addr = 0;
+	fuel_addr = 0x1;
+	pos_x_addr = 0x2;
+	pos_y_addr = 0x3;
+	radius_addr = 0x4;
+	vm_state::reset();
 }
+
+bin_1::~bin_1()
+{
+	free(memory);
+	free(output_ports);
+	free(input_ports);
+}
+
+double bin_1::get_radius()
+{
+	return output_ports[radius_addr];
+}
+
 void bin_1::step() {
 bool lstatus = status;
-double local_1,local_4,local_5,local_7,local_8,local_9,local_11,local_12,local_14,local_15,local_18,local_20,local_22,local_24,local_25,local_26,local_29,local_30,local_32,local_33,local_35,local_37,local_39,local_41,local_42,local_44,local_46,local_48,local_50,local_52,local_53,local_57,local_59,local_62,local_64,local_66,local_67,local_69,local_70,local_71,local_72,local_74,local_75,local_77,local_80,local_83,local_86,local_88,local_89,local_90,local_91,local_92,local_93,local_94,local_95,local_98,local_100,local_101,local_102,local_103,local_104,local_105,local_106,local_107,local_108,local_109,local_110,local_113,local_116,local_119,local_121,local_122,local_123,local_124,local_125,local_126,local_127,local_128,local_129,local_130,local_131,local_132,local_135,local_137,local_139,local_141,local_143,local_144,local_145,local_146,local_147,local_148,local_149,local_150,local_151,local_152,local_153,local_155,local_156,local_157,local_158,local_159,local_160,local_161,local_163,local_164,local_166,local_167,local_168,local_169,local_170,local_171,local_172,local_173,local_174,local_175,local_176,local_177,local_178,local_179,local_180,local_181,local_182,local_183,local_184,local_185,local_186,local_187,local_188,local_191,local_193,local_195,local_197,local_199,local_200,local_202,local_203,local_205,local_206,local_207,local_208,local_210,local_212,local_213,local_216,local_217,local_218,local_221,local_222,local_223,local_224,local_225,local_227,local_228,local_230,local_231,local_232,local_234,local_235,local_237,local_239,local_241,local_dummy;
-const double const_0=1,const_2=30,const_3=0,const_16=1000,const_19=2,const_27=1.1,const_28=42164,const_31=1004,const_36=1.5,const_38=1003,const_43=1002,const_47=1001,const_54=0,const_55=6.457e+06,const_60=-6.357e+06,const_78=8.357e+06,const_81=6.357e+06,const_84=6.557e+06,const_96=6e+24,const_99=6.67428e-11,const_111=-6922.34,const_114=-4719.32,const_117=-7814.93,const_133=-7875.22,const_189=1,const_214=10000,const_219=25,const_220=45,const_226=900,const_238=6.357e+06,const_242=0,const_dummy=0;
+double local_1,local_4,local_5,local_7,local_8,local_9,local_11,local_12,local_14,local_15,local_18,local_20,local_22,local_24,local_25,local_26,local_29,local_30,local_32,local_33,local_35,local_37,local_39,local_41,local_42,local_44,local_46,local_48,local_50,local_52,local_53,local_57,local_59,local_62,local_64,local_66,local_67,local_69,local_70,local_71,local_72,local_74,local_75,local_77,local_80,local_83,local_86,local_88,local_89,local_90,local_91,local_92,local_93,local_94,local_95,local_98,local_100,local_101,local_102,local_103,local_104,local_105,local_106,local_107,local_108,local_109,local_110,local_113,local_116,local_119,local_121,local_122,local_123,local_124,local_125,local_126,local_127,local_128,local_129,local_130,local_131,local_132,local_135,local_137,local_139,local_141,local_143,local_144,local_145,local_146,local_147,local_148,local_149,local_150,local_151,local_152,local_153,local_155,local_156,local_157,local_158,local_159,local_160,local_161,local_163,local_164,local_166,local_167,local_168,local_169,local_170,local_171,local_172,local_173,local_174,local_175,local_176,local_177,local_178,local_179,local_180,local_181,local_182,local_183,local_184,local_185,local_186,local_187,local_188,local_191,local_193,local_195,local_197,local_199,local_200,local_202,local_203,local_205,local_206,local_207,local_208,local_210,local_212,local_213,local_216,local_217,local_218,local_221,local_222,local_223,local_224,local_225,local_227,local_228,local_230,local_231,local_232,local_234,local_235,local_237,local_239,local_241;
+const double const_0=1,const_2=30,const_3=0,const_16=1000,const_19=2,const_27=1.1,const_28=42164,const_31=1004,const_36=1.5,const_38=1003,const_43=1002,const_47=1001,const_54=0,const_55=6.457e+06,const_60=-6.357e+06,const_78=8.357e+06,const_81=6.357e+06,const_84=6.557e+06,const_96=6e+24,const_99=6.67428e-11,const_111=-6922.34,const_114=-4719.32,const_117=-7814.93,const_133=-7875.22,const_189=1,const_214=10000,const_219=25,const_220=45,const_226=900,const_238=6.357e+06,const_242=0;
 local_1 = memory[265-min_global];
 local_4 = memory[248-min_global];
 local_5 = local_4 - const_3;
@@ -253,5 +273,7 @@ memory[263-min_global] = local_24;
 memory[264-min_global] = local_22;
 memory[265-min_global] = local_14;
 status = lstatus;
+
+vm_state::step();
 }
 #endif

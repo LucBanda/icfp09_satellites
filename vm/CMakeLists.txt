@@ -4,12 +4,12 @@ PROJECT (icfp09)
 set(CONFIG_DEBUG OFF CACHE BOOL "")
 set(CONFIG_ALLEGRO ON CACHE BOOL "")
 set(CONFIG_GENERATE OFF CACHE BOOL "")
-set(CONFIG_START_SLOW 10 CACHE INT "")
+set(CONFIG_START_SLOW 10 CACHE STRING "")
 
 if(CONFIG_DEBUG)
-	add_definitions(-g)
+	add_definitions(-g -std=c++11)
 else(CONFIG_DEBUG)
-	add_definitions(-O3)
+	add_definitions(-O3 -std=c++11)
 endif(CONFIG_DEBUG)
 
 
@@ -22,11 +22,12 @@ if(CONFIG_GENERATE)
 	add_definitions(-DGENERATE)
 endif(CONFIG_GENERATE)
 
-include_directories (.)
-link_directories(/usr/lib /usr/bin)
+include_directories (. /usr/local/include ../openGA/src)
+link_directories(/usr/lib /usr/bin /usr/local/lib)
 
 
 add_definitions( -DSTART_TIMER=${CONFIG_START_SLOW} -MD -MP -Wall -Wsign-compare -Wshadow -Woverloaded-virtual -DNOSSL -fPIC)
-add_executable (vm main.cpp vm_state.cpp instructions.cpp trace_generator.cpp controller.cpp meet_and_greed.cpp renderer.cpp satellite.cpp ellipse.cpp clear_sky.cpp excentric.cpp bin4.cpp bin3.cpp bin2.cpp bin1.cpp)
+add_executable (vm main.cpp vm_state.cpp renderer.cpp bin4.cpp bin3.cpp bin2.cpp bin1.cpp)
+#add_executable (generate generate.cpp)
 
-target_link_libraries(vm alleg pthread)
+target_link_libraries(vm allegro pthread allegro_primitives allegro_main)

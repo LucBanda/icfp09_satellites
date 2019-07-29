@@ -4,172 +4,205 @@
 #include "renderer.h"
 #include "vm_state.h"
 #include "ellipse.h"
-
-
-#define ECRAN_X	800
-#define ECRAN_Y	800
-#define MODE    GFX_AUTODETECT_WINDOWED
+#include <allegro5/allegro_primitives.h>
 
 #define MAP_RES 3000
 
-#define BOULDER_COL  	makecol(100,100,100)
-#define BACKGROUND_COL 	makecol(200,200,200)
-#define CRATER_COL	makecol(200,100,100)
-#define ME_COL	makecol(0,200,0)
-#define SAT_COL	makecol(200,0,0)
+#define BOULDER_COL  	al_map_rgb(100,100,100)
+#define BACKGROUND_COL 	al_map_rgb(200,200,200)
+#define CRATER_COL	al_map_rgb(200,100,100)
+#define ME_COL	al_map_rgb(0,200,0)
+#define SAT_COL	al_map_rgb(200,0,0)
 #define ROVER_COL	HOME_COL
-#define WAYPT_COL	makecol(200,0,0)
-#define BLACK		makecol(0,0,0)
+#define WAYPT_COL	al_map_rgb(200,0,0)
+#define BLACK		al_map_rgb(0,0,0)
 
-//#define ALLEGRO
-
+const float draw_decimation = 20;
+const float FPS = 60*draw_decimation;
+const int SCREEN_W = 2000;
+const int SCREEN_H = 2000;
 
 using namespace std;
-renderer *renderer::_single_renderer = NULL;
-bool renderer::_running = false;
 
-
-
-void renderer::add_sat(satellite *sat) {
-  sats.push_back(sat);
-}
 
 double start_radius = 0;
-void renderer::draw(BITMAP* bmp)
+void renderer::draw()
 {
 #ifdef ALLEGRO
-	
-	lock();
-	rectfill(bmp, 0,0,1000,1000, BACKGROUND_COL);
-	
-	circlefill(bmp, 500,500, 6.357e6 / SCALE, BOULDER_COL);
-	circlefill(bmp, 500 + real(position_to_test)/SCALE,500-imag(position_to_test)/SCALE, 3, BOULDER_COL);
-	
-	rectfill(bmp, 900, 900, 950, 1000, BLACK);
-	rectfill(bmp, 903, 903, 947, 903 + (1-(_fuel/_max_fuel)) * 100, BACKGROUND_COL);
-	
-	
-	
-	for (vector<satellite *>::iterator it = sats.begin(); it != sats.end(); it++) {
-	  int color;
-	  if ((*it)->main_sat()) {
-		color = ME_COL;
-	  } else {
-		color = SAT_COL;
-	  }
-	  
-	  circlefill(bmp, 500+real((*it)->position())/(SCALE),  500-imag((*it)->position())/(SCALE) , 4, color);
-	  
-	  if (abs((*it)->position()) > SCALE*500)
-		  SCALE = abs((*it)->position())/450;
-	  
-	  for (vector<complex<double> >::iterator traj_iter = (*it)->trajectoire()->_trace.begin(); traj_iter < (*it)->trajectoire()->_trace.end(); traj_iter+=((*it)->trajectoire()->_trace.size()+500) / 500) {
-		putpixel(bmp, 500+real(*traj_iter)/(SCALE),  500-imag(*traj_iter)/(SCALE) , CRATER_COL);
-		if (abs(*traj_iter) > SCALE*500)
-		  SCALE = abs(*traj_iter)/450;
-	  }
-	}
-	
-	for (vector<double>::iterator it = _radius.begin(); it != _radius.end(); it++) {
-	  if (*it > SCALE * 500)
-		SCALE = *it/450;
-	  circle(bmp, 500,500,*it/SCALE, CRATER_COL);
-	}
-	  
-	unlock();
+	al_draw_filled_rectangle(0,0,SCREEN_W,SCREEN_H, BACKGROUND_COL);
+	al_draw_filled_circle(SCREEN_W / 2., SCREEN_H / 2., 6.357e6 / SCALE, BOULDER_COL);
+	//al_draw_filled_circle(500 + 0.5f + real(position_to_test)/SCALE,500+ 0.5f - imag(position_to_test)/SCALE, 3, BOULDER_COL);
+
+	al_draw_filled_rectangle(SCREEN_W - 100., SCREEN_H - 100., SCREEN_W - 50., SCREEN_H - 10., BLACK);
+	al_draw_filled_rectangle(SCREEN_W - 97., SCREEN_H - 97., SCREEN_W - 47., SCREEN_H - 97. + (1-(_fuel/_max_fuel)) * 100, BACKGROUND_COL);
+
+   if (sqrt(main_sat.pos_x * main_sat.pos_x + main_sat.pos_y * main_sat.pos_y) / SCALE > (double)SCREEN_W / 2.5) {
+      SCALE = sqrt(main_sat.pos_x * main_sat.pos_x + main_sat.pos_y * main_sat.pos_y) / SCREEN_W * 2.5;
+   }
+   al_draw_filled_circle(SCREEN_W / 2. + main_sat.pos_x/(SCALE),  SCREEN_H / 2. - main_sat.pos_y/(SCALE) , 10, ME_COL);
+
+   for (vector<satellite>::iterator it = sats.begin(); it != sats.end(); it++) {
+      al_draw_filled_circle(SCREEN_W / 2. + it->pos_x / (SCALE), SCREEN_H / 2. - it->pos_y / (SCALE), 7.5, SAT_COL);
+      if (sqrt(it->pos_x * it->pos_x + it->pos_y * it->pos_y) / SCALE > (double)SCREEN_W / 2.5) {
+         SCALE = sqrt(it->pos_x * it->pos_x + it->pos_y * it->pos_y) / SCREEN_W * 2.5;
+      }
+   }
+
+   for (vector<double>::iterator it = _radius.begin(); it != _radius.end(); it++) {
+      if (*it / SCALE > (double)SCREEN_W / 2.5) {
+         SCALE = *it / SCREEN_W * 2.5;
+      }
+      al_draw_circle(SCREEN_W / 2.,SCREEN_H / 2.,*it/SCALE, CRATER_COL, 3.f);
+   }
 #endif
 }
 
+void renderer::set_sat(vector<satellite> sat)
+{
+   sats = sat;
+}
 void renderer::add_radius(double radius) {
   _radius.push_back(radius);
 }
-void renderer::init_bitmap(BITMAP **bmp)
-{
-#ifdef ALLEGRO
-	lock();
-	if ((*bmp) == NULL) {
-		*bmp = create_bitmap(1000,1000);
-		_sizeX = 1000;
-	} 
-	unlock();
-#endif
-}
 
- 
+enum MYKEYS {
+   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
+};
 void * renderer::mainLoop(void* params)
 {
 #ifdef ALLEGRO
-	allegro_init();             /* initialise the Allegro library */
+   	ALLEGRO_DISPLAY *display = NULL;
+   	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+   	ALLEGRO_TIMER *timer = NULL;
+      bool key[4] = { false, false, false, false };
+      bool redraw = false;
+      bool doexit = false;
 
-	install_keyboard();
-	install_mouse();
-	if (set_gfx_mode(MODE,ECRAN_X,ECRAN_Y,0,0)!=0) {
+	if(!al_init()) {
+      fprintf(stderr, "failed to initialize allegro!\n");
+      return NULL;
+   }
 
-		return NULL;
-	}
+   if(!al_install_keyboard()) {
+      fprintf(stderr, "failed to initialize the keyboard!\n");
+      return NULL;
+   }
 
-	show_mouse(screen);
-	BITMAP *double_buffer = NULL;
-	enable_hardware_cursor();
-	clear_bitmap(screen);
-	
-	
-	while (_running){
-		
-		if (keypressed()) {
-			char key_pressed = readkey();
-			if ((key_pressed & 0xff) == '-')
-				_single_renderer->m_timer++;
-			else if (((key_pressed & 0xff) == '+')&&(_single_renderer->m_timer > 0) )
-				_single_renderer->m_timer--;
-			else if ((key_pressed & 0xff) == 'f') {
-				_single_renderer->fps_toggle = !_single_renderer->fps_toggle;
-			}
-			clear_keybuf();
-		}
-		usleep(100000);
-		_single_renderer->init_bitmap(&double_buffer);	
-		_single_renderer->draw(double_buffer);
-		stretch_blit(double_buffer, screen, 0,0,double_buffer->w,double_buffer->h,0,0,ECRAN_Y,ECRAN_Y);
-		
-	}
-	allegro_exit();
+   timer = al_create_timer(1.0 / FPS);
+   if(!timer) {
+      fprintf(stderr, "failed to create timer!\n");
+      return NULL;
+   }
 
-#endif
-	return 0;
+   display = al_create_display(SCREEN_W, SCREEN_H);
+   if(!display) {
+      fprintf(stderr, "failed to create display!\n");
+      al_destroy_timer(timer);
+      return NULL;
+   }
 
-}
+	al_clear_to_color(al_map_rgb(255, 0, 255));
 
+   al_set_target_bitmap(al_get_backbuffer(display));
 
-void renderer::init()
-{
-#ifdef ALLEGRO
-	_running = true;
-	pthread_mutex_init(&_main_mutex, NULL);
-	pthread_create(&_mainthread, NULL, renderer::mainLoop, NULL);
-#endif
-}
-				 // Fonctions de création et destruction du singleton
-void renderer::terminate()
-{
-#ifdef ALLEGRO
-	_running =false;
-	pthread_join(_mainthread, NULL);
-	pthread_mutex_destroy(&_main_mutex);
-	
-#endif
-}
+   event_queue = al_create_event_queue();
+   if(!event_queue) {
+      fprintf(stderr, "failed to create event_queue!\n");
+      al_destroy_display(display);
+      al_destroy_timer(timer);
+      return NULL;
+   }
 
+   al_register_event_source(event_queue, al_get_display_event_source(display));
 
-void renderer::lock()
-{
-#ifdef ALLEGRO
-  pthread_mutex_lock( &_main_mutex );
-#endif
-}
-void renderer::unlock()
-{
-#ifdef ALLEGRO
-  pthread_mutex_unlock( &_main_mutex );
-#endif
+   al_register_event_source(event_queue, al_get_timer_event_source(timer));
+
+   al_register_event_source(event_queue, al_get_keyboard_event_source());
+
+   al_clear_to_color(al_map_rgb(0,0,0));
+
+   al_flip_display();
+
+   al_start_timer(timer);
+
+   int i = 0;
+
+   while(!doexit)
+   {
+      ALLEGRO_EVENT ev;
+      al_wait_for_event(event_queue, &ev);
+
+      if(ev.type == ALLEGRO_EVENT_TIMER) {
+         idle(idle_param);
+         i+=1;
+         if (i == draw_decimation) {
+            redraw = true;
+            i = 0;
+         }
+      }
+      else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+         break;
+      }
+      else if(ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+         switch(ev.keyboard.keycode) {
+            case ALLEGRO_KEY_UP:
+               key[KEY_UP] = true;
+               break;
+
+            case ALLEGRO_KEY_DOWN:
+               key[KEY_DOWN] = true;
+               break;
+
+            case ALLEGRO_KEY_LEFT:
+               key[KEY_LEFT] = true;
+               break;
+
+            case ALLEGRO_KEY_RIGHT:
+               key[KEY_RIGHT] = true;
+               break;
+         }
+      }
+      else if(ev.type == ALLEGRO_EVENT_KEY_UP) {
+         switch(ev.keyboard.keycode) {
+            case ALLEGRO_KEY_UP:
+               key[KEY_UP] = false;
+               break;
+
+            case ALLEGRO_KEY_DOWN:
+               key[KEY_DOWN] = false;
+               break;
+
+            case ALLEGRO_KEY_LEFT:
+               key[KEY_LEFT] = false;
+               break;
+
+            case ALLEGRO_KEY_RIGHT:
+               key[KEY_RIGHT] = false;
+               break;
+
+            case ALLEGRO_KEY_ESCAPE:
+               doexit = true;
+               break;
+         }
+      }  else {
+
+      }
+
+      if(redraw && al_is_event_queue_empty(event_queue)) {
+         redraw = false;
+
+         al_clear_to_color(al_map_rgb(0,0,0));
+         draw();
+
+         al_flip_display();
+      }
+   }
+
+   al_destroy_timer(timer);
+   al_destroy_display(display);
+   al_destroy_event_queue(event_queue);
+
+ #endif
+   return 0;
+
 }
