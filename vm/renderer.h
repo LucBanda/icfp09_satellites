@@ -2,9 +2,9 @@
 #define RENDERER_H
 
 #include "common.h"
-#include "controller.h"
 #include <vector>
 #include <math.h>
+#include "vm_state.h"
 
 #ifndef START_TIMER
 #define START_TIMER 0
@@ -15,13 +15,16 @@ class renderer
 	private :
 		static bool _running;
 		void draw();
-		
+
 		vector<double> _radius;
 		double SCALE;
 		double _fuel;
 		double _max_fuel;
 		int m_timer;
 		bool fps_toggle;
+		int FPS;
+		int draw_decimation;
+
 	public:
 
 		std::function<void(void *)> idle;
@@ -30,7 +33,7 @@ class renderer
 		satellite main_sat;
 		vector<satellite> sats;
 
-		renderer(){ SCALE = 2E3;_fuel = 1; _max_fuel = 1; m_timer = START_TIMER; fps_toggle = false;}
+		renderer();
 		~renderer(){}
 
 		void set_sat(vector<satellite> sat);

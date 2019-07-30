@@ -3,7 +3,6 @@
 
 #include "renderer.h"
 #include "vm_state.h"
-#include "ellipse.h"
 #include <allegro5/allegro_primitives.h>
 
 #define MAP_RES 3000
@@ -17,13 +16,20 @@
 #define WAYPT_COL	al_map_rgb(200,0,0)
 #define BLACK		al_map_rgb(0,0,0)
 
-const float draw_decimation = 20;
-const float FPS = 60*draw_decimation;
 const int SCREEN_W = 2000;
 const int SCREEN_H = 2000;
 
 using namespace std;
 
+renderer::renderer()
+{
+   SCALE = 2E3;
+   _fuel = 1;
+   _max_fuel = 1;
+   draw_decimation = 20;
+   FPS = 60*draw_decimation;
+
+}
 
 double start_radius = 0;
 void renderer::draw()
@@ -133,9 +139,10 @@ void * renderer::mainLoop(void* params)
       al_wait_for_event(event_queue, &ev);
 
       if(ev.type == ALLEGRO_EVENT_TIMER) {
+
          idle(idle_param);
          i+=1;
-         if (i == draw_decimation) {
+         if (i > draw_decimation) {
             redraw = true;
             i = 0;
          }
@@ -166,10 +173,18 @@ void * renderer::mainLoop(void* params)
          switch(ev.keyboard.keycode) {
             case ALLEGRO_KEY_UP:
                key[KEY_UP] = false;
+               draw_decimation = draw_decimation + draw_decimation / 4;
+               FPS = 60*draw_decimation;
+               al_set_timer_speed(timer, 1.0/FPS);
                break;
 
             case ALLEGRO_KEY_DOWN:
                key[KEY_DOWN] = false;
+               if (draw_decimation <= 6)
+                  break;
+               draw_decimation = draw_decimation - draw_decimation / 4;
+               FPS = 60*draw_decimation;
+               al_set_timer_speed(timer, 1.0/FPS);
                break;
 
             case ALLEGRO_KEY_LEFT:

@@ -1,6 +1,5 @@
 #include "common.h"
 #include "vm_state.h"
-#include "instructions.h"
 
 vm_state::vm_state()
 {
