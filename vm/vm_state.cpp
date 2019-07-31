@@ -1,57 +1,55 @@
-#include "common.h"
 #include "vm_state.h"
+#include "common.h"
 
-vm_state::vm_state()
-{
-}
+vm_state::vm_state() {}
 
-void vm_state::reset()
-{
-	memset(output_ports, 0, sizeof(double) * (max_out_port - min_out_port+1));
+void vm_state::reset() {
+	memset(output_ports, 0, sizeof(double) * (max_out_port - min_out_port + 1));
 	memset(input_ports, 0, sizeof(double) * 4);
-	memset(memory, 0, sizeof(double) * (max_global - min_global+1));
+	memset(memory, 0, sizeof(double) * (max_global - min_global + 1));
 	input_ports[instance_addr] = _instance;
 	status = 0;
 	pc = 0;
+	old_pos_x = 0.0;
+	old_pos_y = 0.0;
+	speed_x = 0;
+	speed_y = 0;
 }
 
-void vm_state::step()
-{
-
+void vm_state::step() {
+	if (old_pos_x != 0.0) {
+		speed_x = get_pos_x() - old_pos_x;
+		speed_y = get_pos_y() - old_pos_y;
+	}
+	old_pos_x = get_pos_x();
+	old_pos_y = get_pos_y();
 }
 
-int vm_state::get_instance()
-{
-	return input_ports[instance_addr];
-}
+int vm_state::set_speed(double vx, double vy) {
+	input_ports[delta_vx_addr] = vx;
+	input_ports[delta_vy_addr] = vy;
 
-double vm_state::get_fuel()
-{
-	return output_ports[fuel_addr];
-}
-
-double vm_state::get_score()
-{
-	return output_ports[score_addr];
-}
-
-double vm_state::get_pos_x()
-{
-	return output_ports[pos_x_addr];
-}
-
-double vm_state::get_pos_y()
-{
-	return output_ports[pos_y_addr];
-}
-
-double vm_state::get_radius()
-{
 	return 0;
 }
 
-vector<satellite> vm_state::get_targets()
-{
+std::complex<double> vm_state::get_speed() {
+	std::complex<double> speed(speed_x, speed_y);
+	return speed;
+}
+
+int vm_state::get_instance() { return input_ports[instance_addr]; }
+
+double vm_state::get_fuel() { return output_ports[fuel_addr]; }
+
+double vm_state::get_score() { return output_ports[score_addr]; }
+
+double vm_state::get_pos_x() { return -output_ports[pos_x_addr]; }
+
+double vm_state::get_pos_y() { return -output_ports[pos_y_addr]; }
+
+double vm_state::get_radius() { return 0; }
+
+vector<satellite> vm_state::get_targets() {
 	vector<satellite> empty;
 	return empty;
 }
