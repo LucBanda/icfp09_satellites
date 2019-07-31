@@ -28,16 +28,15 @@ bin_3::~bin_3() {
 	free(input_ports);
 }
 
-vector<satellite> bin_3::get_targets() {
-	double x = get_pos_x();
-	double y = get_pos_y();
-	double target_x = output_ports[pos_target_x_addr] + x;
-	double target_y = output_ports[pos_target_y_addr] + y;
+vector<Complex> bin_3::get_targets() {
+	Complex pos = get_pos();
+	Complex target = Complex(output_ports[pos_target_x_addr], output_ports[pos_target_y_addr]);
+	vector<Complex> ret;
 
-	vector<satellite> target;
-	satellite sat(target_x, target_y);
-	target.push_back(sat);
-	return target;
+	target += pos;
+	ret.push_back(target);
+
+	return ret;
 }
 
 void bin_3::step() {

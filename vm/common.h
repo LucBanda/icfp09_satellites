@@ -12,6 +12,10 @@
 #include <math.h>
 #include <sstream>
 #include <vector>
+#include <complex>
+
+
+typedef std::complex<double> Complex;
 
 using namespace std;
 

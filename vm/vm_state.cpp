@@ -10,32 +10,25 @@ void vm_state::reset() {
 	input_ports[instance_addr] = _instance;
 	status = 0;
 	pc = 0;
-	old_pos_x = 0.0;
-	old_pos_y = 0.0;
-	speed_x = 0;
-	speed_y = 0;
+	_old_pos = Complex(0, 0);
+	_speed = Complex(0, 0);
 }
 
 void vm_state::step() {
-	if (old_pos_x != 0.0) {
-		speed_x = get_pos_x() - old_pos_x;
-		speed_y = get_pos_y() - old_pos_y;
+	if (_old_pos != Complex(0.0, 0.0)) {
+		_speed = get_pos() - _old_pos;
 	}
-	old_pos_x = get_pos_x();
-	old_pos_y = get_pos_y();
+	_old_pos = get_pos();
 }
 
-int vm_state::set_speed(double vx, double vy) {
-	input_ports[delta_vx_addr] = vx;
-	input_ports[delta_vy_addr] = vy;
+int vm_state::set_speed(Complex speed) {
+	input_ports[delta_vx_addr] = real(speed);
+	input_ports[delta_vy_addr] = imag(speed);
 
 	return 0;
 }
 
-std::complex<double> vm_state::get_speed() {
-	std::complex<double> speed(speed_x, speed_y);
-	return speed;
-}
+Complex vm_state::get_speed() { return _speed; }
 
 int vm_state::get_instance() { return input_ports[instance_addr]; }
 
@@ -43,13 +36,14 @@ double vm_state::get_fuel() { return output_ports[fuel_addr]; }
 
 double vm_state::get_score() { return output_ports[score_addr]; }
 
-double vm_state::get_pos_x() { return -output_ports[pos_x_addr]; }
-
-double vm_state::get_pos_y() { return -output_ports[pos_y_addr]; }
+Complex vm_state::get_pos() {
+	Complex pos(output_ports[pos_x_addr], output_ports[pos_y_addr]);
+	return -pos;
+}
 
 double vm_state::get_radius() { return 0; }
 
-vector<satellite> vm_state::get_targets() {
-	vector<satellite> empty;
+vector<Complex> vm_state::get_targets() {
+	vector<Complex> empty;
 	return empty;
 }

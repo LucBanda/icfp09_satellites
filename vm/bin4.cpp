@@ -34,17 +34,17 @@ bin_4::~bin_4() {
 	free(input_ports);
 }
 
-vector<satellite> bin_4::get_targets() {
-	vector<satellite> targets;
-	double x = get_pos_x();
-	double y = get_pos_y();
+vector<Complex> bin_4::get_targets() {
+	vector<Complex> ret;
+	Complex pos = get_pos();
+
 	for (int i = 0; i < NB_OF_TARGETS; i++) {
-		double target_x = output_ports[pos_target_x_addrs[i]] + x;
-		double target_y = output_ports[pos_target_y_addrs[i]] + y;
-		satellite sat(target_x, target_y);
-		targets.push_back(sat);
+		Complex target = Complex(output_ports[pos_target_x_addrs[i]], output_ports[pos_target_y_addrs[i]]);
+		target += pos;
+
+		ret.push_back(target);
 	}
-	return targets;
+	return ret;
 }
 
 void bin_4::step() {

@@ -25,7 +25,7 @@ renderer::renderer() {
 	SCALE = 2E3;
 	_fuel = 1;
 	_max_fuel = 1;
-	draw_decimation = 10;
+	draw_decimation = 20;
 	FPS = 60 * draw_decimation;
 }
 
@@ -44,25 +44,23 @@ void renderer::draw() {
 							 SCREEN_H - 98. + (1 - (_fuel / _max_fuel)) * 100,
 							 BACKGROUND_COL);
 
-	if (sqrt(main_sat.pos_x * main_sat.pos_x +
-			 main_sat.pos_y * main_sat.pos_y) /
+	if (abs(main_sat) /
 			SCALE >
 		(double)SCREEN_W / 2.5) {
-		SCALE = sqrt(main_sat.pos_x * main_sat.pos_x +
-					 main_sat.pos_y * main_sat.pos_y) /
+		SCALE = abs(main_sat) /
 				SCREEN_W * 2.5;
 	}
-	al_draw_filled_circle(SCREEN_W / 2. + main_sat.pos_x / (SCALE),
-						  SCREEN_H / 2. - main_sat.pos_y / (SCALE), 10, ME_COL);
+	al_draw_filled_circle(SCREEN_W / 2. + real(main_sat) / (SCALE),
+						  SCREEN_H / 2. - imag(main_sat) / (SCALE), 10, ME_COL);
 
-	for (vector<satellite>::iterator it = sats.begin(); it != sats.end();
+	for (vector<Complex>::iterator it = sats.begin(); it != sats.end();
 		 it++) {
-		al_draw_filled_circle(SCREEN_W / 2. + it->pos_x / (SCALE),
-							  SCREEN_H / 2. - it->pos_y / (SCALE), 7.5,
+		al_draw_filled_circle(SCREEN_W / 2. + real(*it) / (SCALE),
+							  SCREEN_H / 2. - imag(*it) / (SCALE), 7.5,
 							  SAT_COL);
-		if (sqrt(it->pos_x * it->pos_x + it->pos_y * it->pos_y) / SCALE >
+		if (abs(*it) / SCALE >
 			(double)SCREEN_W / 2.5) {
-			SCALE = sqrt(it->pos_x * it->pos_x + it->pos_y * it->pos_y) /
+			SCALE = abs(*it) /
 					SCREEN_W * 2.5;
 		}
 	}
@@ -78,7 +76,7 @@ void renderer::draw() {
 #endif
 }
 
-void renderer::set_sat(vector<satellite> sat) { sats = sat; }
+void renderer::set_sat(vector<Complex> sat) { sats = sat; }
 void renderer::add_radius(double radius) { _radius.push_back(radius); }
 
 enum MYKEYS { KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT };

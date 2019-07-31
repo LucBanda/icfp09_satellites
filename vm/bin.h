@@ -19,7 +19,7 @@ class bin_2 : public vm_state {
 	virtual ~bin_2();
 	// double get_radius();
 	void step();
-	vector<satellite> get_targets();
+	vector<Complex> get_targets();
 };
 
 class bin_3 : public vm_state {
@@ -30,7 +30,7 @@ class bin_3 : public vm_state {
 	bin_3(int instance);
 	virtual ~bin_3();
 	void step();
-	vector<satellite> get_targets();
+	vector<Complex> get_targets();
 };
 
 class bin_4 : public vm_state {
@@ -41,7 +41,7 @@ class bin_4 : public vm_state {
 	bin_4(int instance);
 	virtual ~bin_4();
 	void step();
-	vector<satellite> get_targets();
+	vector<Complex> get_targets();
 };
 
 inline vm_state *bin_factory(int instance) {

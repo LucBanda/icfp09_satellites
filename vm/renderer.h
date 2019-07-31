@@ -28,13 +28,13 @@ class renderer {
 	std::function<void(void *)> idle;
 	void *idle_param;
 
-	satellite main_sat;
-	vector<satellite> sats;
+	Complex main_sat;
+	vector<Complex> sats;
 
 	renderer();
 	~renderer() {}
 
-	void set_sat(vector<satellite> sat);
+	void set_sat(vector<Complex> sat);
 	void *mainLoop(void *params);
 	void add_radius(double radius);
 	void set_max_fuel(double max_fuel) { _max_fuel = max_fuel; }

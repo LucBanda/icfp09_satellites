@@ -18,31 +18,20 @@ class instruction;
 
 typedef uint16_t address;
 
-class satellite {
-   public:
-	satellite(){};
-	satellite(double x, double y) : pos_x(x), pos_y(y){};
-
-   public:
-	double pos_x;
-	double pos_y;
-};
-
 class vm_state {
    public:
 	vm_state();
 	virtual ~vm_state(){};
 	void reset();
-	double get_pos_x();
-	double get_pos_y();
-	int set_speed(double vx, double vy);
+	Complex get_pos();
+	int set_speed(Complex speed);
 	double get_score();
 	double get_fuel();
 	virtual double get_radius();
 	virtual void step();
 	int get_instance();
-	virtual vector<satellite> get_targets();
-	std::complex<double> get_speed();
+	virtual vector<Complex> get_targets();
+	Complex get_speed();
 
    protected:
 	address pc;
@@ -67,10 +56,8 @@ class vm_state {
 	address pos_y_addr;
 
    private:
-	double old_pos_x;
-	double old_pos_y;
-	double speed_x;
-	double speed_y;
+	Complex _old_pos;
+	Complex _speed;
 };
 
 #endif

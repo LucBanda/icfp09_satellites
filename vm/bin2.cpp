@@ -28,25 +28,15 @@ bin_2::~bin_2() {
 	free(input_ports);
 }
 
-/*double bin_2::get_radius()
-{
-	double x = output_ports[pos_x_addr];
-	double y = output_ports[pos_y_addr];
-	double target_x = - output_ports[pos_target_x_addr] + x;
-	double target_y = - output_ports[pos_target_y_addr] + y;
-	return sqrt(target_x*target_x + target_y*target_y);
-}*/
+vector<Complex> bin_2::get_targets() {
+	Complex pos = get_pos();
+	Complex target = Complex(output_ports[pos_target_x_addr], output_ports[pos_target_y_addr]);
+	vector<Complex> ret;
 
-vector<satellite> bin_2::get_targets() {
-	double x = get_pos_x();
-	double y = get_pos_y();
-	double target_x = output_ports[pos_target_x_addr] + x;
-	double target_y = output_ports[pos_target_y_addr] + y;
+	target += pos;
+	ret.push_back(target);
 
-	vector<satellite> target;
-	satellite sat(target_x, target_y);
-	target.push_back(sat);
-	return target;
+	return ret;
 }
 
 void bin_2::step() {
