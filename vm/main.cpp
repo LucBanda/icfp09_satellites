@@ -14,27 +14,18 @@ struct main_status {
 void idle(void* user_param) {
 	struct main_status* status = (struct main_status*)user_param;
 	vm_state* vm = status->ag->vm;
-	//agent* ag = status->ag;
-
+	agent* ag = status->ag;
 	renderer* render = status->render;
 	double fuel;
 	static int time_step = 0;
-	if (time_step == 2) {
-		vm->set_speed(Complex(-5.87934, -2466.48));
-	} else if (time_step == 3)
-		vm->set_speed(Complex(0, 0));
-	else if (time_step == 18875)
-		vm->set_speed(Complex(3.53486, 1482.93));
-	else if (time_step == 18876)
-		vm->set_speed(Complex(0, 0));
 
-	vm->step();
-	render->main_sat = status->vm->get_pos();
-	fuel = status->vm->get_fuel();
+	ag->step(time_step);
+	render->main_sat = vm->get_pos();
+	fuel = vm->get_fuel();
 	render->set_fuel(fuel);
 	render->set_sat(vm->get_targets());
 	if (vm->get_score()) {
-		cout << "score = " << vm->get_score();
+		cout << "score = " << vm->get_score() << " fuel = " << vm->get_fuel() << endl;
 		exit(0);
 	}
 	time_step++;

@@ -105,12 +105,14 @@ void *renderer::mainLoop(void *params) {
 		return NULL;
 	}
 
+	al_set_new_display_flags(ALLEGRO_WINDOWED|ALLEGRO_RESIZABLE);
 	display = al_create_display(SCREEN_W, SCREEN_H);
 	if (!display) {
 		fprintf(stderr, "failed to create display!\n");
 		al_destroy_timer(timer);
 		return NULL;
 	}
+
 
 	al_clear_to_color(al_map_rgb(255, 0, 255));
 

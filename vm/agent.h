@@ -5,7 +5,14 @@
 #include "common.h"
 #include "vm_state.h"
 
-typedef std::map<int, std::tuple<double, double>> executionT;
+typedef std::map<int, Complex> executionT;
+
+
+enum flying_state {
+	FS_ORBIT,
+	FS_FLY,
+	FS_DECELERATE,
+};
 
 class agent {
    public:
@@ -15,7 +22,15 @@ class agent {
 	agent(int instance);
 	~agent();
 
-	void apply_proportionnal_speed(double speed, double alpha);
-	double run(executionT *execution_map);
+	bool circular_orbit_now();
+	void step(int time_step);
+	void set_execution_map(executionT *map);
+	void set_speed(Complex speed);
+	double run();
+
+   private:
+	executionT execution_map;
+	bool finalized;
+	enum flying_state fs_state;
 };
 #endif
