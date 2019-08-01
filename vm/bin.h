@@ -7,7 +7,6 @@ class bin_1 : public vm_state {
 	bin_1(int instance);
 	virtual ~bin_1();
 	void step();
-	double get_radius();
 };
 
 class bin_2 : public vm_state {
@@ -17,7 +16,6 @@ class bin_2 : public vm_state {
 
 	bin_2(int instance);
 	virtual ~bin_2();
-	// double get_radius();
 	void step();
 	vector<Complex> get_targets();
 };

@@ -19,6 +19,9 @@ bin_1::bin_1(int instance) {
 	pos_y_addr = 0x3;
 	radius_addr = 0x4;
 	vm_state::reset();
+	step();
+	step();
+	vm_state::reset();
 }
 
 bin_1::~bin_1() {
@@ -26,8 +29,6 @@ bin_1::~bin_1() {
 	free(output_ports);
 	free(input_ports);
 }
-
-double bin_1::get_radius() { return output_ports[radius_addr]; }
 
 void bin_1::step() {
 	bool lstatus = status;
@@ -454,7 +455,7 @@ void bin_1::step() {
 	memory[264 - min_global] = local_22;
 	memory[265 - min_global] = local_14;
 	status = lstatus;
-
+	_radius = output_ports[radius_addr];
 	vm_state::step();
 }
 #endif

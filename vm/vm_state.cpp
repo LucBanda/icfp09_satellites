@@ -1,7 +1,9 @@
 #include "vm_state.h"
 #include "common.h"
 
-vm_state::vm_state() {}
+vm_state::vm_state(): _radius(0.), _speed(Complex(0,0)) {
+
+}
 
 void vm_state::reset() {
 	memset(output_ports, 0, sizeof(double) * (max_out_port - min_out_port + 1));
@@ -11,7 +13,6 @@ void vm_state::reset() {
 	status = 0;
 	pc = 0;
 	_old_pos = Complex(0, 0);
-	_speed = Complex(0, 0);
 }
 
 void vm_state::step() {
@@ -41,7 +42,7 @@ Complex vm_state::get_pos() {
 	return -pos;
 }
 
-double vm_state::get_radius() { return 0; }
+double vm_state::get_radius() { return _radius; }
 
 vector<Complex> vm_state::get_targets() {
 	vector<Complex> empty;

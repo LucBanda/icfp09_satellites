@@ -59,10 +59,8 @@ int main(int argc, char** argv) {
 			agent* ag = new agent(instance);
 
 			vm = ag->vm;
-			vm->step();
 			render->add_radius(vm->get_radius());
 			render->set_max_fuel(vm->get_fuel());
-			vm->reset();
 
 			status.vm = vm;
 			status.render = render;

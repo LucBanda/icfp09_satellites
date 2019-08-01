@@ -54,6 +54,7 @@ class vm_state {
 	address addr_y;
 	address pos_x_addr;
 	address pos_y_addr;
+	double _radius;
 
    private:
 	Complex _old_pos;
