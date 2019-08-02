@@ -29,9 +29,9 @@ struct MySolution {
 	double alpha1;
 
 	string to_string() const {
-		return string("{") + "time1:" + std::to_string(time1) +
-			   ", speed1:" + std::to_string(speed1) +
-			   ", alpha1:" + std::to_string(alpha1) + "}";
+		return string("{ [") + std::to_string(time1) + "]" +
+			   "Complex(" + std::to_string(speed1) +
+			   ", " + std::to_string(alpha1) + ") }";
 	}
 };
 
@@ -58,6 +58,7 @@ bool eval_solution(const MySolution& p, MyMiddleCost& c) {
 	execution[p.time1] = Complex(p.speed1, p.alpha1);
 	executeur.set_execution_map(&execution);
 	c.objective1 = -executeur.run();
+
 	return true;  // solution is accepted
 }
 
@@ -117,6 +118,7 @@ void SO_report_generation(
 	output_file << generation_number << "\t" << last_generation.average_cost
 				<< "\t" << last_generation.best_total_cost << "\t"
 				<< best_genes.to_string() << "\n";
+	output_file.flush();
 }
 
 int main(int argc, char** argv) {
@@ -126,7 +128,7 @@ int main(int argc, char** argv) {
 	}
 	gInstance = atoi(argv[1]);
 
-	output_file.open("results.txt");
+	output_file.open("./results/" + to_string(gInstance) + ".txt");
 	output_file << "step"
 				<< "\t"
 				<< "cost_avg"
@@ -136,6 +138,7 @@ int main(int argc, char** argv) {
 				<< "solution_best"
 				<< "\n";
 
+	output_file.flush();
 	EA::Chronometer timer;
 	timer.tic();
 
@@ -145,7 +148,7 @@ int main(int argc, char** argv) {
 	ga_obj.idle_delay_us = 1;  // switch between threads quickly
 	ga_obj.dynamic_threading = false;
 	ga_obj.verbose = false;
-	ga_obj.population = 100;
+	ga_obj.population = 500;
 	ga_obj.generation_max = 1000;
 	ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
 	ga_obj.init_genes = init_genes;
@@ -153,9 +156,9 @@ int main(int argc, char** argv) {
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;
 	ga_obj.SO_report_generation = SO_report_generation;
-	ga_obj.crossover_fraction = 0.7;
+	ga_obj.crossover_fraction = 0.8;
 	ga_obj.mutation_rate = 0.8;
-	ga_obj.best_stall_max = 4;
+	ga_obj.best_stall_max = 50;
 	ga_obj.elite_count = 10;
 	ga_obj.solve();
 
