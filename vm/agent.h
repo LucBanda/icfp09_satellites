@@ -8,29 +8,39 @@
 typedef std::map<int, Complex> executionT;
 
 
-enum flying_state {
-	FS_ORBIT,
-	FS_FLY,
-	FS_DECELERATE,
-};
-
 class agent {
    public:
 	vm_state *vm;
-	double max_time_step = 10e6;
+	double max_time_step = 2000000;
 
 	agent(int instance);
-	~agent();
+	virtual ~agent();
 
-	bool circular_orbit_now();
-	void step(int time_step);
-	void set_execution_map(executionT *map);
-	void set_speed(Complex speed);
-	double run();
+	virtual bool stick_to_target() = 0;
+	virtual void step();
+	virtual void set_execution_map(executionT *map);
+	virtual double run();
 
-   private:
+   protected:
 	executionT execution_map;
 	bool finalized;
-	enum flying_state fs_state;
+};
+
+class agent1 : public agent {
+   public:
+	agent1(int instance);
+	~agent1();
+
+	bool stick_to_target();
+
+};
+
+class agent2 : public agent {
+   public:
+	agent2(int instance);
+	~agent2();
+
+	bool stick_to_target();
+
 };
 #endif

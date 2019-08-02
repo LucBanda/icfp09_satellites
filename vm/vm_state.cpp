@@ -2,7 +2,8 @@
 #include "common.h"
 
 vm_state::vm_state(): _radius(0.), _speed(Complex(0,0)) {
-
+	time_step = 0;
+	_fuel = 0;
 }
 
 void vm_state::reset() {
@@ -13,13 +14,16 @@ void vm_state::reset() {
 	status = 0;
 	pc = 0;
 	_old_pos = Complex(0, 0);
+	time_step = 0;
 }
 
-void vm_state::step() {
+void vm_state::step_state() {
 	if (_old_pos != Complex(0.0, 0.0)) {
 		_speed = get_pos() - _old_pos;
 	}
 	_old_pos = get_pos();
+	_fuel = output_ports[fuel_addr];
+	time_step++;
 }
 
 int vm_state::set_speed(Complex speed) {
@@ -33,7 +37,7 @@ Complex vm_state::get_speed() { return _speed; }
 
 int vm_state::get_instance() { return input_ports[instance_addr]; }
 
-double vm_state::get_fuel() { return output_ports[fuel_addr]; }
+double vm_state::get_fuel() { return _fuel; }
 
 double vm_state::get_score() { return output_ports[score_addr]; }
 

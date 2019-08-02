@@ -2,7 +2,7 @@
 
 #define NB_OF_TARGETS 12
 
-bin_4::bin_4(int instance) {
+bin_4::bin_4(int instance):vm_state() {
 	_instance = instance;
 	min_out_port = 0;
 	max_out_port = 101;
@@ -25,6 +25,9 @@ bin_4::bin_4(int instance) {
 		pos_target_x_addrs.push_back(addr_x);
 		pos_target_y_addrs.push_back(addr_y);
 	}
+	reset();
+	step();
+	step();
 	reset();
 }
 
@@ -3236,5 +3239,5 @@ void bin_4::step() {
 	memory[2128 - min_global] = local_1942;
 	status = lstatus;
 
-	vm_state::step();
+	vm_state::step_state();
 }

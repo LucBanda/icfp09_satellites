@@ -1,6 +1,6 @@
 #include "bin.h"
 #ifndef GENERATE
-bin_1::bin_1(int instance) {
+bin_1::bin_1(int instance):vm_state() {
 	_instance = instance;
 	min_out_port = 0;
 	max_out_port = 4;
@@ -456,6 +456,6 @@ void bin_1::step() {
 	memory[265 - min_global] = local_14;
 	status = lstatus;
 	_radius = output_ports[radius_addr];
-	vm_state::step();
+	vm_state::step_state();
 }
 #endif

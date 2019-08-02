@@ -3,19 +3,6 @@
 #include <complex>
 #include "common.h"
 
-//#define GENERATE
-
-class instruction;
-
-#define ADDRESS_RANGE 1 << 14
-#define instance_port 16000
-
-#define FIRST_READ 0x1
-#define FIRST_WRITE 0x2
-#define READ 0x4
-#define WRITE 0x8
-#define ACCESSED 0xB
-
 typedef uint16_t address;
 
 class vm_state {
@@ -23,17 +10,20 @@ class vm_state {
 	vm_state();
 	virtual ~vm_state(){};
 	void reset();
+
 	Complex get_pos();
 	int set_speed(Complex speed);
 	double get_score();
 	double get_fuel();
 	virtual double get_radius();
-	virtual void step();
+	virtual void step() = 0;
 	int get_instance();
 	virtual vector<Complex> get_targets();
 	Complex get_speed();
+	int time_step;
 
    protected:
+   	void step_state();
 	address pc;
 	bool status;
 	double *memory;
@@ -59,6 +49,7 @@ class vm_state {
    private:
 	Complex _old_pos;
 	Complex _speed;
+	double _fuel;
 };
 
 #endif

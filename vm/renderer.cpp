@@ -80,7 +80,7 @@ void renderer::set_sat(vector<Complex> sat) { sats = sat; }
 void renderer::add_radius(double radius) { _radius.push_back(radius); }
 
 enum MYKEYS { KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT };
-void *renderer::mainLoop(void *params) {
+void renderer::mainLoop(void *params) {
 #ifdef ALLEGRO
 	ALLEGRO_DISPLAY *display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -91,18 +91,18 @@ void *renderer::mainLoop(void *params) {
 
 	if (!al_init()) {
 		fprintf(stderr, "failed to initialize allegro!\n");
-		return NULL;
+		return;
 	}
 
 	if (!al_install_keyboard()) {
 		fprintf(stderr, "failed to initialize the keyboard!\n");
-		return NULL;
+		return;
 	}
 
 	timer = al_create_timer(1.0 / FPS);
 	if (!timer) {
 		fprintf(stderr, "failed to create timer!\n");
-		return NULL;
+		return;
 	}
 
 	al_set_new_display_flags(ALLEGRO_WINDOWED|ALLEGRO_RESIZABLE);
@@ -110,7 +110,7 @@ void *renderer::mainLoop(void *params) {
 	if (!display) {
 		fprintf(stderr, "failed to create display!\n");
 		al_destroy_timer(timer);
-		return NULL;
+		return;
 	}
 
 
@@ -123,7 +123,7 @@ void *renderer::mainLoop(void *params) {
 		fprintf(stderr, "failed to create event_queue!\n");
 		al_destroy_display(display);
 		al_destroy_timer(timer);
-		return NULL;
+		return;
 	}
 
 	al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -145,7 +145,7 @@ void *renderer::mainLoop(void *params) {
 		al_wait_for_event(event_queue, &ev);
 
 		if (ev.type == ALLEGRO_EVENT_TIMER) {
-			idle(idle_param);
+			doexit = idle(idle_param);
 			i += 1;
 			if (i > draw_decimation) {
 				redraw = true;
@@ -218,5 +218,5 @@ void *renderer::mainLoop(void *params) {
 	al_destroy_event_queue(event_queue);
 
 #endif
-	return 0;
+	return;
 }

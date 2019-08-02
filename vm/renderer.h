@@ -25,7 +25,7 @@ class renderer {
 	int draw_decimation;
 
    public:
-	std::function<void(void *)> idle;
+	std::function<bool(void *)> idle;
 	void *idle_param;
 
 	Complex main_sat;
@@ -35,7 +35,7 @@ class renderer {
 	~renderer() {}
 
 	void set_sat(vector<Complex> sat);
-	void *mainLoop(void *params);
+	void mainLoop(void *params);
 	void add_radius(double radius);
 	void set_max_fuel(double max_fuel) { _max_fuel = max_fuel; }
 	void set_fuel(double fuel) { _fuel = fuel; }

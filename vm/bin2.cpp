@@ -1,6 +1,6 @@
 #include "bin.h"
 #ifndef GENERATE
-bin_2::bin_2(int instance) {
+bin_2::bin_2(int instance):vm_state() {
 	_instance = instance;
 	min_out_port = 0;
 	max_out_port = 5;
@@ -19,7 +19,10 @@ bin_2::bin_2(int instance) {
 	pos_y_addr = 0x3;
 	pos_target_x_addr = 0x4;
 	pos_target_y_addr = 0x5;
-	reset();
+	vm_state::reset();
+	step();
+	step();
+	vm_state::reset();
 }
 
 bin_2::~bin_2() {
@@ -727,6 +730,6 @@ void bin_2::step() {
 	memory[400 - min_global] = local_14;
 	status = lstatus;
 
-	vm_state::step();
+	vm_state::step_state();
 }
 #endif
