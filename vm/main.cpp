@@ -4,6 +4,7 @@
 #include "openga.hpp"
 #include "renderer.h"
 #include "sys/time.h"
+#include <iomanip>
 
 struct main_status {
 	vm_state* vm;
@@ -23,11 +24,95 @@ bool idle(void* user_param) {
 	fuel = vm->get_fuel();
 	render->set_fuel(fuel);
 	render->set_sat(vm->get_targets());
+	//if (!vm->get_targets().empty())
+	//	cout << abs(vm->get_pos() - vm->get_targets()[0]) << endl;
 	if (vm->get_score()) {
 		cout << "score = " << vm->get_score() << " fuel = " << vm->get_fuel() << endl;
 		return true;
 	}
 	return false;
+}
+
+std::string getLastLine(std::ifstream& in)
+{
+    std::string line;
+    while (in >> std::ws && std::getline(in, line)) // skip empty lines
+        ;
+
+    return line;
+}
+
+executionT parse_result(string fileName) {
+	executionT map;
+	std::ifstream file(fileName);
+
+    if (file)
+    {
+		std::string token;
+        std::string line = getLastLine(file);
+		cout << line << endl;
+		//remove beginning
+		std::string delimiter = "{ map[";
+		size_t  pos = line.find(delimiter);
+		line.erase(0, pos + delimiter.length());
+
+		//remove end
+		delimiter = "; }";
+		pos = line.find(delimiter);
+		//token = line.substr(0, pos);
+		line.erase(pos, line.npos);
+
+		//parse first time
+		delimiter = "] = Complex(";
+		pos = line.find(delimiter);
+		token = line.substr(0, pos);
+		line.erase(0, pos+delimiter.length());
+		int time = stoi(token);
+
+		//parse x1
+		delimiter = ", ";
+		pos = line.find(delimiter);
+		token = line.substr(0, pos);
+		line.erase(0, pos+delimiter.length());
+		double x = stold(token);
+
+		//parse y1
+		delimiter = "); map[";
+		pos = line.find(delimiter);
+		token = line.substr(0, pos);
+		line.erase(0, pos+delimiter.length());
+		double y = stod(token);
+		map[time] = Complex(x, y);
+
+		std::cout << "[" << time << "] = (" << setprecision(10) << x << ", " << setprecision(10) << y << ")\n";
+		//parse second time
+		delimiter = "] = Complex(";
+		pos = line.find(delimiter);
+		token = line.substr(0, pos);
+		line.erase(0, pos+delimiter.length());
+		time = stoi(token);
+
+		//parse x2
+		delimiter = ", ";
+		pos = line.find(delimiter);
+		token = line.substr(0, pos);
+		line.erase(0, pos+delimiter.length());
+		x = stold(token);
+
+		//parse y2
+		delimiter = ")";
+		pos = line.find(delimiter);
+		token = line.substr(0, pos);
+		line.erase(0, pos+delimiter.length());
+		y = stod(token);
+		if (time != -1)
+			map[time] = Complex(x, y);
+
+        std::cout << "[" << time << "] = (" << setprecision(10) << x << ", " << setprecision(10) << y << ")\n";
+    }
+    else
+        std::cout << "Unable to open file.\n";
+	return map;
 }
 
 int main(int argc, char** argv) {
@@ -67,16 +152,8 @@ int main(int argc, char** argv) {
 			}
 
 			vm = ag->vm;
-			executionT map;
-			if (instance == 1001) {
-				map[0] = Complex(1649.156263, -2800.234537); map[7405] = Complex(5077.028557, -1051.155736);
-			} else if (instance == 1002) {
-				map[0] = Complex(4087.196340, -2819.835164); map[8034] = Complex(2118.740268, 1384.343145);
-			} else if (instance == 1003) {
-				map[0] = Complex(6308.011994, 501.171667); map[13241] = Complex(-2040.768846, -232.276828);
-			} else if (instance == 1004) {
-				map[0] = Complex(-2139.581411, 3963.342124); map[7761] = Complex(3010.028293, 1142.908135);
-			}
+
+			executionT map = parse_result("./results/" + to_string(instance) + ".txt");
 
 			ag->set_execution_map(&map);
 			render->add_radius(vm->get_radius());

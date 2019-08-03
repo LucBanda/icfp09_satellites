@@ -27,6 +27,7 @@ bin_4::bin_4(int instance):vm_state() {
 	}
 	reset();
 	step();
+	_fuel_max = get_fuel();
 	step();
 	reset();
 }
@@ -37,7 +38,7 @@ bin_4::~bin_4() {
 	free(input_ports);
 }
 
-vector<Complex> bin_4::get_targets() {
+vector<Complex> bin_4::calculate_targets() {
 	vector<Complex> ret;
 	Complex pos = get_pos();
 
@@ -3240,4 +3241,13 @@ void bin_4::step() {
 	status = lstatus;
 
 	vm_state::step_state();
+	vector<Complex> targets_pos = calculate_targets();
+	if (!_old_targets.empty()) {
+		vector<Complex>::iterator it_old, it_new;
+		_speed_targets.clear();
+		for (it_old = _old_targets.begin(), it_new = targets_pos.begin(); it_old != _old_targets.end() || it_new != targets_pos.end(); ++it_old, ++it_new) {
+			_speed_targets.push_back(*it_new - *it_old);
+		}
+	}
+	_old_targets = targets_pos;
 }

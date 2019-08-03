@@ -20,9 +20,12 @@ bin_2::bin_2(int instance):vm_state() {
 	pos_target_x_addr = 0x4;
 	pos_target_y_addr = 0x5;
 	vm_state::reset();
+	_old_targets.clear();
 	step();
+	_fuel_max = get_fuel();
 	step();
 	vm_state::reset();
+	_old_targets.clear();
 }
 
 bin_2::~bin_2() {
@@ -31,7 +34,7 @@ bin_2::~bin_2() {
 	free(input_ports);
 }
 
-vector<Complex> bin_2::get_targets() {
+vector<Complex> bin_2::calculate_targets() {
 	Complex pos = get_pos();
 	Complex target = Complex(output_ports[pos_target_x_addr], output_ports[pos_target_y_addr]);
 	vector<Complex> ret;
@@ -731,5 +734,15 @@ void bin_2::step() {
 	status = lstatus;
 
 	vm_state::step_state();
+	vector<Complex> targets_pos = calculate_targets();
+	if (!_old_targets.empty()) {
+		vector<Complex>::iterator it_old, it_new;
+		_speed_targets.clear();
+		for (it_old = _old_targets.begin(), it_new = targets_pos.begin(); it_old != _old_targets.end() || it_new != targets_pos.end(); ++it_old, ++it_new) {
+			_speed_targets.push_back(*it_new - *it_old);
+		}
+	}
+	_old_targets = targets_pos;
+	_radius = abs(_old_targets[0]);
 }
 #endif

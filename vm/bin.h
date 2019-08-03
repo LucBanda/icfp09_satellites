@@ -17,7 +17,7 @@ class bin_2 : public vm_state {
 	bin_2(int instance);
 	virtual ~bin_2();
 	void step();
-	vector<Complex> get_targets();
+	vector<Complex> calculate_targets();
 };
 
 class bin_3 : public vm_state {
@@ -28,18 +28,20 @@ class bin_3 : public vm_state {
 	bin_3(int instance);
 	virtual ~bin_3();
 	void step();
-	vector<Complex> get_targets();
+	vector<Complex> calculate_targets();
 };
 
 class bin_4 : public vm_state {
    public:
 	vector<int> pos_target_x_addrs;
 	vector<int> pos_target_y_addrs;
+	vector<Complex> old_targets;
+	vector<Complex> speed_targets;
 
 	bin_4(int instance);
 	virtual ~bin_4();
 	void step();
-	vector<Complex> get_targets();
+	vector<Complex> calculate_targets();
 };
 
 inline vm_state *bin_factory(int instance) {

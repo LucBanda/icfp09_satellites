@@ -7,6 +7,13 @@
 
 typedef std::map<int, Complex> executionT;
 
+enum flying_state {
+	FS_ORBIT,
+	FS_FLY,
+	FS_STICK_TO_TARGET,
+	FS_ON_TARGET_ORBIT,
+	FS_FLYING_TO_TARGET
+};
 
 class agent {
    public:
@@ -16,6 +23,7 @@ class agent {
 	agent(int instance);
 	virtual ~agent();
 
+	virtual double get_score() = 0;
 	virtual bool stick_to_target() = 0;
 	virtual void step();
 	virtual void set_execution_map(executionT *map);
@@ -23,7 +31,8 @@ class agent {
 
    protected:
 	executionT execution_map;
-	bool finalized;
+	enum flying_state fly_state;
+	int last_time_fs_changed;
 };
 
 class agent1 : public agent {
@@ -32,6 +41,7 @@ class agent1 : public agent {
 	~agent1();
 
 	bool stick_to_target();
+	double get_score();
 
 };
 
@@ -41,6 +51,7 @@ class agent2 : public agent {
 	~agent2();
 
 	bool stick_to_target();
+	double get_score();
 
 };
 #endif

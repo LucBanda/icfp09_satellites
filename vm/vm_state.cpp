@@ -15,6 +15,7 @@ void vm_state::reset() {
 	pc = 0;
 	_old_pos = Complex(0, 0);
 	time_step = 0;
+	_old_targets.clear();
 }
 
 void vm_state::step_state() {
@@ -49,6 +50,9 @@ Complex vm_state::get_pos() {
 double vm_state::get_radius() { return _radius; }
 
 vector<Complex> vm_state::get_targets() {
-	vector<Complex> empty;
-	return empty;
+	return _old_targets;
+}
+
+vector<Complex> vm_state::get_targets_speeds() {
+	return _speed_targets;
 }

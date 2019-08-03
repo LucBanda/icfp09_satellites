@@ -20,6 +20,7 @@ bin_1::bin_1(int instance):vm_state() {
 	radius_addr = 0x4;
 	vm_state::reset();
 	step();
+	_fuel_max = get_fuel();
 	step();
 	vm_state::reset();
 }
