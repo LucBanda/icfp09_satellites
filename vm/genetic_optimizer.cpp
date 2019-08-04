@@ -194,18 +194,20 @@ int main(int argc, char** argv) {
 				agent2 ag(gInstance);
 				max_fuel = ag.vm->get_fuel();
 				max_time1 = 20000;
-				nb_of_thrusts = 1;
+				max_time2 = 50000;
+				nb_of_thrusts = 2;
 			} else if (gInstance == 2002) {
 				agent2 ag(gInstance);
 				max_fuel = ag.vm->get_fuel();
 				max_time1 = 10000;
 				max_time2 = 50000;
-				nb_of_thrusts = 2;
+				nb_of_thrusts = 1;
 			} else if (gInstance >= 2003) {
 				agent2 ag(gInstance);
 				max_fuel = ag.vm->get_fuel();
 				max_time1 = 50000;
-				nb_of_thrusts = 1;
+				max_time2 = 100000;
+				nb_of_thrusts = 2;
 			}
 
 			output_file.open("./results/" + to_string(gInstance) + ".txt");
