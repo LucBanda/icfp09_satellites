@@ -88,7 +88,7 @@ double agent2::get_score() {
 	}
 	if (vm->get_fuel() <= 0.001) return -abs(vm->get_pos() - vm->get_targets()[0]);
 	if (vm->time_step > last_time_fs_changed + 1000 && fly_state == FS_ON_TARGET_ORBIT) {
-		double approximate_error = log10f(max(10., distance_when_crossed - 500.));
+		double approximate_error = 2 * log10f(max(1., distance_when_crossed - 500.));
 		double fake_score = 2 * (25. + 45. * ((vm->get_fuel() - abs_delta_v_when_crossed) / vm->get_fuel_max()) + (30. - log2(vm->time_step/1000.)) - approximate_error);
 		return fake_score;
 	}
@@ -142,7 +142,7 @@ double agent3::get_score() {
 
 	if (vm->get_fuel() <= 0.001) return -10000;
 	if (vm->time_step > last_time_fs_changed + 1000 && fly_state == FS_ON_TARGET_ORBIT) {
-		double approximate_error = log10f(max(10., distance_when_crossed - 500.));
+		double approximate_error = 2 * log10f(max(10., distance_when_crossed - 500.));
 		double fake_score = 4 * (25. + 45. * ((vm->get_fuel() - abs_delta_v_when_crossed) / vm->get_fuel_max()) + (30. - log2(vm->time_step/1000.)) - approximate_error);
 		return fake_score;
 	}

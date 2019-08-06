@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
 			} else if (gInstance == 3004) {
 				agent3 ag(gInstance);
 				max_fuel = ag.vm->get_fuel();
-				max_time1 = 50000;
+				max_time1 = 10000;
 				max_time2 = 50000;
 				reference_ellipse = new ellipse(gInstance, 0);
 				nb_of_thrusts = 1;
