@@ -5,6 +5,10 @@
 #include <vector>
 #include "common.h"
 #include "vm_state.h"
+#include "allegro5/allegro.h"
+#include "allegro5/allegro_font.h"
+#include "allegro5/allegro_ttf.h"
+#include "ellipse.h"
 
 #ifndef START_TIMER
 #define START_TIMER 0
@@ -15,30 +19,25 @@ class renderer {
 	static bool _running;
 	void draw();
 
-	vector<double> _radius;
 	double SCALE;
-	double _fuel;
-	double _max_fuel;
 	int m_timer;
 	bool fps_toggle;
 	int FPS;
-	int draw_decimation;
+	float draw_decimation;
+	bool debug_relative_position;
+	ALLEGRO_FONT *debug_font;
+	ellipse *_target_ellipse;
+	vm_state *_vm;
 
    public:
 	std::function<bool(void *)> idle;
 	void *idle_param;
 
-	Complex main_sat;
-	vector<Complex> sats;
-
 	renderer();
 	~renderer() {}
-
-	void set_sat(vector<Complex> sat);
+	void set_vm(vm_state *vm) {_vm = vm;}
+	void set_target_ellipse(ellipse *target_ellipse);
 	void mainLoop(void *params);
-	void add_radius(double radius);
-	void set_max_fuel(double max_fuel) { _max_fuel = max_fuel; }
-	void set_fuel(double fuel) { _fuel = fuel; }
 	int get_timer() { return m_timer; }
 	bool get_fps_toggle() { return fps_toggle; }
 };

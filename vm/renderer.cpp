@@ -15,77 +15,95 @@
 #define ROVER_COL HOME_COL
 #define WAYPT_COL al_map_rgb(200, 0, 0)
 #define BLACK al_map_rgb(0, 0, 0)
+#define ELLIPSE_COL al_map_rgb(0,0,250)
 
-const int SCREEN_W = 2000;
-const int SCREEN_H = 2000;
+#define TO_SCREEN(c) SCREEN_W / 2. + real(c) / SCALE, SCREEN_H / 2. - imag(c) / SCALE
+
+#define SHAPE_SCALE		1
+const int SCREEN_W = 2000 / SHAPE_SCALE;
+const int SCREEN_H = 2000 / SHAPE_SCALE;
+
 
 using namespace std;
 
 renderer::renderer() {
 	SCALE = 2E3;
-	_fuel = 1;
-	_max_fuel = 1;
 	draw_decimation = 20;
 	FPS = 60 * draw_decimation;
+	debug_relative_position = false;
+	_target_ellipse = NULL;
 }
 
 double start_radius = 0;
 void renderer::draw() {
 #ifdef ALLEGRO
+	Complex main_sat = _vm->get_pos();
+	vector<Complex> sats = _vm->get_targets();
+	double fuel = _vm->get_fuel();
+	double max_fuel = _vm->get_fuel_max();
+	double radius = _vm->get_radius();
+
 	al_draw_filled_rectangle(0, 0, SCREEN_W, SCREEN_H, BACKGROUND_COL);
 	al_draw_filled_circle(SCREEN_W / 2., SCREEN_H / 2., 6.357e6 / SCALE,
 						  BOULDER_COL);
-	// al_draw_filled_circle(500 + 0.5f + real(position_to_test)/SCALE,500+ 0.5f
-	// - imag(position_to_test)/SCALE, 3, BOULDER_COL);
 
 	al_draw_filled_rectangle(SCREEN_W - 100., SCREEN_H - 100., SCREEN_W - 50.,
 							 SCREEN_H - 10., BLACK);
 	al_draw_filled_rectangle(SCREEN_W - 98., SCREEN_H - 98., SCREEN_W - 52.,
-							 SCREEN_H - 98. + (1 - (_fuel / _max_fuel)) * 100,
+							 SCREEN_H - 98. + (1 - (fuel / max_fuel)) * 100,
 							 BACKGROUND_COL);
 
-	if (abs(main_sat) /
-			SCALE >
-		(double)SCREEN_W / 2.5) {
-		SCALE = abs(main_sat) /
-				SCREEN_W * 2.5;
+	if (abs(main_sat) / SCALE > (double)SCREEN_W / 2.5) {
+		SCALE = abs(main_sat) / SCREEN_W * 2.5;
 	}
 	al_draw_filled_circle(SCREEN_W / 2. + real(main_sat) / (SCALE),
-						  SCREEN_H / 2. - imag(main_sat) / (SCALE), 10, ME_COL);
+						  SCREEN_H / 2. - imag(main_sat) / (SCALE), 10 / SHAPE_SCALE, ME_COL);
 
-	for (vector<Complex>::iterator it = sats.begin(); it != sats.end();
-		 it++) {
+	for (vector<Complex>::iterator it = sats.begin(); it != sats.end(); it++) {
 		al_draw_filled_circle(SCREEN_W / 2. + real(*it) / (SCALE),
-							  SCREEN_H / 2. - imag(*it) / (SCALE), 7.5,
+							  SCREEN_H / 2. - imag(*it) / (SCALE), 7.5/ SHAPE_SCALE,
 							  SAT_COL);
-		if (abs(*it) / SCALE >
-			(double)SCREEN_W / 2.5) {
-			SCALE = abs(*it) /
-					SCREEN_W * 2.5;
+		if (abs(*it) / SCALE > (double)SCREEN_W / 2.5) {
+			SCALE = abs(*it) / SCREEN_W * 2.5;
 		}
 	}
 
-	for (vector<double>::iterator it = _radius.begin(); it != _radius.end();
-		 it++) {
-		if (*it / SCALE > (double)SCREEN_W / 2.5) {
-			SCALE = *it / SCREEN_W * 2.5;
-		}
-		al_draw_circle(SCREEN_W / 2., SCREEN_H / 2., *it / SCALE, CRATER_COL,
-					   3.f);
+	if (radius / SCALE > (double)SCREEN_W / 2.5) {
+		SCALE = radius / SCREEN_W * 2.5;
+	}
+	al_draw_circle(SCREEN_W / 2., SCREEN_H / 2., radius / SCALE, CRATER_COL,
+					3.f/ SHAPE_SCALE);
+
+	string text;
+	text = to_string(abs(main_sat - *sats.begin())) + " m";
+	al_draw_text(debug_font, al_map_rgb(0,0,0), 0, 0, ALLEGRO_ALIGN_LEFT, text.c_str());
+	text = to_string(_vm->time_step) + " s";
+	al_draw_text(debug_font, al_map_rgb(0,0,0), 0, 60, ALLEGRO_ALIGN_LEFT, text.c_str());
+
+	if (_target_ellipse) {
+		al_draw_ellipse(TO_SCREEN(_target_ellipse->center),
+			real(_target_ellipse->radii) / SCALE, imag(_target_ellipse->radii) / SCALE, ELLIPSE_COL, 3. / SHAPE_SCALE);
+		//Complex ellipse_speed = _target_ellipse->get_speed(_vm->get_targets()[0]);
+		//Complex sat_speed = _vm->get_targets_speeds()[0];
+		//Complex delta_speed = sat_speed - ellipse_speed;
+		/*string text = to_string(abs(delta_speed)) + " \t" + to_string(arg(delta_speed));
+		al_draw_text(debug_font, al_map_rgb(0,0,0), 0, 0, ALLEGRO_ALIGN_LEFT, text.c_str());*/
+		al_draw_filled_circle(SCREEN_W / 2. + real(_target_ellipse->apexf) / SCALE, SCREEN_H / 2. - imag(_target_ellipse->apexf) / SCALE, 10./ SHAPE_SCALE, ELLIPSE_COL);
+		al_draw_filled_circle(SCREEN_W / 2. + real(_target_ellipse->apexs) / SCALE, SCREEN_H / 2. - imag(_target_ellipse->apexs) / SCALE, 10./ SHAPE_SCALE, ELLIPSE_COL);
+		al_draw_filled_circle(SCREEN_W / 2. + real(_target_ellipse->center) / SCALE, SCREEN_H / 2. - imag(_target_ellipse->center) / SCALE, 10./ SHAPE_SCALE, ELLIPSE_COL);
+
 	}
 #endif
 }
+void renderer::set_target_ellipse(ellipse *ellip) { _target_ellipse = ellip; }
 
-void renderer::set_sat(vector<Complex> sat) { sats = sat; }
-void renderer::add_radius(double radius) { _radius.push_back(radius); }
-
-enum MYKEYS { KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT };
+enum MYKEYS { KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_R };
 void renderer::mainLoop(void *params) {
 #ifdef ALLEGRO
 	ALLEGRO_DISPLAY *display = NULL;
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
-	bool key[4] = {false, false, false, false};
+	bool key[5] = {false, false, false, false, false};
 	bool redraw = false;
 	bool doexit = false;
 
@@ -104,15 +122,18 @@ void renderer::mainLoop(void *params) {
 		fprintf(stderr, "failed to create timer!\n");
 		return;
 	}
+   al_init_font_addon(); // initialize the font addon
+   al_init_ttf_addon();// initialize the ttf (True Type Font) addon
 
-	al_set_new_display_flags(ALLEGRO_WINDOWED|ALLEGRO_RESIZABLE);
+   debug_font = al_load_ttf_font("AllegroBT-Regular.otf",72 / SHAPE_SCALE,0 );
+
+	al_set_new_display_flags(ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
 	display = al_create_display(SCREEN_W, SCREEN_H);
 	if (!display) {
 		fprintf(stderr, "failed to create display!\n");
 		al_destroy_timer(timer);
 		return;
 	}
-
 
 	al_clear_to_color(al_map_rgb(255, 0, 255));
 
@@ -127,15 +148,10 @@ void renderer::mainLoop(void *params) {
 	}
 
 	al_register_event_source(event_queue, al_get_display_event_source(display));
-
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
-
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
-
 	al_clear_to_color(al_map_rgb(0, 0, 0));
-
 	al_flip_display();
-
 	al_start_timer(timer);
 
 	int i = 0;
@@ -170,20 +186,23 @@ void renderer::mainLoop(void *params) {
 				case ALLEGRO_KEY_RIGHT:
 					key[KEY_RIGHT] = true;
 					break;
+				case ALLEGRO_KEY_R:
+					key[KEY_R] = true;
+					break;
 			}
 		} else if (ev.type == ALLEGRO_EVENT_KEY_UP) {
 			switch (ev.keyboard.keycode) {
 				case ALLEGRO_KEY_UP:
 					key[KEY_UP] = false;
-					draw_decimation = draw_decimation + draw_decimation / 4;
+					draw_decimation = draw_decimation + draw_decimation / 4.;
 					FPS = 60 * draw_decimation;
 					al_set_timer_speed(timer, 1.0 / FPS);
 					break;
 
 				case ALLEGRO_KEY_DOWN:
 					key[KEY_DOWN] = false;
-					if (draw_decimation <= 6) break;
-					draw_decimation = draw_decimation - draw_decimation / 4;
+					if (draw_decimation <= 1) break;
+					draw_decimation = draw_decimation - draw_decimation / 4.;
 					FPS = 60 * draw_decimation;
 					al_set_timer_speed(timer, 1.0 / FPS);
 					break;
@@ -194,6 +213,11 @@ void renderer::mainLoop(void *params) {
 
 				case ALLEGRO_KEY_RIGHT:
 					key[KEY_RIGHT] = false;
+					break;
+
+				case ALLEGRO_KEY_R:
+					key[KEY_R] = false;
+					debug_relative_position = !debug_relative_position;
 					break;
 
 				case ALLEGRO_KEY_ESCAPE:

@@ -1,6 +1,8 @@
 #include "vm_state.h"
 #include "common.h"
 
+
+
 vm_state::vm_state(): _radius(0.), _speed(Complex(0,0)) {
 	time_step = 0;
 	_fuel = 0;

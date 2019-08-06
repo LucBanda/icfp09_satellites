@@ -4,6 +4,7 @@
 #include <tuple>
 #include "common.h"
 #include "vm_state.h"
+#include "ellipse.h"
 
 typedef std::map<int, Complex> executionT;
 
@@ -12,13 +13,14 @@ enum flying_state {
 	FS_FLY,
 	FS_STICK_TO_TARGET,
 	FS_ON_TARGET_ORBIT,
-	FS_FLYING_TO_TARGET
+	FS_FLYING_TO_TARGET,
+	FS_LOST
 };
 
 class agent {
    public:
 	vm_state *vm;
-	double max_time_step = 2000000;
+	double max_time_step = 200000;
 
 	agent(int instance);
 	virtual ~agent();
@@ -28,11 +30,16 @@ class agent {
 	virtual void step();
 	virtual void set_execution_map(executionT *map);
 	virtual double run();
+	void set_target_ellipse(ellipse *target_ellipse) { _target_ellipse = target_ellipse; }
 
    protected:
 	executionT execution_map;
 	enum flying_state fly_state;
 	int last_time_fs_changed;
+	int time_close_to_orbit;
+	double distance_when_crossed;
+	double abs_delta_v_when_crossed;
+	ellipse *_target_ellipse;
 };
 
 class agent1 : public agent {
@@ -53,5 +60,14 @@ class agent2 : public agent {
 	bool stick_to_target();
 	double get_score();
 
+};
+
+class agent3 : public agent {
+   public:
+	agent3(int instance);
+	~agent3();
+
+	bool stick_to_target();
+	double get_score();
 };
 #endif
