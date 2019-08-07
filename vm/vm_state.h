@@ -12,18 +12,20 @@ class vm_state {
 	void reset();
 
 	double get_fuel_max() {return _fuel_max;}
-	Complex get_pos();
 	int set_speed(Complex speed);
 	double get_score();
 	double get_fuel();
 	virtual double get_radius();
 	virtual void step() = 0;
 	int get_instance();
-	virtual vector<Complex> get_targets();
-	vector<Complex> get_targets_speeds();
-	Complex get_speed();
 	int time_step;
-	double _fuel_max;
+	int nb_of_targets;
+
+	virtual double get_relative_distance(int target) = 0;
+	virtual double get_relative_delta_speed(int target) = 0;
+	virtual Complex get_absolute_position() = 0;
+	virtual Complex get_target_absolute_position(int target) = 0;
+	virtual Complex get_relative_speed(int target = 0) = 0;
 
    protected:
    	void step_state();
@@ -47,15 +49,9 @@ class vm_state {
 	address addr_y;
 	address pos_x_addr;
 	address pos_y_addr;
-
 	double _radius;
-	vector<Complex> _old_targets;
-	vector<Complex> _speed_targets;
-
-   private:
-	Complex _old_pos;
-	Complex _speed;
 	double _fuel;
+	double _fuel_max;
 };
 
 #endif

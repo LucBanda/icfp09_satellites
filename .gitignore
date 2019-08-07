@@ -1,0 +1,5 @@
+vm/build/*
+!vm/build/results/
+.DS_Store
+CMake*
+vm/Makefile

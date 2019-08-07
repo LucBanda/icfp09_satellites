@@ -12,7 +12,7 @@ ellipse::ellipse(int instance, int target) {
         pos_N = pos;
         speed_N_2 = speed_N;
         speed_N = speed;
-        pos = vm->get_targets()[target];
+        pos = vm->get_target_absolute_position(target);
         speed = vm->get_targets_speeds()[target];
         if (speed_N_2 != Complex()) {
             if (abs(speed_N_2) < abs(speed_N) && abs(speed_N) > abs(speed))

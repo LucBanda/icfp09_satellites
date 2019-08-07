@@ -5,7 +5,6 @@
 #include "renderer.h"
 #include "sys/time.h"
 #include <iomanip>
-#include "ellipse.h"
 
 struct main_status {
 	vm_state* vm;
@@ -19,12 +18,7 @@ bool idle(void* user_param) {
 	agent* ag = status->ag;
 
 	ag->step();
-	/*render->main_sat = vm->get_pos();
-	fuel = vm->get_fuel();
-	render->set_fuel(fuel);
-	render->set_sat(vm->get_targets());*/
-	//if (!vm->get_targets().empty())
-	//	cout << abs(vm->get_pos() - vm->get_targets()[0]) << endl;
+
 	if (vm->get_score()) {
 		cout << "score = " << vm->get_score() << " fuel = " << vm->get_fuel() << endl;
 		return true;
@@ -139,18 +133,15 @@ int main(int argc, char** argv) {
 			}
 
 			agent* ag;
-			ellipse *target_ellipse;
 			render = new renderer();
 			if (instance / 1000 == 1) {
 				ag = new agent1(instance);
 			} else if (instance / 1000 == 2) {
 				ag = new agent2(instance);
 			} else if (instance / 1000 == 3) {
-				ag = new agent2(instance);
-				target_ellipse = new ellipse(instance, 0);
-				render->set_target_ellipse(target_ellipse);
+				ag = new agent3(instance);
 			} else {
-				ag = new agent2(instance);
+				ag = new agent3(instance);
 			}
 
 			vm = ag->vm;

@@ -19,13 +19,17 @@ bin_2::bin_2(int instance):vm_state() {
 	pos_y_addr = 0x3;
 	pos_target_x_addr = 0x4;
 	pos_target_y_addr = 0x5;
+	old_target_rel_pos_x = 0.;
+	old_target_rel_pos_y = 0.;
+	rel_speed_targets_x = 0.;
+	rel_speed_targets_y = 0.;
+	nb_of_targets = 1;
+	time_step = 0;
 	vm_state::reset();
-	_old_targets.clear();
 	step();
 	_fuel_max = get_fuel();
 	step();
 	vm_state::reset();
-	_old_targets.clear();
 }
 
 bin_2::~bin_2() {
@@ -34,15 +38,27 @@ bin_2::~bin_2() {
 	free(input_ports);
 }
 
-vector<Complex> bin_2::calculate_targets() {
-	Complex pos = get_pos();
-	Complex target = Complex(output_ports[pos_target_x_addr], output_ports[pos_target_y_addr]);
-	vector<Complex> ret;
+double bin_2::get_relative_distance(int target) {
+	return hypotl(output_ports[pos_target_x_addr], output_ports[pos_target_y_addr]);
+}
 
-	target += pos;
-	ret.push_back(target);
+Complex bin_2::get_target_absolute_position(int target) {
+	Complex relative_target_pos(output_ports[pos_target_x_addr], output_ports[pos_target_y_addr]);
+	Complex absolute_target_pos = get_absolute_position() + relative_target_pos;
 
-	return ret;
+	return absolute_target_pos;
+}
+
+Complex bin_2::get_absolute_position() {
+	return -Complex(output_ports[pos_x_addr], output_ports[pos_y_addr]);
+}
+
+double bin_2::get_relative_delta_speed(int target) {
+	return hypotl(rel_speed_targets_x, rel_speed_targets_y);
+}
+
+Complex bin_2::get_relative_speed(int target) {
+	return Complex(rel_speed_targets_x, rel_speed_targets_y);
 }
 
 void bin_2::step() {
@@ -733,16 +749,15 @@ void bin_2::step() {
 	memory[400 - min_global] = local_14;
 	status = lstatus;
 
-	vm_state::step_state();
-	vector<Complex> targets_pos = calculate_targets();
-	if (!_old_targets.empty()) {
-		vector<Complex>::iterator it_old, it_new;
-		_speed_targets.clear();
-		for (it_old = _old_targets.begin(), it_new = targets_pos.begin(); it_old != _old_targets.end() || it_new != targets_pos.end(); ++it_old, ++it_new) {
-			_speed_targets.push_back(*it_new - *it_old);
-		}
+	if (old_target_rel_pos_x != 0) {
+			rel_speed_targets_x = - output_ports[pos_target_x_addr] + old_target_rel_pos_x;
+			rel_speed_targets_y = - output_ports[pos_target_y_addr] + old_target_rel_pos_y;
 	}
-	_old_targets = targets_pos;
-	_radius = abs(_old_targets[0]);
+	old_target_rel_pos_x = output_ports[pos_target_x_addr];
+	old_target_rel_pos_y = output_ports[pos_target_y_addr];
+
+	_fuel = output_ports[fuel_addr];
+	_radius = abs(get_target_absolute_position(0));
+	time_step++;
 }
 #endif

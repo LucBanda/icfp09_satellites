@@ -4,7 +4,6 @@
 #include <tuple>
 #include "common.h"
 #include "vm_state.h"
-#include "ellipse.h"
 
 typedef std::map<int, Complex> executionT;
 
@@ -30,7 +29,6 @@ class agent {
 	virtual void step();
 	virtual void set_execution_map(executionT *map);
 	virtual double run();
-	void set_target_ellipse(ellipse *target_ellipse) { _target_ellipse = target_ellipse; }
 
    protected:
 	executionT execution_map;
@@ -39,7 +37,6 @@ class agent {
 	int time_close_to_orbit;
 	double distance_when_crossed;
 	double abs_delta_v_when_crossed;
-	ellipse *_target_ellipse;
 };
 
 class agent1 : public agent {

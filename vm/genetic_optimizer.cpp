@@ -4,7 +4,6 @@
 #include <string>
 #include "agent.h"
 #include "openga.hpp"
-#include "ellipse.h"
 
 using std::cout;
 using std::endl;
@@ -15,7 +14,6 @@ double max_fuel;
 int max_time1;
 int max_time2;
 int nb_of_thrusts;
-ellipse *reference_ellipse;
 
 struct MySolution {
 	int time1;
@@ -99,8 +97,6 @@ bool eval_solution3(const MySolution& p, MyMiddleCost& c) {
 	if (nb_of_thrusts >= 2) {
 		execution[p.time2] = Complex(p.speed2_x, p.speed2_y);
 	}
-	executeur.set_target_ellipse(reference_ellipse);
-
 	executeur.set_execution_map(&execution);
 	c.objective1 = -executeur.run();
 	return true;  // solution is accepted
@@ -195,7 +191,7 @@ int main(int argc, char** argv) {
 	} else
 		do_all = true;
 
-	for (int i = 2; i < 4; i++) {
+	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 5; j++) {
 			if (do_all) {
 				gInstance = i * 1000 + j;
@@ -209,54 +205,50 @@ int main(int argc, char** argv) {
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2001) {
 				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
-				max_time1 = 20000;
+				max_fuel = ag.vm->get_fuel()/10.;
+				max_time1 = 5000;
 				max_time2 = 50000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2002) {
 				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
+				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time1 = 10000;
 				max_time2 = 25000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2003) {
 				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
+				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time1 = 1000;
 				max_time2 = 100000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2004) {
 				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
-				max_time1 = 50000;
+				max_fuel = ag.vm->get_fuel() / 10.;
+				max_time1 = 25000;
 				max_time2 = 100000;
 				nb_of_thrusts = 1;
 			}else if (gInstance == 3001) {
 				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
+				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time1 = 20000;
 				max_time2 = 20000;
-				reference_ellipse = new ellipse(gInstance, 0);
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3002) {
 				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
+				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time1 = 30000;
-				reference_ellipse = new ellipse(gInstance, 0);
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3003) {
 				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
-				max_time1 = 50000;
+				max_fuel = ag.vm->get_fuel() / 5.;
+				max_time1 = 500;
 				max_time2 = 50000;
-				reference_ellipse = new ellipse(gInstance, 0);
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3004) {
 				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
-				max_time1 = 10000;
+				max_fuel = ag.vm->get_fuel() / 10.;
+				max_time1 = 5000;
 				max_time2 = 50000;
-				reference_ellipse = new ellipse(gInstance, 0);
 				nb_of_thrusts = 1;
 			}
 
@@ -280,7 +272,7 @@ int main(int argc, char** argv) {
 			ga_obj.idle_delay_us = 1;  // switch between threads quickly
 			ga_obj.dynamic_threading = false;
 			ga_obj.verbose = false;
-			ga_obj.population = 2000;
+			ga_obj.population = 3000;
 			ga_obj.generation_max = 1000;
 			ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
 			ga_obj.init_genes = init_genes;
@@ -294,17 +286,15 @@ int main(int argc, char** argv) {
 			ga_obj.mutate = mutate;
 			ga_obj.crossover = crossover;
 			ga_obj.SO_report_generation = SO_report_generation;
-			ga_obj.crossover_fraction = 0.7;
-			ga_obj.mutation_rate = 0.8;
-			ga_obj.best_stall_max = 50;
-			ga_obj.elite_count = 20;
+			ga_obj.crossover_fraction = 0.6;
+			ga_obj.mutation_rate = 0.9;
+			ga_obj.best_stall_max = 70;
+			ga_obj.elite_count = 150;
 			ga_obj.solve();
 			cout << "The problem is optimized in " << timer.toc() << " seconds."
 				<< endl;
 
 			output_file.close();
-			if (reference_ellipse)
-				delete reference_ellipse;
 
 			if (!do_all) {
 				return 0;

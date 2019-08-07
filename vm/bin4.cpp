@@ -1,7 +1,5 @@
 #include "bin.h"
 
-#define NB_OF_TARGETS 12
-
 bin_4::bin_4(int instance):vm_state() {
 	_instance = instance;
 	min_out_port = 0;
@@ -19,17 +17,24 @@ bin_4::bin_4(int instance):vm_state() {
 	fuel_addr = 0x1;
 	pos_x_addr = 0x2;
 	pos_y_addr = 0x3;
-	for (int i = 0; i < NB_OF_TARGETS; i++) {
+	nb_of_targets = 12;
+	for (int i = 0; i < nb_of_targets; i++) {
 		int addr_x = 0x7 + 3 * i;
 		int addr_y = 0x8 + 3 * i;
 		pos_target_x_addrs.push_back(addr_x);
 		pos_target_y_addrs.push_back(addr_y);
 	}
+	old_target_rel_pos_x.clear();
+	old_target_rel_pos_y.clear();
+	rel_speed_targets_x.clear();
+	rel_speed_targets_y.clear();
 	reset();
 	step();
 	_fuel_max = get_fuel();
 	step();
 	reset();
+	old_target_rel_pos_x.clear();
+	old_target_rel_pos_y.clear();
 }
 
 bin_4::~bin_4() {
@@ -38,17 +43,27 @@ bin_4::~bin_4() {
 	free(input_ports);
 }
 
-vector<Complex> bin_4::calculate_targets() {
-	vector<Complex> ret;
-	Complex pos = get_pos();
+double bin_4::get_relative_distance(int target) {
+	return hypotl(output_ports[pos_target_x_addrs[target]], output_ports[pos_target_y_addrs[target]]);
+}
 
-	for (int i = 0; i < NB_OF_TARGETS; i++) {
-		Complex target = Complex(output_ports[pos_target_x_addrs[i]], output_ports[pos_target_y_addrs[i]]);
-		target += pos;
+Complex bin_4::get_target_absolute_position(int target) {
+	Complex relative_target_pos(old_target_rel_pos_x[target], old_target_rel_pos_y[target]);
+	Complex absolute_target_pos = get_absolute_position() + relative_target_pos;
 
-		ret.push_back(target);
-	}
-	return ret;
+	return absolute_target_pos;
+}
+
+Complex bin_4::get_absolute_position() {
+	return -Complex(output_ports[pos_x_addr], output_ports[pos_y_addr]);
+}
+
+double bin_4::get_relative_delta_speed(int target) {
+	return hypotl(rel_speed_targets_x[target], rel_speed_targets_y[target]);
+}
+
+Complex bin_4::get_relative_speed(int target) {
+	return Complex(rel_speed_targets_x[target], rel_speed_targets_y[target]);
 }
 
 void bin_4::step() {
@@ -3240,14 +3255,20 @@ void bin_4::step() {
 	memory[2128 - min_global] = local_1942;
 	status = lstatus;
 
-	vm_state::step_state();
-	vector<Complex> targets_pos = calculate_targets();
-	if (!_old_targets.empty()) {
-		vector<Complex>::iterator it_old, it_new;
-		_speed_targets.clear();
-		for (it_old = _old_targets.begin(), it_new = targets_pos.begin(); it_old != _old_targets.end() || it_new != targets_pos.end(); ++it_old, ++it_new) {
-			_speed_targets.push_back(*it_new - *it_old);
+	if (!old_target_rel_pos_x.empty()) {
+		rel_speed_targets_x.clear();
+		rel_speed_targets_y.clear();
+		for (int i = 0; i < nb_of_targets; i++) {
+			rel_speed_targets_x.push_back(-(output_ports[pos_target_x_addrs[i]] - old_target_rel_pos_x[i]));
+			rel_speed_targets_y.push_back(-(output_ports[pos_target_y_addrs[i]] - old_target_rel_pos_y[i]));
 		}
+		old_target_rel_pos_x.clear();
+		old_target_rel_pos_y.clear();
 	}
-	_old_targets = targets_pos;
+	for (int i = 0; i < nb_of_targets; i++) {
+		old_target_rel_pos_x.push_back(output_ports[pos_target_x_addrs[i]]);
+		old_target_rel_pos_y.push_back(output_ports[pos_target_y_addrs[i]]);
+	}
+	_fuel = output_ports[fuel_addr];
+	time_step++;
 }

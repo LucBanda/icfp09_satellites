@@ -15,11 +15,10 @@
 #define ROVER_COL HOME_COL
 #define WAYPT_COL al_map_rgb(200, 0, 0)
 #define BLACK al_map_rgb(0, 0, 0)
-#define ELLIPSE_COL al_map_rgb(0,0,250)
 
 #define TO_SCREEN(c) SCREEN_W / 2. + real(c) / SCALE, SCREEN_H / 2. - imag(c) / SCALE
 
-#define SHAPE_SCALE		1
+#define SHAPE_SCALE		2
 const int SCREEN_W = 2000 / SHAPE_SCALE;
 const int SCREEN_H = 2000 / SHAPE_SCALE;
 
@@ -37,8 +36,7 @@ renderer::renderer() {
 double start_radius = 0;
 void renderer::draw() {
 #ifdef ALLEGRO
-	Complex main_sat = _vm->get_pos();
-	vector<Complex> sats = _vm->get_targets();
+	Complex main_sat = _vm->get_absolute_position();
 	double fuel = _vm->get_fuel();
 	double max_fuel = _vm->get_fuel_max();
 	double radius = _vm->get_radius();
@@ -59,12 +57,13 @@ void renderer::draw() {
 	al_draw_filled_circle(SCREEN_W / 2. + real(main_sat) / (SCALE),
 						  SCREEN_H / 2. - imag(main_sat) / (SCALE), 10 / SHAPE_SCALE, ME_COL);
 
-	for (vector<Complex>::iterator it = sats.begin(); it != sats.end(); it++) {
-		al_draw_filled_circle(SCREEN_W / 2. + real(*it) / (SCALE),
-							  SCREEN_H / 2. - imag(*it) / (SCALE), 7.5/ SHAPE_SCALE,
+	for (int i = 0; i < _vm->nb_of_targets; i++) {
+		Complex pos = _vm->get_target_absolute_position(i);
+		al_draw_filled_circle(SCREEN_W / 2. + real(pos) / (SCALE),
+							  SCREEN_H / 2. - imag(pos) / (SCALE), 7.5/ SHAPE_SCALE,
 							  SAT_COL);
-		if (abs(*it) / SCALE > (double)SCREEN_W / 2.5) {
-			SCALE = abs(*it) / SCREEN_W * 2.5;
+		if (abs(pos) / SCALE > (double)SCREEN_W / 2.5) {
+			SCALE = abs(pos) / SCREEN_W * 2.5;
 		}
 	}
 
@@ -75,24 +74,10 @@ void renderer::draw() {
 					3.f/ SHAPE_SCALE);
 
 	string text;
-	text = to_string(abs(main_sat - *sats.begin())) + " m";
+	text = to_string(_vm->get_relative_distance(0)) + " m";
 	al_draw_text(debug_font, al_map_rgb(0,0,0), 0, 0, ALLEGRO_ALIGN_LEFT, text.c_str());
 	text = to_string(_vm->time_step) + " s";
 	al_draw_text(debug_font, al_map_rgb(0,0,0), 0, 60, ALLEGRO_ALIGN_LEFT, text.c_str());
-
-	if (_target_ellipse) {
-		al_draw_ellipse(TO_SCREEN(_target_ellipse->center),
-			real(_target_ellipse->radii) / SCALE, imag(_target_ellipse->radii) / SCALE, ELLIPSE_COL, 3. / SHAPE_SCALE);
-		//Complex ellipse_speed = _target_ellipse->get_speed(_vm->get_targets()[0]);
-		//Complex sat_speed = _vm->get_targets_speeds()[0];
-		//Complex delta_speed = sat_speed - ellipse_speed;
-		/*string text = to_string(abs(delta_speed)) + " \t" + to_string(arg(delta_speed));
-		al_draw_text(debug_font, al_map_rgb(0,0,0), 0, 0, ALLEGRO_ALIGN_LEFT, text.c_str());*/
-		al_draw_filled_circle(SCREEN_W / 2. + real(_target_ellipse->apexf) / SCALE, SCREEN_H / 2. - imag(_target_ellipse->apexf) / SCALE, 10./ SHAPE_SCALE, ELLIPSE_COL);
-		al_draw_filled_circle(SCREEN_W / 2. + real(_target_ellipse->apexs) / SCALE, SCREEN_H / 2. - imag(_target_ellipse->apexs) / SCALE, 10./ SHAPE_SCALE, ELLIPSE_COL);
-		al_draw_filled_circle(SCREEN_W / 2. + real(_target_ellipse->center) / SCALE, SCREEN_H / 2. - imag(_target_ellipse->center) / SCALE, 10./ SHAPE_SCALE, ELLIPSE_COL);
-
-	}
 #endif
 }
 void renderer::set_target_ellipse(ellipse *ellip) { _target_ellipse = ellip; }

@@ -18,6 +18,7 @@ bin_1::bin_1(int instance):vm_state() {
 	pos_x_addr = 0x2;
 	pos_y_addr = 0x3;
 	radius_addr = 0x4;
+	nb_of_targets = 0;
 	vm_state::reset();
 	step();
 	_fuel_max = get_fuel();
@@ -29,6 +30,26 @@ bin_1::~bin_1() {
 	free(memory);
 	free(output_ports);
 	free(input_ports);
+}
+
+double bin_1::get_relative_distance(int target) {
+	return _radius - abs(get_absolute_position());
+}
+
+Complex bin_1::get_target_absolute_position(int target) {
+	return Complex(_radius, _radius);
+}
+
+Complex bin_1::get_absolute_position() {
+	return -Complex(output_ports[pos_x_addr], output_ports[pos_y_addr]);
+}
+
+double bin_1::get_relative_delta_speed(int target) {
+	return 0.;
+}
+
+Complex bin_1::get_relative_speed(int target) {
+	return Complex(speed_x, speed_y);
 }
 
 void bin_1::step() {
@@ -457,6 +478,13 @@ void bin_1::step() {
 	memory[265 - min_global] = local_14;
 	status = lstatus;
 	_radius = output_ports[radius_addr];
-	vm_state::step_state();
+	_fuel = output_ports[fuel_addr];
+	if (old_pos_x != 0) {
+		speed_x = - output_ports[pos_x_addr] - old_pos_x;
+		speed_y = - output_ports[pos_y_addr] - old_pos_y;
+	}
+	old_pos_x = - output_ports[pos_x_addr];
+	old_pos_y = - output_ports[pos_y_addr];
+	time_step++;
 }
 #endif
