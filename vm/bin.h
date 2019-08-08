@@ -68,12 +68,15 @@ class bin_4 : public vm_state {
 	bin_4(int instance);
 	virtual ~bin_4();
 	void step();
-	vector<Complex> calculate_targets();
 	double get_relative_distance(int target);
 	Complex get_absolute_position();
 	Complex get_target_absolute_position(int target);
 	double get_relative_delta_speed(int target);
 	Complex get_relative_speed(int target);
+	double get_relative_distance_to_tank();
+	Complex get_tank_absolute_position();
+	double get_tank_fuel();
+	bool is_target_validated(int target);
 
 	private:
 	vector<int> pos_target_x_addrs;
@@ -82,6 +85,12 @@ class bin_4 : public vm_state {
 	vector<double> old_target_rel_pos_y;
 	vector<double> rel_speed_targets_x;
 	vector<double> rel_speed_targets_y;
+	vector<bool> validated_target;
+	address tank_x_addr;
+	address tank_y_addr;
+	address tank_fuel_addr;
+	vector<bool> validated_target_addr;
+
 };
 
 inline vm_state *bin_factory(int instance) {

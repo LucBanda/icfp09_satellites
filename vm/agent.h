@@ -19,7 +19,7 @@ enum flying_state {
 class agent {
    public:
 	vm_state *vm;
-	double max_time_step = 200000;
+	double max_time_step = 500000;
 
 	agent(int instance);
 	virtual ~agent();
@@ -63,6 +63,16 @@ class agent3 : public agent {
    public:
 	agent3(int instance);
 	~agent3();
+
+	bool stick_to_target();
+	double get_score();
+};
+
+
+class agent4 : public agent {
+   public:
+	agent4(int instance);
+	~agent4();
 
 	bool stick_to_target();
 	double get_score();

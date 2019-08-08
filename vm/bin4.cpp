@@ -17,12 +17,17 @@ bin_4::bin_4(int instance):vm_state() {
 	fuel_addr = 0x1;
 	pos_x_addr = 0x2;
 	pos_y_addr = 0x3;
+	tank_x_addr = 0x4;
+	tank_y_addr = 0x5;
+	tank_fuel_addr = 0x6;
 	nb_of_targets = 12;
 	for (int i = 0; i < nb_of_targets; i++) {
 		int addr_x = 0x7 + 3 * i;
 		int addr_y = 0x8 + 3 * i;
+		bool addr_validated = 0x9 + 3 * i;
 		pos_target_x_addrs.push_back(addr_x);
 		pos_target_y_addrs.push_back(addr_y);
+		validated_target_addr.push_back(addr_validated);
 	}
 	old_target_rel_pos_x.clear();
 	old_target_rel_pos_y.clear();
@@ -47,6 +52,24 @@ double bin_4::get_relative_distance(int target) {
 	return hypotl(output_ports[pos_target_x_addrs[target]], output_ports[pos_target_y_addrs[target]]);
 }
 
+double bin_4::get_relative_distance_to_tank() {
+	return hypotl(output_ports[tank_x_addr], output_ports[tank_y_addr]);
+}
+double bin_4::get_tank_fuel() {
+	return output_ports[tank_fuel_addr];
+}
+
+Complex bin_4::get_tank_absolute_position() {
+	Complex relative_tank_pos(output_ports[tank_x_addr], output_ports[tank_y_addr]);
+	Complex absolute_target_pos = get_absolute_position() + relative_tank_pos;
+
+	return absolute_target_pos;
+}
+
+bool bin_4::is_target_validated(int target) {
+	return output_ports[validated_target_addr[target]];
+}
+
 Complex bin_4::get_target_absolute_position(int target) {
 	Complex relative_target_pos(old_target_rel_pos_x[target], old_target_rel_pos_y[target]);
 	Complex absolute_target_pos = get_absolute_position() + relative_target_pos;
@@ -65,6 +88,8 @@ double bin_4::get_relative_delta_speed(int target) {
 Complex bin_4::get_relative_speed(int target) {
 	return Complex(rel_speed_targets_x[target], rel_speed_targets_y[target]);
 }
+
+
 
 void bin_4::step() {
 	bool lstatus = status;

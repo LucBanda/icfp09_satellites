@@ -26,6 +26,10 @@ class vm_state {
 	virtual Complex get_absolute_position() = 0;
 	virtual Complex get_target_absolute_position(int target) = 0;
 	virtual Complex get_relative_speed(int target = 0) = 0;
+	virtual double get_relative_distance_to_tank() {return 0.;}
+	virtual Complex get_tank_absolute_position() {return Complex(0.,0.);}
+	virtual double get_tank_fuel() {return 0.;}
+	virtual bool is_target_validated(int target) {return false;}
 
    protected:
    	void step_state();

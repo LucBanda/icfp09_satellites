@@ -20,6 +20,7 @@ class renderer {
 	void draw();
 
 	double SCALE;
+	bool scale_edited;
 	int m_timer;
 	bool fps_toggle;
 	int FPS;

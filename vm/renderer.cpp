@@ -12,13 +12,13 @@
 #define CRATER_COL al_map_rgb(200, 100, 100)
 #define ME_COL al_map_rgb(0, 200, 0)
 #define SAT_COL al_map_rgb(200, 0, 0)
-#define ROVER_COL HOME_COL
 #define WAYPT_COL al_map_rgb(200, 0, 0)
 #define BLACK al_map_rgb(0, 0, 0)
+#define TANK_COL al_map_rgb(0, 0, 100)
 
 #define TO_SCREEN(c) SCREEN_W / 2. + real(c) / SCALE, SCREEN_H / 2. - imag(c) / SCALE
 
-#define SHAPE_SCALE		2
+#define SHAPE_SCALE		1
 const int SCREEN_W = 2000 / SHAPE_SCALE;
 const int SCREEN_H = 2000 / SHAPE_SCALE;
 
@@ -31,6 +31,7 @@ renderer::renderer() {
 	FPS = 60 * draw_decimation;
 	debug_relative_position = false;
 	_target_ellipse = NULL;
+	scale_edited = false;
 }
 
 double start_radius = 0;
@@ -51,7 +52,7 @@ void renderer::draw() {
 							 SCREEN_H - 98. + (1 - (fuel / max_fuel)) * 100,
 							 BACKGROUND_COL);
 
-	if (abs(main_sat) / SCALE > (double)SCREEN_W / 2.5) {
+	if (!scale_edited && abs(main_sat) / SCALE > (double)SCREEN_W / 2.5) {
 		SCALE = abs(main_sat) / SCREEN_W * 2.5;
 	}
 	al_draw_filled_circle(SCREEN_W / 2. + real(main_sat) / (SCALE),
@@ -62,16 +63,19 @@ void renderer::draw() {
 		al_draw_filled_circle(SCREEN_W / 2. + real(pos) / (SCALE),
 							  SCREEN_H / 2. - imag(pos) / (SCALE), 7.5/ SHAPE_SCALE,
 							  SAT_COL);
-		if (abs(pos) / SCALE > (double)SCREEN_W / 2.5) {
+		if (!scale_edited && abs(pos) / SCALE > (double)SCREEN_W / 2.5) {
 			SCALE = abs(pos) / SCREEN_W * 2.5;
 		}
 	}
 
-	if (radius / SCALE > (double)SCREEN_W / 2.5) {
+	if (!scale_edited && radius / SCALE > (double)SCREEN_W / 2.5) {
 		SCALE = radius / SCREEN_W * 2.5;
 	}
 	al_draw_circle(SCREEN_W / 2., SCREEN_H / 2., radius / SCALE, CRATER_COL,
 					3.f/ SHAPE_SCALE);
+
+	al_draw_filled_circle(SCREEN_W / 2. + real(_vm->get_tank_absolute_position()) / (SCALE),
+						  SCREEN_H / 2. - imag(_vm->get_tank_absolute_position()) / (SCALE), 10 / SHAPE_SCALE, TANK_COL);
 
 	string text;
 	text = to_string(_vm->get_relative_distance(0)) + " m";
@@ -194,10 +198,14 @@ void renderer::mainLoop(void *params) {
 
 				case ALLEGRO_KEY_LEFT:
 					key[KEY_LEFT] = false;
+					SCALE = SCALE - SCALE / 4.;
+					scale_edited = true;
 					break;
 
 				case ALLEGRO_KEY_RIGHT:
 					key[KEY_RIGHT] = false;
+					SCALE = SCALE + SCALE / 4.;
+					scale_edited = true;
 					break;
 
 				case ALLEGRO_KEY_R:

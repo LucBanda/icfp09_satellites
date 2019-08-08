@@ -102,6 +102,19 @@ bool eval_solution3(const MySolution& p, MyMiddleCost& c) {
 	return true;  // solution is accepted
 }
 
+bool eval_solution4(const MySolution& p, MyMiddleCost& c) {
+	executionT execution;
+	agent4 executeur(gInstance);
+
+	execution[p.time1] = Complex(p.speed1_x, p.speed1_y);
+	if (nb_of_thrusts >= 2) {
+		execution[p.time2] = Complex(p.speed2_x, p.speed2_y);
+	}
+	executeur.set_execution_map(&execution);
+	c.objective1 = -executeur.run();
+	return true;  // solution is accepted
+}
+
 MySolution mutate(const MySolution& X_base,
 				  const std::function<double(void)>& rnd01,
 				  double shrink_scale) {
@@ -245,11 +258,11 @@ int main(int argc, char** argv) {
 				max_time2 = 50000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3004) {
-				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
-				max_time1 = 5000;
-				max_time2 = 50000;
-				nb_of_thrusts = 1;
+				agent4 ag(gInstance);
+				max_fuel = ag.vm->get_fuel();
+				max_time1 = 1000;
+				max_time2 = 2000000;
+				nb_of_thrusts = 2;
 			}
 
 			output_file.open("./results/" + to_string(gInstance) + ".txt");
@@ -282,6 +295,8 @@ int main(int argc, char** argv) {
 				ga_obj.eval_solution = eval_solution2;
 			} else if (gInstance / 1000 == 3) {
 				ga_obj.eval_solution = eval_solution3;
+			} else if (gInstance / 1000 == 4) {
+				ga_obj.eval_solution = eval_solution4;
 			}
 			ga_obj.mutate = mutate;
 			ga_obj.crossover = crossover;
