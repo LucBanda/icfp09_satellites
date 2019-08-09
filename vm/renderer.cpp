@@ -18,7 +18,7 @@
 
 #define TO_SCREEN(c) SCREEN_W / 2. + real(c) / SCALE, SCREEN_H / 2. - imag(c) / SCALE
 
-#define SHAPE_SCALE		1
+#define SHAPE_SCALE	1
 const int SCREEN_W = 2000 / SHAPE_SCALE;
 const int SCREEN_H = 2000 / SHAPE_SCALE;
 
@@ -49,8 +49,16 @@ void renderer::draw() {
 	al_draw_filled_rectangle(SCREEN_W - 100., SCREEN_H - 100., SCREEN_W - 50.,
 							 SCREEN_H - 10., BLACK);
 	al_draw_filled_rectangle(SCREEN_W - 98., SCREEN_H - 98., SCREEN_W - 52.,
-							 SCREEN_H - 98. + (1 - (fuel / max_fuel)) * 100,
+							 SCREEN_H - 12. - (fuel / max_fuel) * 96.,
 							 BACKGROUND_COL);
+
+	if (_vm->get_max_tank_fuel()) {
+		al_draw_filled_rectangle(SCREEN_W - 200., SCREEN_H - 100., SCREEN_W - 150.,
+								SCREEN_H - 10., BLACK);
+		al_draw_filled_rectangle(SCREEN_W - 198., SCREEN_H - 98., SCREEN_W - 152.,
+								SCREEN_H - 12. - (_vm->get_tank_fuel() / _vm->get_max_tank_fuel()) * 96.,
+								BACKGROUND_COL);
+	}
 
 	if (!scale_edited && abs(main_sat) / SCALE > (double)SCREEN_W / 2.5) {
 		SCALE = abs(main_sat) / SCREEN_W * 2.5;
@@ -59,6 +67,8 @@ void renderer::draw() {
 						  SCREEN_H / 2. - imag(main_sat) / (SCALE), 10 / SHAPE_SCALE, ME_COL);
 
 	for (int i = 0; i < _vm->nb_of_targets; i++) {
+		if (_vm->is_target_validated(i))
+			continue;
 		Complex pos = _vm->get_target_absolute_position(i);
 		al_draw_filled_circle(SCREEN_W / 2. + real(pos) / (SCALE),
 							  SCREEN_H / 2. - imag(pos) / (SCALE), 7.5/ SHAPE_SCALE,

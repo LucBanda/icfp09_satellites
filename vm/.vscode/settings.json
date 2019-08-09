@@ -9,7 +9,7 @@
                 "engineLogging": true,
                 "traceResponse": true
         },
-       "args": ["-a"]
+       "args": ["-i", "4001", "-l"]
     }
 
 }

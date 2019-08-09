@@ -2,7 +2,7 @@
 #include "bin.h"
 #include "complex"
 
-#define ORBIT_PRECISION 750.
+#define ORBIT_PRECISION 1000.
 #define SAT_PRECISION 750.
 
 agent::agent(int instance) {
@@ -21,9 +21,8 @@ void agent::step() {
 	} else {
 		vm->set_speed(Complex(0., 0.));
 	}
-	if (fly_state != FS_ORBIT)
+	if (vm->time_step > 0)
 		stick_to_target();
-
 	vm->step();
 }
 
@@ -89,7 +88,7 @@ double agent2::get_score() {
 	}
 	if (vm->get_fuel() <= 0.001) return -1000000;
 	if (vm->time_step > last_time_fs_changed + 1000 && fly_state == FS_ON_TARGET_ORBIT) {
-		double approximate_error = log2f(max(1., distance_when_crossed - 500.));
+		double approximate_error = log2l(max(1., distance_when_crossed - 500.));
 		double fake_score = 2 * (25. + 45. * ((vm->get_fuel() - abs_delta_v_when_crossed) / vm->get_fuel_max()) + (30. - log2(vm->time_step/1000.)) - approximate_error);
 		return fake_score;
 	}
@@ -130,7 +129,7 @@ double agent3::get_score() {
 
 	if (vm->get_fuel() <= 0.001) return -10000;
 	if (vm->time_step > last_time_fs_changed + 1000 && fly_state == FS_ON_TARGET_ORBIT) {
-		double approximate_error = log2f(max(1., distance_when_crossed - 500.));
+		double approximate_error = log2l(max(1., distance_when_crossed - 500.));
 		double fake_score = 4 * (25. + 45. * ((vm->get_fuel() - abs_delta_v_when_crossed) / vm->get_fuel_max()) + (30. - log2(vm->time_step/1000.)) - approximate_error);
 		return fake_score;
 	}
@@ -162,24 +161,84 @@ bool agent3::stick_to_target() {
 	return false;
 }
 
-agent4::agent4(int instance) : agent(instance) {}
+agent4::agent4(int instance) : agent(instance) {
+	distance_when_lost = 100000000000000;
+}
 
 agent4::~agent4() {}
 
+void update_status() {
+
+}
+
+double agent4::get_intermediate_score() {
+	double approximate_error =  log2l(max(1., distance_when_lost));
+	/*for (vector<int>::iterator target_left = non_validated_targets.begin();
+		target_left != non_validated_targets.end(); ++target_left)
+			approximate_error += log2l(vm->get_relative_distance(*target_left));*/
+	double fake_score = 0.;
+	for (vector<int>::iterator t1 = validated_time_steps.begin();
+		t1 != validated_time_steps.end(); ++t1)
+			fake_score += (2e6 - *t1) / 24e6;
+	fake_score = 75. * fake_score + 25 * (vm->get_fuel() + vm->get_tank_fuel()) / (vm->get_fuel_max() + vm->get_max_tank_fuel());
+	fake_score *= 8.;
+	fake_score -= approximate_error;
+	return fake_score;
+}
+
 double agent4::get_score() {
+	if (vm->time_step < 2)
+		return 0;
+
+	if (vm->get_score() == -1.) {
+		return get_intermediate_score();
+	}
 	if (vm->get_score() != 0)
 		return vm->get_score();
 
-	if (vm->get_fuel() <= 0.001) return -1;
+	if (vm->get_fuel() <= 0.001) return -2e30;
 
-	/*if (vm->time_step == max_time_step - 1) {
-		double approximate_error = log2f(max(1., distance_when_crossed - 500.));
-		double fake_score = 4 * (25. + 45. * ((vm->get_fuel() - abs_delta_v_when_crossed) / vm->get_fuel_max()) + (30. - log2(vm->time_step/1000.)) - approximate_error);
-		return fake_score;
-	}*/
+	if (fly_state == FS_LOST) {
+		return get_intermediate_score();
+	}
 	return 0;
 }
 
+void agent4::update_status() {
+	if (vm->time_step == 1)
+		for (int i = 0; i < vm->nb_of_targets; i++)
+			non_validated_targets.push_back(i);
+
+	vector<int>::iterator target = non_validated_targets.begin();
+	while (target != non_validated_targets.end()) {
+		if (vm->is_target_validated(*target)) {
+			validated_targets.push_back(*target);
+			target = non_validated_targets.erase(target);
+			validated_time_steps.push_back(vm->time_step);
+			fly_state = FS_FLY;
+		} else {
+			target++;
+		}
+	}
+}
+
 bool agent4::stick_to_target() {
+	update_status();
+	int closest_target = -1;
+	double closest_distance = 9e50;
+	Complex closest_pos;
+
+	for (vector<int>::iterator target = non_validated_targets.begin(); target != non_validated_targets.end(); ++target) {
+		if (closest_target == -1 || closest_distance > vm->get_relative_distance(*target)) {
+			closest_target = *target;
+			closest_distance = vm->get_relative_distance(*target);
+			closest_pos = vm->get_target_absolute_position(*target);
+		}
+	}
+	if (abs(abs(closest_pos) - abs(vm->get_absolute_position())) < ORBIT_PRECISION) {
+		fly_state = FS_LOST;
+		distance_when_lost = closest_distance;
+	}
+
 	return false;
 }

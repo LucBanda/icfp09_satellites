@@ -21,14 +21,6 @@ bin_4::bin_4(int instance):vm_state() {
 	tank_y_addr = 0x5;
 	tank_fuel_addr = 0x6;
 	nb_of_targets = 12;
-	for (int i = 0; i < nb_of_targets; i++) {
-		int addr_x = 0x7 + 3 * i;
-		int addr_y = 0x8 + 3 * i;
-		bool addr_validated = 0x9 + 3 * i;
-		pos_target_x_addrs.push_back(addr_x);
-		pos_target_y_addrs.push_back(addr_y);
-		validated_target_addr.push_back(addr_validated);
-	}
 	old_target_rel_pos_x.clear();
 	old_target_rel_pos_y.clear();
 	rel_speed_targets_x.clear();
@@ -36,6 +28,7 @@ bin_4::bin_4(int instance):vm_state() {
 	reset();
 	step();
 	_fuel_max = get_fuel();
+	_tank_max = get_tank_fuel();
 	step();
 	reset();
 	old_target_rel_pos_x.clear();
@@ -59,6 +52,10 @@ double bin_4::get_tank_fuel() {
 	return output_ports[tank_fuel_addr];
 }
 
+double bin_4::get_max_tank_fuel() {
+	return _tank_max;
+}
+
 Complex bin_4::get_tank_absolute_position() {
 	Complex relative_tank_pos(output_ports[tank_x_addr], output_ports[tank_y_addr]);
 	Complex absolute_target_pos = get_absolute_position() + relative_tank_pos;
@@ -67,7 +64,7 @@ Complex bin_4::get_tank_absolute_position() {
 }
 
 bool bin_4::is_target_validated(int target) {
-	return output_ports[validated_target_addr[target]];
+	return output_ports[validated_target_addr[target]] == 1.0;
 }
 
 Complex bin_4::get_target_absolute_position(int target) {
@@ -414,6 +411,20 @@ void bin_4::step() {
 		const_1693 = 2e+06, const_1923 = 75000, const_1927 = 10000,
 		const_1944 = 8, const_1945 = 2.4e+07, const_1958 = 75, const_1963 = 25,
 		const_1986 = 6.357e+06, const_1996 = 0;
+
+	if (time_step == 0) {
+		validated_target_addr.clear();
+		pos_target_x_addrs.clear();
+		pos_target_y_addrs.clear();
+		for (int i = 0; i < nb_of_targets; i++) {
+			int addr_x = 0x7 + 3 * i;
+			int addr_y = 0x8 + 3 * i;
+			int addr_validated = 0x9 + 3 * i;
+			pos_target_x_addrs.push_back(addr_x);
+			pos_target_y_addrs.push_back(addr_y);
+			validated_target_addr.push_back(addr_validated);
+		}
+	}
 	local_2 = (const_1 == 0) ? 0 : const_1 / const_1;
 	local_3 = local_2 * local_2;
 	local_4 = (const_0 == 0) ? 0 : local_3 / const_0;
@@ -3280,6 +3291,14 @@ void bin_4::step() {
 	memory[2128 - min_global] = local_1942;
 	status = lstatus;
 
+	if (time_step == 0){
+		int new_number_of_targets = 0;
+		for (int i = 0; i < nb_of_targets; i++) {
+			if (get_relative_distance(i) != 0. || is_target_validated(i))
+				new_number_of_targets++;
+		}
+	 	nb_of_targets = new_number_of_targets;
+	}
 	if (!old_target_rel_pos_x.empty()) {
 		rel_speed_targets_x.clear();
 		rel_speed_targets_y.clear();

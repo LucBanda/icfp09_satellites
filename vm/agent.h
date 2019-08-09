@@ -76,5 +76,13 @@ class agent4 : public agent {
 
 	bool stick_to_target();
 	double get_score();
+
+	private:
+	void update_status();
+	double get_intermediate_score();
+	vector<int> validated_targets;
+	vector<int> non_validated_targets;
+	vector<int> validated_time_steps;
+	double distance_when_lost;
 };
 #endif

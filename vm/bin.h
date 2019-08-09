@@ -76,6 +76,7 @@ class bin_4 : public vm_state {
 	double get_relative_distance_to_tank();
 	Complex get_tank_absolute_position();
 	double get_tank_fuel();
+	double get_max_tank_fuel();
 	bool is_target_validated(int target);
 
 	private:
@@ -89,7 +90,7 @@ class bin_4 : public vm_state {
 	address tank_x_addr;
 	address tank_y_addr;
 	address tank_fuel_addr;
-	vector<bool> validated_target_addr;
+	vector<int> validated_target_addr;
 
 };
 

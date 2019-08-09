@@ -29,6 +29,7 @@ class vm_state {
 	virtual double get_relative_distance_to_tank() {return 0.;}
 	virtual Complex get_tank_absolute_position() {return Complex(0.,0.);}
 	virtual double get_tank_fuel() {return 0.;}
+	virtual double get_max_tank_fuel() {return 0.;}
 	virtual bool is_target_validated(int target) {return false;}
 
    protected:
@@ -56,6 +57,7 @@ class vm_state {
 	double _radius;
 	double _fuel;
 	double _fuel_max;
+	double _tank_max;
 };
 
 #endif

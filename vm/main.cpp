@@ -44,64 +44,47 @@ executionT parse_result(string fileName) {
 		std::string line = getLastLine(file);
 		cout << line << endl;
 		// remove beginning
-		std::string delimiter = "{ map[";
+		std::string delimiter = "{ ";
 		size_t pos = line.find(delimiter);
 		line.erase(0, pos + delimiter.length());
 
 		// remove end
-		delimiter = "; }";
+		delimiter = " }";
 		pos = line.find(delimiter);
 		// token = line.substr(0, pos);
 		line.erase(pos, line.npos);
 
-		// parse first time
-		delimiter = "] = Complex(";
-		pos = line.find(delimiter);
-		token = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-		int time = stoi(token);
+		while (line.size() != 0) {
+			std::string delimiter = "map[";
+			size_t pos = line.find(delimiter);
+			line.erase(0, pos + delimiter.length());
 
-		// parse x1
-		delimiter = ", ";
-		pos = line.find(delimiter);
-		token = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-		double x = stold(token);
+			// parse first time
+			delimiter = "] = Complex(";
+			pos = line.find(delimiter);
+			token = line.substr(0, pos);
+			line.erase(0, pos + delimiter.length());
+			int time = stoi(token);
 
-		// parse y1
-		delimiter = "); map[";
-		pos = line.find(delimiter);
-		token = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-		double y = stod(token);
-		map[time] = Complex(x, y);
+			// parse x1
+			delimiter = ", ";
+			pos = line.find(delimiter);
+			token = line.substr(0, pos);
+			line.erase(0, pos + delimiter.length());
+			double x = stold(token);
 
-		std::cout << "[" << time << "] = (" << setprecision(10) << x << ", "
-				  << setprecision(10) << y << ")\n";
-		// parse second time
-		delimiter = "] = Complex(";
-		pos = line.find(delimiter);
-		token = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-		time = stoi(token);
+			// parse y1
+			delimiter = "); ";
+			pos = line.find(delimiter);
+			token = line.substr(0, pos);
+			line.erase(0, pos + delimiter.length());
+			double y = stod(token);
+			map[time] = Complex(x, y);
 
-		// parse x2
-		delimiter = ", ";
-		pos = line.find(delimiter);
-		token = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-		x = stold(token);
+			std::cout << "[" << time << "] = (" << setprecision(10) << x << ", "
+				<< setprecision(10) << y << ")\n";
+		}
 
-		// parse y2
-		delimiter = ")";
-		pos = line.find(delimiter);
-		token = line.substr(0, pos);
-		line.erase(0, pos + delimiter.length());
-		y = stod(token);
-		if (time != -1) map[time] = Complex(x, y);
-
-		std::cout << "[" << time << "] = (" << setprecision(10) << x << ", "
-				  << setprecision(10) << y << ")\n";
 	} else
 		std::cout << "Unable to open file.\n";
 	return map;
