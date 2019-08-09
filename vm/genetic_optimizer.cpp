@@ -115,7 +115,7 @@ MySolution mutate(const MySolution& X_base,
 		do {
 			in_range = true;
 			X_new = X_base;
-			X_new.time[i] += 10 * (rnd01() - rnd01()) * shrink_scale;
+			X_new.time[i] += 5 * (rnd01() - rnd01()) * shrink_scale;
 			in_range = in_range && (X_new.time[i] >= 0 && X_new.time[i] < max_time[i]);
 			X_new.speed_x[i] += 0.2 * (rnd01() - rnd01()) * shrink_scale;
 			in_range = in_range && (X_new.speed_x[i] >= -max_fuel && X_new.speed_x[i] < max_fuel);
@@ -129,10 +129,11 @@ MySolution mutate(const MySolution& X_base,
 MySolution crossover(const MySolution& X1, const MySolution& X2,
 					 const std::function<double(void)>& rnd01) {
 	MySolution X_new;
-	double r;
+	double r, rmin;
 	for (int i = 0; i < nb_of_thrusts; i++) {
 		r = rnd01();
-		X_new.time[i] = r * X1.time[i] + (1.0 - r) * X2.time[i];
+		rmin = 1. - rnd01() / 10.;
+		X_new.time[i] = rmin * (r * X1.time[i] + (1.0 - r) * X2.time[i]);
 		r = rnd01();
 		X_new.speed_x[i] = r * X1.speed_x[i] + (1.0 - r) * X2.speed_x[i];
 		r = rnd01();
@@ -197,7 +198,7 @@ int main(int argc, char** argv) {
 			} else if (gInstance == 2001) {
 				agent2 ag(gInstance);
 				max_fuel = ag.vm->get_fuel()/10.;
-				max_time[0] = 5000;
+				max_time[0] = 20000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2002) {
 				agent2 ag(gInstance);
@@ -238,10 +239,10 @@ int main(int argc, char** argv) {
 				agent4 ag(gInstance);
 				max_fuel = ag.vm->get_fuel() / 2.;
 				max_time[0] = 10000;
-				max_time[1] = 100000;
-				max_time[2] = 200000;
-				max_time[3] = 300000;
-				max_time[4] = 400000;
+				max_time[1] = 50000;
+				max_time[2] = 100000;
+				max_time[3] = 150000;
+				max_time[4] = 200000;
 				nb_of_thrusts = 5;
 			}
 
@@ -265,7 +266,7 @@ int main(int argc, char** argv) {
 			ga_obj.idle_delay_us = 1;  // switch between threads quickly
 			ga_obj.dynamic_threading = false;
 			ga_obj.verbose = false;
-			ga_obj.population = 3000;
+			ga_obj.population = 2000;
 			ga_obj.generation_max = 1000;
 			ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
 			ga_obj.init_genes = init_genes;
@@ -281,10 +282,10 @@ int main(int argc, char** argv) {
 			ga_obj.mutate = mutate;
 			ga_obj.crossover = crossover;
 			ga_obj.SO_report_generation = SO_report_generation;
-			ga_obj.crossover_fraction = 0.9;
+			ga_obj.crossover_fraction = 0.5;
 			ga_obj.mutation_rate = 0.9;
 			ga_obj.best_stall_max = 70;
-			ga_obj.elite_count = 300;
+			ga_obj.elite_count = 20;
 			ga_obj.solve();
 			cout << "The problem is optimized in " << timer.toc() << " seconds."
 				<< endl;
