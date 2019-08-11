@@ -20,6 +20,7 @@ class agent {
    public:
 	vm_state *vm;
 	double max_time_step = 500000;
+	int last_validated_time;
 
 	agent(int instance);
 	virtual ~agent();
@@ -37,6 +38,7 @@ class agent {
 	int time_close_to_orbit;
 	double distance_when_crossed;
 	double abs_delta_v_when_crossed;
+
 };
 
 class agent1 : public agent {
@@ -84,5 +86,24 @@ class agent4 : public agent {
 	vector<int> non_validated_targets;
 	vector<int> validated_time_steps;
 	double distance_when_lost;
+	double max_distance;
 };
+
+static inline agent *agent_factory(int instance) {
+	int pb = instance /1000;
+	switch (pb) {
+	case 1:
+		return new agent1(instance);
+	case 2:
+		return new agent2(instance);
+	case 3:
+		return new agent3(instance);
+	case 4:
+		return new agent4(instance);
+	default:
+		cout << instance << " not allowed" << endl;
+	}
+	return NULL;
+}
+
 #endif

@@ -5,6 +5,7 @@
 #include "openga.hpp"
 #include "renderer.h"
 #include "sys/time.h"
+#include "fileparser.h"
 
 struct main_status {
 	vm_state* vm;
@@ -27,70 +28,7 @@ bool idle(void* user_param) {
 	return false;
 }
 
-std::string getLastLine(std::ifstream& in) {
-	std::string line;
-	while (in >> std::ws && std::getline(in, line))  // skip empty lines
-		;
-
-	return line;
-}
-
-executionT parse_result(string fileName) {
-	executionT map;
-	std::ifstream file(fileName);
-
-	if (file) {
-		std::string token;
-		std::string line = getLastLine(file);
-		cout << line << endl;
-		// remove beginning
-		std::string delimiter = "{ ";
-		size_t pos = line.find(delimiter);
-		line.erase(0, pos + delimiter.length());
-
-		// remove end
-		delimiter = " }";
-		pos = line.find(delimiter);
-		// token = line.substr(0, pos);
-		line.erase(pos, line.npos);
-
-		while (line.size() != 0) {
-			std::string delimiter = "map[";
-			size_t pos = line.find(delimiter);
-			line.erase(0, pos + delimiter.length());
-
-			// parse first time
-			delimiter = "] = Complex(";
-			pos = line.find(delimiter);
-			token = line.substr(0, pos);
-			line.erase(0, pos + delimiter.length());
-			int time = stoi(token);
-
-			// parse x1
-			delimiter = ", ";
-			pos = line.find(delimiter);
-			token = line.substr(0, pos);
-			line.erase(0, pos + delimiter.length());
-			double x = stold(token);
-
-			// parse y1
-			delimiter = "); ";
-			pos = line.find(delimiter);
-			token = line.substr(0, pos);
-			line.erase(0, pos + delimiter.length());
-			double y = stod(token);
-			map[time] = Complex(x, y);
-
-			std::cout << "[" << time << "] = (" << setprecision(10) << x << ", "
-				<< setprecision(10) << y << ")\n";
-		}
-
-	} else
-		std::cout << "Unable to open file.\n";
-	return map;
-}
-
-void print_help() {
+static void print_help() {
 	printf(
 "options: \n \
 	-h : this help \n \
@@ -149,7 +87,7 @@ int main(int argc, char** argv) {
 
 			vm = ag->vm;
 			if (load_result) {
-				map = parse_result("./results/" + to_string(instance) + ".txt");
+				map = parse_result(instance);
 				ag->set_execution_map(&map);
 			}
 

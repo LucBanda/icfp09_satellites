@@ -4,6 +4,7 @@
 #include <string>
 #include "agent.h"
 #include "openga.hpp"
+#include "fileparser.h"
 
 using std::cout;
 using std::endl;
@@ -14,6 +15,8 @@ int gInstance;
 double max_fuel;
 int max_time[MAX_NUMBER_OF_THRUSTS];
 int nb_of_thrusts;
+int global_min_time = 0;
+executionT so_far_executed;
 
 struct MySolution {
 	int time[MAX_NUMBER_OF_THRUSTS];
@@ -24,10 +27,14 @@ struct MySolution {
 		std::ostringstream out;
 		out.precision(20);
 		out << "{ ";
+			for (executionT::iterator it = so_far_executed.begin() ; it != so_far_executed.end(); ++it)
+				out << "map[" << std::to_string(it->first) << "] = "
+					<< "Complex(" << std::to_string(real(it->second))
+					<< ", " << std::to_string(imag(it->second)) << "); ";
 			for (int i = 0; i < nb_of_thrusts; i++) {
 				out << "map[" << std::to_string(time[i]) << "] = "
-			   << "Complex(" << std::to_string(speed_x[i])
-			   << ", " << std::to_string(speed_y[i]) << "); ";
+			   		<< "Complex(" << std::to_string(speed_x[i])
+			   		<< ", " << std::to_string(speed_y[i]) << "); ";
 			}
 		out << " }";
 		return out.str();
@@ -51,10 +58,12 @@ void init_genes(MySolution& p, const std::function<double(void)>& rnd01) {
 		p.speed_x[i] =-1;
 		p.speed_y[i] =-1;
 	}
+	int min_time = global_min_time;
 	for (i = 0; i < nb_of_thrusts; i ++) {
-		p.time[i] = 0 + max_time[i] * rnd01();
+		p.time[i] = min_time + max_time[i] * rnd01();
 		p.speed_x[i] = -max_fuel + 2 * max_fuel * rnd01();
 		p.speed_y[i] = -max_fuel + 2 * max_fuel * rnd01();
+		min_time = p.time[i];
 	}
 }
 
@@ -98,6 +107,7 @@ bool eval_solution4(const MySolution& p, MyMiddleCost& c) {
 	executionT execution;
 	agent4 executeur(gInstance);
 
+	execution = so_far_executed;
 	for (int i = 0; i < nb_of_thrusts; i++)
 		execution[p.time[i]] = Complex(p.speed_x[i], p.speed_y[i]);
 
@@ -111,18 +121,24 @@ MySolution mutate(const MySolution& X_base,
 				  double shrink_scale) {
 	MySolution X_new;
 	bool in_range;
-	for (int i = 0; i < nb_of_thrusts; i++) {
+	int min_time = global_min_time;
+	int damped_thrust = nb_of_thrusts * rnd01();
+	//cout << "damped_thrust " << damped_thrust << endl;
+	//for (int i = damped_thrust; i < nb_of_thrusts; i++) {
 		do {
 			in_range = true;
 			X_new = X_base;
-			X_new.time[i] += 5 * (rnd01() - rnd01()) * shrink_scale;
-			in_range = in_range && (X_new.time[i] >= 0 && X_new.time[i] < max_time[i]);
-			X_new.speed_x[i] += 0.2 * (rnd01() - rnd01()) * shrink_scale;
-			in_range = in_range && (X_new.speed_x[i] >= -max_fuel && X_new.speed_x[i] < max_fuel);
-			X_new.speed_y[i] += 0.2 * (rnd01() - rnd01()) * shrink_scale;
-			in_range = in_range && (X_new.speed_y[i] >= -max_fuel && X_new.speed_y[i] < max_fuel);
+			X_new.time[damped_thrust] += 10. * (rnd01() - rnd01()) * shrink_scale;
+			if (X_new.time[damped_thrust] < min_time) X_new.time[damped_thrust] = min_time;
+			if(X_new.time[damped_thrust] >= (min_time + max_time[damped_thrust])) X_new.time[damped_thrust] = (min_time + max_time[damped_thrust]);
+			X_new.speed_x[damped_thrust] += .02 * (rnd01() - rnd01()) * shrink_scale;
+			in_range = in_range && (X_new.speed_x[damped_thrust] >= -max_fuel && X_new.speed_x[damped_thrust] < max_fuel);
+			X_new.speed_y[damped_thrust] += .02 * (rnd01() - rnd01()) * shrink_scale;
+			in_range = in_range && (X_new.speed_y[damped_thrust] >= -max_fuel && X_new.speed_y[damped_thrust] < max_fuel);
+
 		} while (!in_range);
-	}
+		//min_time = X_new.time[i];
+	//}
 	return X_new;
 }
 
@@ -131,13 +147,13 @@ MySolution crossover(const MySolution& X1, const MySolution& X2,
 	MySolution X_new;
 	double r, rmin;
 	for (int i = 0; i < nb_of_thrusts; i++) {
-		r = rnd01();
-		rmin = 1. - rnd01() / 10.;
-		X_new.time[i] = rmin * (r * X1.time[i] + (1.0 - r) * X2.time[i]);
-		r = rnd01();
-		X_new.speed_x[i] = r * X1.speed_x[i] + (1.0 - r) * X2.speed_x[i];
-		r = rnd01();
-		X_new.speed_y[i] = r * X1.speed_y[i] + (1.0 - r) * X2.speed_y[i];
+			r = rnd01();
+			rmin = 1. - rnd01() / 10.;
+			X_new.time[i] = rmin * r * X1.time[i] + (1.0 - r) * X2.time[i];
+			r = rnd01();
+			X_new.speed_x[i] = r * X1.speed_x[i] + (1.0 - r) * X2.speed_x[i];
+			r = rnd01();
+			X_new.speed_y[i] = r * X1.speed_y[i] + (1.0 - r) * X2.speed_y[i];
 	}
 	return X_new;
 }
@@ -161,7 +177,7 @@ void SO_report_generation(
 		 << "Average=" << -last_generation.average_cost << ", "
 		 << "Best genes=(" << best_genes.to_string() << ")"
 		 << ", "
-		 << "Exe_time=" << last_generation.exe_time << endl;
+		 << "Exe_time=" << last_generation.exe_time << endl << endl;
 
 	output_file << generation_number << "   \t"
 				<< std::setw( 11 ) << -last_generation.average_cost
@@ -170,19 +186,34 @@ void SO_report_generation(
 	output_file.flush();
 }
 
-int main(int argc, char** argv) {
-	bool do_all;
-	if (argc < 2) {
-		cerr << "please enter the scenario id" << endl;
-		exit(-1);
-	}
-	gInstance = atoi(argv[1]);
+static void print_help() {
+	printf(
+"options: \n \
+	-h : this help \n \
+	-i instance: instance of the problem to display \n \
+	-l : load the best solution so far for this problem \n \
+	-a : do all problem\n");
+}
 
-	if (strcmp(argv[1], "all") != 0) {
-		gInstance = atoi(argv[1]);
-		do_all = false;
-	} else
-		do_all = true;
+int main(int argc, char** argv) {
+	bool do_all = false;
+	bool continue_optim = false;
+	int c;
+
+	while ((c = getopt(argc, argv, "ahli:")) != -1) switch (c) {
+			case 'l':
+				continue_optim = true;
+				break;
+			case 'i':
+				gInstance = atoi(optarg);
+				break;
+			case 'a':
+				do_all = true;
+				break;
+			case 'h':
+			default:
+				print_help();
+		}
 
 	for (int i = 1; i < 4; i++) {
 		for (int j = 1; j < 5; j++) {
@@ -190,61 +221,62 @@ int main(int argc, char** argv) {
 				gInstance = i * 1000 + j;
 			}
 
+			agent *base_agent = agent_factory(gInstance);
+
+			max_fuel = base_agent->vm->get_fuel() / 10.;
+			if (continue_optim) {
+				so_far_executed = parse_result(gInstance);
+				base_agent->set_execution_map(&so_far_executed);
+				base_agent->run();
+				global_min_time = base_agent->last_validated_time;
+			}
+			executionT::iterator target = so_far_executed.begin();
+			while (target != so_far_executed.end()) {
+				if (target->first > global_min_time) {
+					target = so_far_executed.erase(target);
+				} else {
+					target++;
+				}
+			}
+			cout << "global min time = " << global_min_time << endl;
 			if (gInstance / 1000 == 1) {
-				agent1 ag(gInstance);
-				max_fuel = ag.vm->get_fuel();
 				max_time[0] = 1;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2001) {
-				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel()/10.;
 				max_time[0] = 20000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2002) {
-				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time[0] = 10000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2003) {
-				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time[0] = 1000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 2004) {
-				agent2 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time[0] = 25000;
 				nb_of_thrusts = 1;
 			}else if (gInstance == 3001) {
-				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time[0] = 20000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3002) {
-				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time[0] = 30000;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3003) {
-				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 5.;
 				max_time[0] = 500;
 				nb_of_thrusts = 1;
 			} else if (gInstance == 3004) {
-				agent3 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 10.;
 				max_time[0] = 10000;
 				nb_of_thrusts = 1;
 			} else {
-				agent4 ag(gInstance);
-				max_fuel = ag.vm->get_fuel() / 2.;
-				max_time[0] = 10000;
-				max_time[1] = 50000;
-				max_time[2] = 100000;
-				max_time[3] = 150000;
-				max_time[4] = 200000;
-				nb_of_thrusts = 5;
+				delete base_agent;
+				base_agent = agent_factory(gInstance);
+				max_fuel = base_agent->vm->get_fuel();
+				max_time[0] = global_min_time + 10000;
+				nb_of_thrusts = 2;
+				for (int k = 1; k < nb_of_thrusts; k ++)
+					max_time[k] = max_time[k - 1] + 50000;
 			}
+
+			delete base_agent;
 
 			output_file.open("./results/" + to_string(gInstance) + ".txt");
 			output_file << "step"
@@ -266,8 +298,8 @@ int main(int argc, char** argv) {
 			ga_obj.idle_delay_us = 1;  // switch between threads quickly
 			ga_obj.dynamic_threading = false;
 			ga_obj.verbose = false;
-			ga_obj.population = 2000;
-			ga_obj.generation_max = 1000;
+			ga_obj.population = 3000;
+			ga_obj.generation_max = 5000;
 			ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
 			ga_obj.init_genes = init_genes;
 			if (gInstance / 1000 == 1) {
@@ -282,13 +314,15 @@ int main(int argc, char** argv) {
 			ga_obj.mutate = mutate;
 			ga_obj.crossover = crossover;
 			ga_obj.SO_report_generation = SO_report_generation;
-			ga_obj.crossover_fraction = 0.5;
-			ga_obj.mutation_rate = 0.9;
-			ga_obj.best_stall_max = 70;
-			ga_obj.elite_count = 20;
-			ga_obj.solve();
+			ga_obj.crossover_fraction = 0.3;
+			ga_obj.mutation_rate = 0.7;
+			ga_obj.best_stall_max = 30;
+			ga_obj.average_stall_max = 10;
+			ga_obj.elite_count = 50;
+			EA::StopReason reason = ga_obj.solve();
 			cout << "The problem is optimized in " << timer.toc() << " seconds."
 				<< endl;
+			cout << "cause: " << ga_obj.stop_reason_to_string(reason) << endl;
 
 			output_file.close();
 
