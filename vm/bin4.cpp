@@ -25,6 +25,11 @@ bin_4::bin_4(int instance):vm_state() {
 	old_target_rel_pos_y.clear();
 	rel_speed_targets_x.clear();
 	rel_speed_targets_y.clear();
+	old_tank_rel_pos_x = 0;
+	old_tank_rel_pos_y = 0;
+	rel_speed_tank_x = 0;
+	rel_speed_tank_y = 0;
+
 	reset();
 	step();
 	_fuel_max = get_fuel();
@@ -47,6 +52,10 @@ double bin_4::get_relative_distance(int target) {
 
 double bin_4::get_relative_distance_to_tank() {
 	return hypotl(output_ports[tank_x_addr], output_ports[tank_y_addr]);
+}
+
+Complex bin_4::get_tank_relative_speed() {
+	return Complex(rel_speed_tank_x, rel_speed_tank_y);
 }
 double bin_4::get_tank_fuel() {
 	return output_ports[tank_fuel_addr];
@@ -3306,9 +3315,15 @@ void bin_4::step() {
 			rel_speed_targets_x.push_back(-(output_ports[pos_target_x_addrs[i]] - old_target_rel_pos_x[i]));
 			rel_speed_targets_y.push_back(-(output_ports[pos_target_y_addrs[i]] - old_target_rel_pos_y[i]));
 		}
-		old_target_rel_pos_x.clear();
-		old_target_rel_pos_y.clear();
+		rel_speed_tank_x = -(output_ports[tank_x_addr] - old_tank_rel_pos_x);
+		rel_speed_tank_y = -(output_ports[tank_y_addr] - old_tank_rel_pos_y);
 	}
+	old_tank_rel_pos_x = output_ports[tank_x_addr];
+	old_tank_rel_pos_y = output_ports[tank_y_addr];
+
+	old_target_rel_pos_x.clear();
+	old_target_rel_pos_y.clear();
+
 	for (int i = 0; i < nb_of_targets; i++) {
 		old_target_rel_pos_x.push_back(output_ports[pos_target_x_addrs[i]]);
 		old_target_rel_pos_y.push_back(output_ports[pos_target_y_addrs[i]]);

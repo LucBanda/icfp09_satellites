@@ -123,22 +123,23 @@ MySolution mutate(const MySolution& X_base,
 	bool in_range;
 	int min_time = global_min_time;
 	int damped_thrust = nb_of_thrusts * rnd01();
-	//cout << "damped_thrust " << damped_thrust << endl;
-	//for (int i = damped_thrust; i < nb_of_thrusts; i++) {
-		do {
-			in_range = true;
-			X_new = X_base;
-			X_new.time[damped_thrust] += 10. * (rnd01() - rnd01()) * shrink_scale;
-			if (X_new.time[damped_thrust] < min_time) X_new.time[damped_thrust] = min_time;
-			if(X_new.time[damped_thrust] >= (min_time + max_time[damped_thrust])) X_new.time[damped_thrust] = (min_time + max_time[damped_thrust]);
-			X_new.speed_x[damped_thrust] += .02 * (rnd01() - rnd01()) * shrink_scale;
-			in_range = in_range && (X_new.speed_x[damped_thrust] >= -max_fuel && X_new.speed_x[damped_thrust] < max_fuel);
-			X_new.speed_y[damped_thrust] += .02 * (rnd01() - rnd01()) * shrink_scale;
-			in_range = in_range && (X_new.speed_y[damped_thrust] >= -max_fuel && X_new.speed_y[damped_thrust] < max_fuel);
+	for (int i = 0; i < nb_of_thrusts; i++) {
+		if (i == damped_thrust) {
+			do {
+				in_range = true;
+				X_new = X_base;
+				X_new.time[damped_thrust] += 10. * (rnd01() - rnd01()) * shrink_scale;
+				if (X_new.time[damped_thrust] < min_time) X_new.time[damped_thrust] = min_time;
+				if(X_new.time[damped_thrust] >= (min_time + max_time[damped_thrust])) X_new.time[damped_thrust] = (min_time + max_time[damped_thrust]);
+				X_new.speed_x[damped_thrust] += .02 * (rnd01() - rnd01()) * shrink_scale;
+				in_range = in_range && (X_new.speed_x[damped_thrust] >= -max_fuel && X_new.speed_x[damped_thrust] < max_fuel);
+				X_new.speed_y[damped_thrust] += .02 * (rnd01() - rnd01()) * shrink_scale;
+				in_range = in_range && (X_new.speed_y[damped_thrust] >= -max_fuel && X_new.speed_y[damped_thrust] < max_fuel);
 
-		} while (!in_range);
-		//min_time = X_new.time[i];
-	//}
+			} while (!in_range);
+		}
+		min_time = X_base.time[i];
+	}
 	return X_new;
 }
 
@@ -270,10 +271,10 @@ int main(int argc, char** argv) {
 				delete base_agent;
 				base_agent = agent_factory(gInstance);
 				max_fuel = base_agent->vm->get_fuel();
-				max_time[0] = global_min_time + 10000;
-				nb_of_thrusts = 2;
+				max_time[0] = 10000;
+				nb_of_thrusts = 1;
 				for (int k = 1; k < nb_of_thrusts; k ++)
-					max_time[k] = max_time[k - 1] + 50000;
+					max_time[k] = 50000;
 			}
 
 			delete base_agent;
@@ -314,7 +315,7 @@ int main(int argc, char** argv) {
 			ga_obj.mutate = mutate;
 			ga_obj.crossover = crossover;
 			ga_obj.SO_report_generation = SO_report_generation;
-			ga_obj.crossover_fraction = 0.3;
+			ga_obj.crossover_fraction = 0.7;
 			ga_obj.mutation_rate = 0.7;
 			ga_obj.best_stall_max = 30;
 			ga_obj.average_stall_max = 10;

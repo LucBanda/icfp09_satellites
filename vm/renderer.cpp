@@ -15,12 +15,12 @@
 #define WAYPT_COL al_map_rgb(200, 0, 0)
 #define BLACK al_map_rgb(0, 0, 0)
 #define TANK_COL al_map_rgb(0, 0, 100)
-
+#define WHITE_COL al_map_rgb(250, 250, 250)
 #define TO_SCREEN(c) SCREEN_W / 2. + real(c) / SCALE, SCREEN_H / 2. - imag(c) / SCALE
 
-#define SHAPE_SCALE	1
-const int SCREEN_W = 2000 / SHAPE_SCALE;
-const int SCREEN_H = 2000 / SHAPE_SCALE;
+#define SHAPE_SCALE	1.
+const int SCREEN_W = 2000. / SHAPE_SCALE;
+const int SCREEN_H = 2000. / SHAPE_SCALE;
 
 
 using namespace std;
@@ -46,18 +46,18 @@ void renderer::draw() {
 	al_draw_filled_circle(SCREEN_W / 2., SCREEN_H / 2., 6.357e6 / SCALE,
 						  BOULDER_COL);
 
-	al_draw_filled_rectangle(SCREEN_W - 100., SCREEN_H - 100., SCREEN_W - 50.,
+	al_draw_filled_rectangle(SCREEN_W - 100., SCREEN_H - 110., SCREEN_W - 50.,
 							 SCREEN_H - 10., BLACK);
-	al_draw_filled_rectangle(SCREEN_W - 98., SCREEN_H - 98., SCREEN_W - 52.,
+	al_draw_filled_rectangle(SCREEN_W - 98., SCREEN_H - 108., SCREEN_W - 52.,
 							 SCREEN_H - 12. - (fuel / max_fuel) * 96.,
-							 BACKGROUND_COL);
+							 WHITE_COL);
 
 	if (_vm->get_max_tank_fuel()) {
-		al_draw_filled_rectangle(SCREEN_W - 200., SCREEN_H - 100., SCREEN_W - 150.,
+		al_draw_filled_rectangle(SCREEN_W - 200., SCREEN_H - 110., SCREEN_W - 150.,
 								SCREEN_H - 10., BLACK);
-		al_draw_filled_rectangle(SCREEN_W - 198., SCREEN_H - 98., SCREEN_W - 152.,
-								SCREEN_H - 12. - (_vm->get_tank_fuel() / _vm->get_max_tank_fuel()) * 96.,
-								BACKGROUND_COL);
+		al_draw_filled_rectangle(SCREEN_W - 198., SCREEN_H - 108., SCREEN_W - 152.,
+								SCREEN_H - 12. - (_vm->get_tank_fuel() / _vm->get_max_tank_fuel()) * 96. ,
+								WHITE_COL);
 	}
 
 	if (!scale_edited && abs(main_sat) / SCALE > (double)SCREEN_W / 2.5) {

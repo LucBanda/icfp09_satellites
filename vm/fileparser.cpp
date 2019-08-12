@@ -1,7 +1,6 @@
 #include "fileparser.h"
 #include "agent.h"
 
-
 static std::string getLastLine(std::ifstream& in) {
 	std::string line;
 	while (in >> std::ws && std::getline(in, line))  // skip empty lines
@@ -12,12 +11,16 @@ static std::string getLastLine(std::ifstream& in) {
 
 executionT parse_result(int instance) {
 	executionT map;
-    string fileName = "./results/" + to_string(instance) + ".txt";
-    std::ifstream file(fileName);
+	string fileName = "./results/" + to_string(instance) + ".txt";
+	std::ifstream file(fileName);
 
 	if (file) {
 		std::string token;
 		std::string line = getLastLine(file);
+		if (line.empty()) {
+			cout << "empty line at end of file" << endl;
+			exit(-1);
+		}
 		cout << line << endl;
 		// remove beginning
 		std::string delimiter = "{ ";
@@ -58,7 +61,7 @@ executionT parse_result(int instance) {
 			map[time] = Complex(x, y);
 
 			std::cout << "[" << time << "] = (" << setprecision(10) << x << ", "
-				<< setprecision(10) << y << ")\n";
+					  << setprecision(10) << y << ")\n";
 		}
 
 	} else

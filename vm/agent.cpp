@@ -172,12 +172,23 @@ void update_status() {
 }
 
 double agent4::get_intermediate_score() {
-	double approximate_error =  log2l(max(1., distance_when_lost)) * 75. / log2(max_distance) / 12.;
+	double approximate_error = 0.;
 	double fake_score = 0.;
+
 	for (vector<int>::iterator t1 = validated_time_steps.begin();
 		t1 != validated_time_steps.end(); ++t1)
 			fake_score += 1. / 12.;
-	fake_score = 75. * fake_score + 25 * (vm->get_fuel() + vm->get_tank_fuel()) / (vm->get_fuel_max() + vm->get_max_tank_fuel());
+
+	if (fly_state == FS_TANKING) {
+		approximate_error += log2l(max(1., distance_when_lost)) * 75. / log2(2 * abs(vm->get_tank_absolute_position()))
+							* (vm->get_fuel_max() - vm->get_fuel()) / vm->get_max_tank_fuel() / 12.;
+	} else {
+		approximate_error += log2l(max(1., distance_when_lost)) * 75. / log2(max_distance) / 12.;
+	}
+	fake_score = 75. * fake_score
+				+ 25. * (vm->get_fuel() + vm->get_tank_fuel()) / (vm->get_fuel_max() + vm->get_max_tank_fuel())
+				+ 75. * (vm->get_max_tank_fuel() - vm->get_tank_fuel()) / vm->get_max_tank_fuel() / 12.;
+
 	fake_score -= approximate_error;
 	fake_score *= 8.;
 	return fake_score;
@@ -191,11 +202,11 @@ double agent4::get_score() {
 		return get_intermediate_score() / 2.;
 	}
 	if (vm->get_score() != 0)
-		return vm->get_score();
+		return vm->get_score() + 75. * (vm->get_max_tank_fuel() - vm->get_tank_fuel()) / vm->get_max_tank_fuel();
 
 	if (vm->get_fuel() <= 0.001) return -2e30;
 
-	if (fly_state == FS_LOST && last_time_fs_changed > vm->time_step - 1000) {
+	if ((fly_state == FS_LOST || fly_state == FS_TANKING) && vm->time_step > last_time_fs_changed + 1000) {
 		return get_intermediate_score();
 	}
 	return 0;
@@ -241,13 +252,29 @@ bool agent4::stick_to_target() {
 			closest_pos = vm->get_target_absolute_position(*target);
 		}
 	}
-	if (vm->get_fuel() < vm->get_fuel_max() / 3.) {
+	if (vm->get_fuel() == vm->get_fuel_max() && fly_state == FS_TANKING) {
+		fly_state = FS_FLY;
+		last_validated_time = vm->time_step;
+		/*for (executionT::iterator it = execution_map.begin() ; it != execution_map.end(); ++it)
+				cout << "map[" << std::to_string(it->first) << "] = "
+					<< "Complex(" << std::to_string(real(it->second))
+					<< ", " << std::to_string(imag(it->second)) << "); ";
+		cout << "refueling " << endl;*/
+		//cout << "refueled" << vm->get_tank_fuel() << " -> " << vm->get_fuel() << endl;
+
+		return false;
+	}
+
+	if (vm->get_fuel() < vm->get_fuel_max() / 2.) {
 		if (abs(abs(vm->get_tank_absolute_position()) - abs(vm->get_absolute_position())) < ORBIT_PRECISION) {
-			fly_state = FS_LOST;
+			fly_state = FS_TANKING;
 			distance_when_lost = abs(vm->get_tank_absolute_position() - vm->get_absolute_position());
-			last_time_fs_changed = vm->time_step;
+			last_time_fs_changed = vm->time_step + 1000;
+			relative_speed_to_tank_when_crossed = vm->get_tank_relative_speed();
+			//cout << "tanking" << endl;
 			return false;
 		}
+		return false;
 	}
 
 	if ((fly_state == FS_FLY) && (abs(abs(closest_pos) - abs(vm->get_absolute_position())) < ORBIT_PRECISION)) {
@@ -255,6 +282,6 @@ bool agent4::stick_to_target() {
 		distance_when_lost = closest_distance;
 		last_time_fs_changed = vm->time_step;
 	}
-
+	//cout << (vm->get_tank_fuel() / vm->get_max_tank_fuel()) << endl;
 	return false;
 }

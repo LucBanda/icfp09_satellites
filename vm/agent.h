@@ -13,7 +13,8 @@ enum flying_state {
 	FS_STICK_TO_TARGET,
 	FS_ON_TARGET_ORBIT,
 	FS_FLYING_TO_TARGET,
-	FS_LOST
+	FS_LOST,
+	FS_TANKING
 };
 
 class agent {
@@ -87,6 +88,7 @@ class agent4 : public agent {
 	vector<int> validated_time_steps;
 	double distance_when_lost;
 	double max_distance;
+	Complex relative_speed_to_tank_when_crossed;
 };
 
 static inline agent *agent_factory(int instance) {
