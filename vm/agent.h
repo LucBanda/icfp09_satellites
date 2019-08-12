@@ -20,7 +20,7 @@ enum flying_state {
 class agent {
    public:
 	vm_state *vm;
-	double max_time_step = 500000;
+	double max_time_step = 750000;
 	int last_validated_time;
 
 	agent(int instance);
@@ -31,6 +31,7 @@ class agent {
 	virtual void step();
 	virtual void set_execution_map(executionT *map);
 	virtual double run();
+	vector<int> non_validated_targets;
 
    protected:
 	executionT execution_map;
@@ -84,7 +85,6 @@ class agent4 : public agent {
 	void update_status();
 	double get_intermediate_score();
 	vector<int> validated_targets;
-	vector<int> non_validated_targets;
 	vector<int> validated_time_steps;
 	double distance_when_lost;
 	double max_distance;

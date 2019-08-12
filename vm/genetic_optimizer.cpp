@@ -138,7 +138,7 @@ MySolution mutate(const MySolution& X_base,
 
 			} while (!in_range);
 		}
-		min_time = X_base.time[i];
+		min_time = max(X_base.time[i], global_min_time);
 	}
 	return X_new;
 }
@@ -150,7 +150,7 @@ MySolution crossover(const MySolution& X1, const MySolution& X2,
 	for (int i = 0; i < nb_of_thrusts; i++) {
 			r = rnd01();
 			rmin = 1. - rnd01() / 10.;
-			X_new.time[i] = rmin * r * X1.time[i] + (1.0 - r) * X2.time[i];
+			X_new.time[i] = max((double)global_min_time, rmin * r * X1.time[i] + (1.0 - r) * X2.time[i]);
 			r = rnd01();
 			X_new.speed_x[i] = r * X1.speed_x[i] + (1.0 - r) * X2.speed_x[i];
 			r = rnd01();
@@ -193,15 +193,17 @@ static void print_help() {
 	-h : this help \n \
 	-i instance: instance of the problem to display \n \
 	-l : load the best solution so far for this problem \n \
-	-a : do all problem\n");
+	-a : do all problem \
+	-c : continue until solution is found\n");
 }
 
 int main(int argc, char** argv) {
 	bool do_all = false;
 	bool continue_optim = false;
 	int c;
+	bool continue_after_stall = false;
 
-	while ((c = getopt(argc, argv, "ahli:")) != -1) switch (c) {
+	while ((c = getopt(argc, argv, "cahli:")) != -1) switch (c) {
 			case 'l':
 				continue_optim = true;
 				break;
@@ -210,6 +212,9 @@ int main(int argc, char** argv) {
 				break;
 			case 'a':
 				do_all = true;
+				break;
+			case 'c':
+				continue_after_stall = true;
 				break;
 			case 'h':
 			default:
@@ -221,8 +226,10 @@ int main(int argc, char** argv) {
 			if (do_all) {
 				gInstance = i * 1000 + j;
 			}
-
 			agent *base_agent = agent_factory(gInstance);
+
+			//while (continue_after_stall && base_agent->)
+
 
 			max_fuel = base_agent->vm->get_fuel() / 10.;
 			if (continue_optim) {
@@ -270,7 +277,7 @@ int main(int argc, char** argv) {
 			} else {
 				delete base_agent;
 				base_agent = agent_factory(gInstance);
-				max_fuel = base_agent->vm->get_fuel();
+				max_fuel = base_agent->vm->get_fuel() / 2.;
 				max_time[0] = 10000;
 				nb_of_thrusts = 1;
 				for (int k = 1; k < nb_of_thrusts; k ++)

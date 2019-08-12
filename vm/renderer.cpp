@@ -49,14 +49,14 @@ void renderer::draw() {
 	al_draw_filled_rectangle(SCREEN_W - 100., SCREEN_H - 110., SCREEN_W - 50.,
 							 SCREEN_H - 10., BLACK);
 	al_draw_filled_rectangle(SCREEN_W - 98., SCREEN_H - 108., SCREEN_W - 52.,
-							 SCREEN_H - 12. - (fuel / max_fuel) * 96.,
+							 SCREEN_H - 12. - (fuel / max_fuel) * 95.,
 							 WHITE_COL);
 
 	if (_vm->get_max_tank_fuel()) {
 		al_draw_filled_rectangle(SCREEN_W - 200., SCREEN_H - 110., SCREEN_W - 150.,
 								SCREEN_H - 10., BLACK);
 		al_draw_filled_rectangle(SCREEN_W - 198., SCREEN_H - 108., SCREEN_W - 152.,
-								SCREEN_H - 12. - (_vm->get_tank_fuel() / _vm->get_max_tank_fuel()) * 96. ,
+								SCREEN_H - 12. - (_vm->get_tank_fuel() / _vm->get_max_tank_fuel()) * 95. ,
 								WHITE_COL);
 	}
 

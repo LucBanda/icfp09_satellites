@@ -17,7 +17,7 @@ executionT parse_result(int instance) {
 	if (file) {
 		std::string token;
 		std::string line = getLastLine(file);
-		if (line.empty()) {
+		if (line == "") {
 			cout << "empty line at end of file" << endl;
 			exit(-1);
 		}
