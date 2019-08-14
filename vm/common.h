@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #include <allegro5/allegro.h>
-
+#include <functional>
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>

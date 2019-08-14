@@ -13,4 +13,4 @@ add_executable (vm main.cpp vm_state.cpp renderer.cpp bin4.cpp bin3.cpp bin2.cpp
 add_executable (optimizer genetic_optimizer.cpp vm_state.cpp bin4.cpp bin3.cpp bin2.cpp bin1.cpp agent.cpp)
 
 target_link_libraries(vm allegro allegro_primitives allegro_main allegro_font allegro_ttf)
-target_link_libraries(optimizer allegro allegro_main)
+target_link_libraries(optimizer allegro allegro_main pthread)
