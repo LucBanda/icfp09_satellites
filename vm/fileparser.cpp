@@ -13,7 +13,7 @@ executionT parse_result(int instance) {
 	executionT map;
 	string fileName = "./results/" + to_string(instance) + ".txt";
 	std::ifstream file(fileName);
-
+    if (!file.good()) return map;
 	if (file) {
 		std::string token;
 		std::string line = getLastLine(file);

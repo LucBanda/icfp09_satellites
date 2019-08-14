@@ -4,6 +4,7 @@
 
 #define ORBIT_PRECISION 1000.
 #define SAT_PRECISION 750.
+#define LOCK_PRECISION	1000000.
 
 agent::agent(int instance) {
 	vm = bin_factory(instance);
@@ -26,7 +27,15 @@ void agent::step() {
 	vm->step();
 }
 
-void agent::set_execution_map(executionT *map) { execution_map = *map; }
+void agent::set_execution_map(executionT *map) {
+	execution_map = *map;
+	int max_time = 0;
+	for (executionT::iterator it = map->begin(); it != map->end(); ++it) {
+		if (it->first > max_time)
+			max_time = it->first;
+	}
+	max_time_step = max_time + 200000;
+}
 
 double agent::run() {
 	while (vm->time_step < max_time_step) {
@@ -35,7 +44,7 @@ double agent::run() {
 		if (score != 0.0)
 			return score;
 	}
-	return -1000000;
+	return -1;
 }
 
 agent1::agent1(int instance) : agent(instance) {}
@@ -177,13 +186,15 @@ double agent4::get_intermediate_score() {
 
 	for (vector<int>::iterator t1 = validated_time_steps.begin();
 		t1 != validated_time_steps.end(); ++t1)
-			fake_score += 1. / 12.;
+			fake_score += 1. / 12. - *t1 / 24e6;
 
 	if (fly_state == FS_TANKING) {
-		approximate_error += log2l(max(1., distance_when_lost)) * 75. / log2(2 * abs(vm->get_tank_absolute_position()))
-							* (vm->get_fuel_max() - vm->get_fuel()) / vm->get_max_tank_fuel() / 12.;
+		approximate_error += log2l(max(1., distance_when_crossed)) * 75. / log2(2 * abs(vm->get_tank_absolute_position()))
+							* (vm->get_max_tank_fuel() - vm->get_fuel()) / vm->get_max_tank_fuel() / 12.;
+		fake_score += (vm->get_max_tank_fuel() - vm->get_fuel()) / vm->get_max_tank_fuel() / 12.;
 	} else {
-		approximate_error += log2l(max(1., distance_when_lost)) * 75. / log2(max_distance) / 12.;
+		approximate_error += log2l(max(1., distance_when_crossed)) * 75. / log2( 2 *last_abs_pos_target) / 12. - last_time_fs_changed / 24e6;
+		fake_score += 1. / 12. - last_validated_time / 24e6;
 	}
 	fake_score = 75. * fake_score
 				+ 25. * (vm->get_fuel() + vm->get_tank_fuel()) / (vm->get_fuel_max() + vm->get_max_tank_fuel())
@@ -198,15 +209,18 @@ double agent4::get_score() {
 	if (vm->time_step < 2)
 		return 0;
 
+	if (vm->time_step == max_time_step) return get_intermediate_score();
+	if (fly_state == FS_LOST) return -1;
+	if (vm->get_fuel() <= 0.001) return -1;
+
 	if (vm->get_score() == -1.) {
-		return get_intermediate_score() / 2.;
+		return -1.;
 	}
 	if (vm->get_score() != 0)
 		return vm->get_score() + 75. * (vm->get_max_tank_fuel() - vm->get_tank_fuel()) / vm->get_max_tank_fuel();
 
-	if (vm->get_fuel() <= 0.001) return -2e30;
 
-	if ((fly_state == FS_LOST || fly_state == FS_TANKING) && vm->time_step > last_time_fs_changed + 1000) {
+	if ((fly_state == FS_ON_TARGET_ORBIT || fly_state == FS_TANKING) && vm->time_step > last_time_fs_changed + 1000) {
 		return get_intermediate_score();
 	}
 	return 0;
@@ -233,6 +247,7 @@ void agent4::update_status() {
 			last_validated_time = vm->time_step;
 			distance_when_lost = 2e20;
 			last_time_fs_changed = vm->time_step;
+			//cout << "validated" << endl;
 		} else {
 			target++;
 		}
@@ -254,34 +269,32 @@ bool agent4::stick_to_target() {
 	}
 	if (vm->get_fuel() == vm->get_fuel_max() && fly_state == FS_TANKING) {
 		fly_state = FS_FLY;
-		last_validated_time = vm->time_step;
-		/*for (executionT::iterator it = execution_map.begin() ; it != execution_map.end(); ++it)
-				cout << "map[" << std::to_string(it->first) << "] = "
-					<< "Complex(" << std::to_string(real(it->second))
-					<< ", " << std::to_string(imag(it->second)) << "); ";
-		cout << "refueling " << endl;*/
-		//cout << "refueled" << vm->get_tank_fuel() << " -> " << vm->get_fuel() << endl;
-
+		last_validated_time = vm->time_step + 2000.;
 		return false;
 	}
 
-	if (vm->get_fuel() < vm->get_fuel_max() / 2.) {
+	if (vm->get_fuel() < vm->get_fuel_max() / 3.) {
 		if (abs(abs(vm->get_tank_absolute_position()) - abs(vm->get_absolute_position())) < ORBIT_PRECISION) {
 			fly_state = FS_TANKING;
-			distance_when_lost = abs(vm->get_tank_absolute_position() - vm->get_absolute_position());
+			distance_when_crossed = abs(vm->get_tank_absolute_position() - vm->get_absolute_position());
 			last_time_fs_changed = vm->time_step + 1000;
 			relative_speed_to_tank_when_crossed = vm->get_tank_relative_speed();
 			//cout << "tanking" << endl;
 			return false;
 		}
-		return false;
 	}
 
 	if ((fly_state == FS_FLY) && (abs(abs(closest_pos) - abs(vm->get_absolute_position())) < ORBIT_PRECISION)) {
+		fly_state = FS_ON_TARGET_ORBIT;
+		distance_when_crossed = closest_distance;
+		last_time_fs_changed = vm->time_step;
+		last_abs_pos_target = abs(closest_pos);
+	}
+
+	if ((fly_state == FS_FLY) && (abs(vm->get_absolute_position()) > max_distance * 3. / 4.)) {
 		fly_state = FS_LOST;
 		distance_when_lost = closest_distance;
 		last_time_fs_changed = vm->time_step;
 	}
-	//cout << (vm->get_tank_fuel() / vm->get_max_tank_fuel()) << endl;
 	return false;
 }

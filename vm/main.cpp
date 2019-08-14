@@ -60,6 +60,8 @@ int main(int argc, char** argv) {
 			case 'h':
 			default:
 				print_help();
+				exit(0);
+				break;
 		}
 
 	if (do_all && instance != 0) {

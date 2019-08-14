@@ -21,7 +21,7 @@ class agent {
    public:
 	vm_state *vm;
 	double max_time_step = 750000;
-	int last_validated_time;
+	int last_validated_time = 0;
 
 	agent(int instance);
 	virtual ~agent();
@@ -40,6 +40,7 @@ class agent {
 	int time_close_to_orbit;
 	double distance_when_crossed;
 	double abs_delta_v_when_crossed;
+	double last_abs_pos_target;
 
 };
 
