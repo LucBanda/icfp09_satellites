@@ -46,6 +46,27 @@ bin_4::~bin_4() {
 	free(input_ports);
 }
 
+void bin_4::set_state(vm_state *from_vm) {
+	memcpy(output_ports, from_vm->output_ports, sizeof(double) * (max_out_port - min_out_port + 1));
+	memcpy(input_ports, from_vm->input_ports, sizeof(double) * 4);
+	memcpy(memory, from_vm->memory, sizeof(double) * (max_global - min_global + 1));
+	old_target_rel_pos_x = ((bin_4 *)from_vm)->old_target_rel_pos_x;
+	old_target_rel_pos_y = ((bin_4 *)from_vm)->old_target_rel_pos_y;
+	rel_speed_targets_x = ((bin_4 *)from_vm)->rel_speed_targets_x;
+	rel_speed_targets_y = ((bin_4 *)from_vm)->rel_speed_targets_y;
+	old_tank_rel_pos_x = ((bin_4 *)from_vm)->old_tank_rel_pos_x;
+	old_tank_rel_pos_y = ((bin_4 *)from_vm)->old_tank_rel_pos_y;
+	rel_speed_tank_x = ((bin_4 *)from_vm)->rel_speed_tank_x;
+	rel_speed_tank_y = ((bin_4 *)from_vm)->rel_speed_tank_y;
+	time_step = from_vm->time_step;
+	_radius = from_vm->_radius;
+	_fuel = from_vm->_fuel;
+	_fuel_max = from_vm->_fuel_max;
+	_tank_max = from_vm->_tank_max;
+	nb_of_targets = from_vm->nb_of_targets;
+	pc = from_vm->pc;
+}
+
 double bin_4::get_relative_distance(int target) {
 	return hypotl(output_ports[pos_target_x_addrs[target]], output_ports[pos_target_y_addrs[target]]);
 }
@@ -94,7 +115,6 @@ double bin_4::get_relative_delta_speed(int target) {
 Complex bin_4::get_relative_speed(int target) {
 	return Complex(rel_speed_targets_x[target], rel_speed_targets_y[target]);
 }
-
 
 
 void bin_4::step() {

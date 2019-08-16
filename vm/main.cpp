@@ -87,10 +87,12 @@ int main(int argc, char** argv) {
 				ag = new agent4(instance);
 			}
 
+
 			vm = ag->vm;
 			if (load_result) {
 				map = parse_result(instance);
 				ag->set_execution_map(&map);
+				cout <<"max time step for evaluation " << ag->max_time_step << endl;
 			}
 
 			status.vm = vm;

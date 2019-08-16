@@ -32,7 +32,8 @@ class vm_state {
 	virtual double get_max_tank_fuel() {return 0.;}
 	virtual bool is_target_validated(int target) {return false;}
 	virtual Complex get_tank_relative_speed() { return Complex(0.,0.);}
-   protected:
+	virtual void set_state(vm_state *from_vm) {};
+
    	void step_state();
 	address pc;
 	bool status;

@@ -30,8 +30,9 @@ class agent {
 	virtual bool stick_to_target() = 0;
 	virtual void step();
 	virtual void set_execution_map(executionT *map);
-	virtual double run();
+	virtual double run(int until = 0);
 	vector<int> non_validated_targets;
+	virtual void set_resume_point(agent *from_agent) {};
 
    protected:
 	executionT execution_map;
@@ -81,15 +82,22 @@ class agent4 : public agent {
 
 	bool stick_to_target();
 	double get_score();
+	void set_resume_point(agent *from_agent);
 
-	private:
 	void update_status();
 	double get_intermediate_score();
 	vector<int> validated_targets;
 	vector<int> validated_time_steps;
+	vector<double> closest_distance;
+	vector<double> closest_radius;
+	vector<int> closest_time;
 	double distance_when_lost;
-	double max_distance;
 	Complex relative_speed_to_tank_when_crossed;
+	double closest_distance_of_tank;
+	double closest_fuel;
+	double last_fuel;
+	double max_distance;
+	int closest_tank_time;
 };
 
 static inline agent *agent_factory(int instance) {

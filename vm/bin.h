@@ -79,8 +79,8 @@ class bin_4 : public vm_state {
 	double get_tank_fuel();
 	double get_max_tank_fuel();
 	bool is_target_validated(int target);
+	void set_state(vm_state *from_vm);
 
-	private:
 	vector<int> pos_target_x_addrs;
 	vector<int> pos_target_y_addrs;
 	vector<double> old_target_rel_pos_x;
@@ -96,7 +96,6 @@ class bin_4 : public vm_state {
 	double rel_speed_tank_x;
 	double rel_speed_tank_y;
 	vector<int> validated_target_addr;
-
 };
 
 inline vm_state *bin_factory(int instance) {
