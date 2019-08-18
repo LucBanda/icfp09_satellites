@@ -46,7 +46,7 @@ void agent::set_execution_map(executionT *map) {
 	else if (max_time < 1000000)
 		max_time_step = max_time + 300000;
 	else
-		max_time_step = min(2e6, max_time + 300000.);
+		max_time_step = min(2e6, max_time + 600000.);
 }
 
 double agent::run(int until) {
@@ -201,6 +201,7 @@ bool agent3::stick_to_target() {
 agent4::agent4(int instance) : agent(instance) {
 	distance_when_lost = 9e50;
 	closest_distance_of_tank = 9e30;
+	max_distance = 0.;
 }
 
 agent4::~agent4() {}
@@ -238,28 +239,35 @@ double agent4::get_intermediate_score() {
 	for (vector<int>::iterator tnv = non_validated_targets.begin();
 		 tnv != non_validated_targets.end(); ++tnv) {
 		approximate_error +=
-			(2e6 - closest_time[*tnv]) / 24e6 * 75. * 0.7 *
-			pow(1. / 100., (closest_distance[*tnv]) / closest_radius[*tnv]);
+			(2e6 - closest_time[*tnv]) / 24e6 * 75. * max(0., min(1., (log2(max_distance) - log2(closest_distance[*tnv] - 500)) / (1 + log2(max_distance))));
 	}
 	// tank
-	fake_score_fuel = (10e6 - closest_tank_time) / 10e6 * 75. *
+	/*fake_score_fuel = (10e6 - closest_tank_time) / 10e6  *
 					  (vm->get_max_tank_fuel() - vm->get_tank_fuel()) /
 					  vm->get_max_tank_fuel();
 	error_fuel =
-		(10e6 - closest_tank_time) / 10e6 * 75. *
-		(vm->get_max_tank_fuel() - (vm->get_max_tank_fuel() - vm->get_fuel())) /
+		(10e6 - closest_tank_time) / 10e6  *
+		(vm->get_max_tank_fuel() - vm->get_tank_fuel() + vm->get_fuel()) /
 		vm->get_max_tank_fuel() *
-		pow(1. / 100., (closest_distance_of_tank) / 10000000.);
+		max(0., min(1., (log2(10000000) - log2(closest_distance_of_tank - 500)) / (1 + log2(10000000))));*/
+		//pow(1. / 100., (closest_distance_of_tank - 900) / abs(vm->get_tank_absolute_position()));
+	//cout << "max distance" << max_distance << endl;
+	/*cout << "fuel " << vm->get_fuel() << endl;
+	cout << "error fuel " << error_fuel << endl;
+	cout << "score fuel " << fake_score_fuel << endl;
+	cout << "approximate error " << approximate_error << endl;
+	cout << "sigmoid fuel " << (1 - sigmoid(vm->get_fuel(), 1. / 100., 3000.)) * error_fuel << endl;
+	cout << "sigmoid error " << sigmoid(vm->get_fuel(), 1. / 100., 3000.) * approximate_error << endl;*/
 
 	fake_score =
-		75. * fake_score + 25. * (vm->get_fuel() + vm->get_tank_fuel()) /
+		75. * fake_score + 12. * (vm->get_fuel() + vm->get_tank_fuel()) /
 							   (vm->get_fuel_max() + vm->get_max_tank_fuel());
 	// fake_score += error_fuel;
-	fake_score += sigmoid(vm->get_fuel(), 1. / 200., 3000.) * approximate_error;
-	fake_score += (1 - sigmoid(vm->get_fuel(), 1. / 200., 3000.)) * error_fuel;
+	fake_score += /*sigmoid(vm->get_fuel(), 1. / 100., 3000.) **/ approximate_error;
+	//fake_score += (1 - sigmoid(vm->get_fuel(), 1. / 100., 3000.)) * error_fuel;
 	fake_score += fake_score_fuel;
 	fake_score *= 8.;
-
+	//cout << "score " << fake_score << endl;
 	return fake_score;
 }
 
@@ -311,6 +319,9 @@ void agent4::update_status() {
 	if (vm->get_fuel() > last_fuel) {
 		last_validated_time = vm->time_step;
 		closest_distance_of_tank = 9e30;
+		closest_fuel = vm->get_fuel();
+		for (vector<int>::iterator it = non_validated_targets.begin(); it != non_validated_targets.end(); ++it)
+			closest_distance[*it] = 2e30;
 	}
 
 	last_fuel = vm->get_fuel();
@@ -328,6 +339,9 @@ bool agent4::stick_to_target() {
 			closest_time[tg] = vm->time_step;
 			// cout << closest_distance << endl;
 		}
+		/*if (vm->get_relative_distance(*target) > abs(vm->get_target_absolute_position(*target))) {
+			closest_distance[*target] = abs(vm->get_target_absolute_position(*target));
+		}*/
 	}
 
 	if (vm->time_step > 20000 &&

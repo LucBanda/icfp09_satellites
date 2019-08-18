@@ -322,8 +322,6 @@ int main(int argc, char** argv) {
 					}
 				}
 				max_fuel = base_agent->vm->get_fuel_max() / (double)fuel_factor;
-
-				max_fuel = base_agent->vm->get_fuel_max() / (double)fuel_factor;
 				max_time[0] = max(10000., global_min_time / 3.);
 
 				cout << "searching time range : " << global_min_time << " -> "

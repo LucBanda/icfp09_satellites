@@ -8,21 +8,26 @@
 #include "fileparser.h"
 
 struct main_status {
-	vm_state* vm;
-	renderer* render;
 	agent* ag;
+	bool score_displayed;
 };
 
 bool idle(void* user_param) {
 	struct main_status* status = (struct main_status*)user_param;
-	vm_state* vm = status->ag->vm;
 	agent* ag = status->ag;
 
 	ag->step();
 
-	if (vm->get_score()) {
-		cout << "score = " << vm->get_score() << " fuel = " << vm->get_fuel()
-			 << endl;
+	if (!status->score_displayed) {
+		if (ag->get_score() != 0) {
+			cout << "agent score = "<< ag->get_score() << endl;
+			status->score_displayed = true;
+		}
+	}
+	if (ag->vm->get_score()) {
+		cout << "score = " << ag->vm->get_score() << " fuel = " << ag->vm->get_fuel() << endl;
+		cout << "agent score = "<< ag->get_score() << endl;
+
 		return true;
 	}
 	return false;
@@ -34,20 +39,21 @@ static void print_help() {
 	-h : this help \n \
 	-i instance: instance of the problem to display \n \
 	-l : load the best solution so far for this problem \n \
-	-a : do all problem\n");
+	-a : do all problem\n \
+	-r : resume from time\n");
 }
 
 int main(int argc, char** argv) {
 	bool do_all = false;
-	vm_state* vm = NULL;
 	struct main_status status;
 	renderer* render;
 	int c;
 	bool load_result = false;
 	uint32_t instance = 0;
 	executionT map;
+	int resume_from = 0;
 
-	while ((c = getopt(argc, argv, "ahli:")) != -1) switch (c) {
+	while ((c = getopt(argc, argv, "r:ahli:")) != -1) switch (c) {
 			case 'l':
 				load_result = true;
 				break;
@@ -56,6 +62,9 @@ int main(int argc, char** argv) {
 				break;
 			case 'a':
 				do_all = true;
+				break;
+			case 'r':
+				resume_from = atoi(optarg);
 				break;
 			case 'h':
 			default:
@@ -87,19 +96,19 @@ int main(int argc, char** argv) {
 				ag = new agent4(instance);
 			}
 
-
-			vm = ag->vm;
 			if (load_result) {
 				map = parse_result(instance);
 				ag->set_execution_map(&map);
 				cout <<"max time step for evaluation " << ag->max_time_step << endl;
 			}
 
-			status.vm = vm;
-			status.render = render;
-			render->set_vm(vm);
-			status.ag = ag;
+			if (resume_from != 0) {
+				ag->run(resume_from);
+			}
 
+			render->set_vm(ag->vm);
+			status.ag = ag;
+			status.score_displayed = false;
 			render->idle = &idle;
 			render->idle_param = &status;
 			render->mainLoop(NULL);
