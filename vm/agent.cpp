@@ -241,8 +241,7 @@ double agent4::get_intermediate_score() {
 	for (vector<int>::iterator tnv = non_validated_targets.begin();
 		tnv != non_validated_targets.end(); ++tnv) {
 			double error =
-				(2e6 - closest_time[*tnv]) / 24e6 * 75. * (1. - .1 * non_validated_targets.size() / vm->nb_of_targets)
-+					pow(1. / closest_radius[*tnv] / 100., (closest_distance[*tnv]) / closest_radius[*tnv] / 10.);
+				(2e6 - closest_time[*tnv]) / 24e6 * 75. * max(0., min(1., (log2(max_distance) - log2(max(2., closest_distance[*tnv]-500.))) / (1 + log2(max_distance))));
 
 		if (best_error < error && last_validated_time < closest_time[*tnv]) {
 			best_error = error;

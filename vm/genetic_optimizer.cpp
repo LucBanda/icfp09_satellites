@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
 				ga_obj.mutation_rate = 0.3;
 				ga_obj.best_stall_max = nb_of_thrusts * 20;
 				ga_obj.average_stall_max = nb_of_thrusts * 20;
-				ga_obj.elite_count = 100;
+				ga_obj.elite_count = 10;
 				EA::StopReason reason = ga_obj.solve();
 				cout << "The problem is optimized in " << timer.toc()
 					 << " seconds." << endl;

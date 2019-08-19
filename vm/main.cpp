@@ -20,7 +20,7 @@ bool idle(void* user_param) {
 
 	if (!status->score_displayed) {
 		if (ag->get_score() != 0) {
-			cout << "agent score = "<< ag->get_score() << endl;
+			cout << "agent score = "<< ag->get_score() << " fuel = " << ag->vm->get_fuel() << endl;
 			status->score_displayed = true;
 		}
 	}
