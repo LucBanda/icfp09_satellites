@@ -221,26 +221,35 @@ void agent4::set_resume_point(agent *from_agent) {
 	closest_distance_of_tank = 9e30;
 }
 
-static double sigmoid(double x, double lambda, double center) {
+/*static double sigmoid(double x, double lambda, double center) {
 	double y = 1. / (1 + exp(-lambda * (x - center)));
 	return y;
-}
+}*/
 
 double agent4::get_intermediate_score() {
 	double approximate_error = 0.;
-	double error_fuel = 0;
+	//double error_fuel = 0;
 	double fake_score = 0.;
-	double fake_score_fuel = 0.;
+	//double fake_score_fuel = 0.;
+	double best_error = 0;
+
 
 	for (vector<int>::iterator t1 = validated_time_steps.begin();
 		 t1 != validated_time_steps.end(); ++t1)
 		fake_score += 1. / 12. - *t1 / 24e6;
 
 	for (vector<int>::iterator tnv = non_validated_targets.begin();
-		 tnv != non_validated_targets.end(); ++tnv) {
-		approximate_error +=
-			(2e6 - closest_time[*tnv]) / 24e6 * 75. * max(0., min(1., (log2(max_distance) - log2(closest_distance[*tnv] - 500)) / (1 + log2(max_distance))));
+		tnv != non_validated_targets.end(); ++tnv) {
+			double error =
+				(2e6 - closest_time[*tnv]) / 24e6 * 75. * (1. - .1 * non_validated_targets.size() / vm->nb_of_targets)
++					pow(1. / closest_radius[*tnv] / 100., (closest_distance[*tnv]) / closest_radius[*tnv] / 10.);
+
+		if (best_error < error && last_validated_time < closest_time[*tnv]) {
+			best_error = error;
+		}
 	}
+	approximate_error = best_error;
+
 	// tank
 	/*fake_score_fuel = (10e6 - closest_tank_time) / 10e6  *
 					  (vm->get_max_tank_fuel() - vm->get_tank_fuel()) /
@@ -260,12 +269,12 @@ double agent4::get_intermediate_score() {
 	cout << "sigmoid error " << sigmoid(vm->get_fuel(), 1. / 100., 3000.) * approximate_error << endl;*/
 
 	fake_score =
-		75. * fake_score + 12. * (vm->get_fuel() + vm->get_tank_fuel()) /
+		75. * fake_score + 25. * (vm->get_fuel() + vm->get_tank_fuel()) /
 							   (vm->get_fuel_max() + vm->get_max_tank_fuel());
 	// fake_score += error_fuel;
 	fake_score += /*sigmoid(vm->get_fuel(), 1. / 100., 3000.) **/ approximate_error;
 	//fake_score += (1 - sigmoid(vm->get_fuel(), 1. / 100., 3000.)) * error_fuel;
-	fake_score += fake_score_fuel;
+	//fake_score += fake_score_fuel;
 	fake_score *= 8.;
 	//cout << "score " << fake_score << endl;
 	return fake_score;
@@ -277,10 +286,7 @@ double agent4::get_score() {
 	if (fly_state == FS_LOST) return -1;
 	if (vm->get_fuel() <= 0.001) return -1;
 	if (vm->get_score() != 0)
-		return vm->get_score() +
-			   (10e6 - closest_tank_time) / 10e6 * 75. *
-				   (vm->get_max_tank_fuel() - vm->get_tank_fuel()) /
-				   vm->get_max_tank_fuel();
+		return vm->get_score();
 
 	return 0;
 }

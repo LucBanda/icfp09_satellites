@@ -40,7 +40,8 @@ static void print_help() {
 	-i instance: instance of the problem to display \n \
 	-l : load the best solution so far for this problem \n \
 	-a : do all problem\n \
-	-r : resume from time\n");
+	-r : resume from time\n \
+	-f : load the specified file");
 }
 
 int main(int argc, char** argv) {
@@ -52,8 +53,9 @@ int main(int argc, char** argv) {
 	uint32_t instance = 0;
 	executionT map;
 	int resume_from = 0;
+	string fileName = "";
 
-	while ((c = getopt(argc, argv, "r:ahli:")) != -1) switch (c) {
+	while ((c = getopt(argc, argv, "f:r:ahli:")) != -1) switch (c) {
 			case 'l':
 				load_result = true;
 				break;
@@ -65,6 +67,9 @@ int main(int argc, char** argv) {
 				break;
 			case 'r':
 				resume_from = atoi(optarg);
+				break;
+			case 'f':
+				fileName = optarg;
 				break;
 			case 'h':
 			default:
@@ -97,7 +102,8 @@ int main(int argc, char** argv) {
 			}
 
 			if (load_result) {
-				map = parse_result(instance);
+				if (fileName == "") fileName = "./results/" + to_string(instance) + ".txt";
+				map = parse_result(fileName);
 				ag->set_execution_map(&map);
 				cout <<"max time step for evaluation " << ag->max_time_step << endl;
 			}

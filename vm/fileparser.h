@@ -6,6 +6,6 @@
 #include "bin.h"
 #include "common.h"
 
-executionT parse_result(int instance);
+executionT parse_result(string fileName);
 
 #endif

@@ -9,9 +9,8 @@ static std::string getLastLine(std::ifstream& in) {
 	return line;
 }
 
-executionT parse_result(int instance) {
+executionT parse_result(string fileName) {
 	executionT map;
-	string fileName = "./results/" + to_string(instance) + ".txt";
 	std::ifstream file(fileName);
     if (!file.good()) return map;
 	if (file) {

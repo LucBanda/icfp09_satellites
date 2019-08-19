@@ -212,6 +212,7 @@ void SO_report_generation(
 				<< -last_generation.average_cost << "   \t" << std::setw(11)
 				<< -last_generation.best_total_cost << "\t" << std::setw(20)
 				<< best_genes.to_string() << "\n";
+	output_file.flush();
 	output_file.close();
 }
 
@@ -269,6 +270,7 @@ int main(int argc, char** argv) {
 				exit(0);
 		}
 
+	string fileName = "";
 	ifstream file_to_test("./results/" + to_string(gInstance) + ".txt");
 	if (!file_to_test.good()) {
 		cout << "file do not exist" << endl;
@@ -296,7 +298,8 @@ int main(int argc, char** argv) {
 			do {
 				agent* base_agent = agent_factory(gInstance);
 				if (continue_optim) {
-					so_far_executed = parse_result(gInstance);
+					if (fileName == "") fileName = "./results/" + to_string(gInstance) + ".txt";
+					so_far_executed = parse_result(fileName);
 					base_agent->set_execution_map(&so_far_executed);
 					base_agent->run();
 					global_min_time = base_agent->last_validated_time;
@@ -367,9 +370,10 @@ int main(int argc, char** argv) {
 					 << endl;
 
 				if (continue_after_stall) {
+					continue_optim = true;
 					so_far_executed.clear();
 					base_agent = agent_factory(gInstance);
-					so_far_executed = parse_result(gInstance);
+					so_far_executed = parse_result(fileName);
 					base_agent->set_execution_map(&so_far_executed);
 					base_agent->run();
 					global_min_time = base_agent->last_validated_time;
@@ -381,6 +385,7 @@ int main(int argc, char** argv) {
 					starting_point_agent = NULL;
 				}
 			} while (continue_after_stall);
+
 			if (!do_all) {
 				return 0;
 			}
