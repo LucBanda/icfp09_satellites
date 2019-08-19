@@ -113,7 +113,7 @@ bool eval_solution4(const MySolution& p, MyMiddleCost& c) {
 	}
 	executeur.set_execution_map(&execution);
 	c.objective1 = -executeur.run();
-	// if (c.objective1 == -1) return false;
+	if (c.objective1 == -1) return false;
 	return true;  // solution is accepted
 }
 
@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
 					global_min_time = base_agent->last_validated_time;
 
 					// TODO generalize to other agents
-					if (global_min_time > 0) {
+					if (global_min_time > 0 && gInstance > 4000) {
 						starting_point_agent = new agent4(gInstance);
 						starting_point_agent->set_execution_map(
 							&so_far_executed);

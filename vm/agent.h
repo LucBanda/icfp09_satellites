@@ -91,13 +91,7 @@ class agent4 : public agent {
 	vector<double> closest_distance;
 	vector<double> closest_radius;
 	vector<int> closest_time;
-	double distance_when_lost;
-	Complex relative_speed_to_tank_when_crossed;
-	double closest_distance_of_tank;
-	double closest_fuel;
-	double last_fuel;
 	double max_distance;
-	int closest_tank_time;
 };
 
 static inline agent *agent_factory(int instance) {
