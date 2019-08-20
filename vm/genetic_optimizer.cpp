@@ -5,55 +5,14 @@
 #include "agent.h"
 #include "fileparser.h"
 #include "openga.hpp"
+#include "genetic_optimizer.h"
+#include "functional"
 
 using std::cout;
 using std::endl;
 using std::string;
 
-#define MAX_NUMBER_OF_THRUSTS 20
-int gInstance;
-double max_fuel;
-int max_time[MAX_NUMBER_OF_THRUSTS];
-int nb_of_thrusts;
-int global_min_time = 0;
-executionT so_far_executed;
-bool verbose_chromosomes = false;
-agent* starting_point_agent = NULL;
-
-struct MySolution {
-	int time[MAX_NUMBER_OF_THRUSTS];
-	double speed_x[MAX_NUMBER_OF_THRUSTS];
-	double speed_y[MAX_NUMBER_OF_THRUSTS];
-
-	string to_string() const {
-		std::ostringstream out;
-		out.precision(20);
-		out << "{ ";
-		for (executionT::iterator it = so_far_executed.begin();
-			 it != so_far_executed.end(); ++it)
-			out << "map[" << std::to_string(it->first) << "] = "
-				<< "Complex(" << std::to_string(real(it->second)) << ", "
-				<< std::to_string(imag(it->second)) << "); ";
-		for (int i = 0; i < nb_of_thrusts; i++) {
-			out << "map[" << std::to_string(time[i]) << "] = "
-				<< "Complex(" << std::to_string(speed_x[i]) << ", "
-				<< std::to_string(speed_y[i]) << "); ";
-		}
-		out << " }";
-		return out.str();
-	}
-};
-
-struct MyMiddleCost {
-	// This is where the results of simulation
-	// is stored but not yet finalized.
-	double objective1;
-};
-
-typedef EA::Genetic<MySolution, MyMiddleCost> GA_Type;
-typedef EA::GenerationType<MySolution, MyMiddleCost> Generation_Type;
-
-void init_genes(MySolution& p, const std::function<double(void)>& rnd01) {
+void genetic_optimizer::init_genes(MySolution& p, const std::function<double(void)>& rnd01) {
 	int i;
 	int min_time = global_min_time;
 	for (i = 0; i < nb_of_thrusts; i++) {
@@ -64,60 +23,26 @@ void init_genes(MySolution& p, const std::function<double(void)>& rnd01) {
 	}
 }
 
-bool eval_solution1(const MySolution& p, MyMiddleCost& c) {
+bool genetic_optimizer::eval_solution(const MySolution& p, MyMiddleCost& c) {
 	executionT execution;
-	agent1 executeur(gInstance);
-
-	for (int i = 0; i < nb_of_thrusts; i++)
-		execution[p.time[i]] = Complex(p.speed_x[i], p.speed_y[i]);
-
-	executeur.set_execution_map(&execution);
-	c.objective1 = -executeur.run();
-	return true;  // solution is accepted
-}
-
-bool eval_solution2(const MySolution& p, MyMiddleCost& c) {
-	executionT execution;
-	agent2 executeur(gInstance);
-
-	for (int i = 0; i < nb_of_thrusts; i++)
-		execution[p.time[i]] = Complex(p.speed_x[i], p.speed_y[i]);
-
-	executeur.set_execution_map(&execution);
-	c.objective1 = -executeur.run();
-	return true;  // solution is accepted
-}
-
-bool eval_solution3(const MySolution& p, MyMiddleCost& c) {
-	executionT execution;
-	agent3 executeur(gInstance);
-
-	for (int i = 0; i < nb_of_thrusts; i++)
-		execution[p.time[i]] = Complex(p.speed_x[i], p.speed_y[i]);
-
-	executeur.set_execution_map(&execution);
-	c.objective1 = -executeur.run();
-	return true;  // solution is accepted
-}
-
-bool eval_solution4(const MySolution& p, MyMiddleCost& c) {
-	executionT execution;
-	agent4 executeur(gInstance);
+	agent *executeur = agent_factory(instance);
 
 	execution = so_far_executed;
 	for (int i = 0; i < nb_of_thrusts; i++)
 		execution[p.time[i]] = Complex(p.speed_x[i], p.speed_y[i]);
 
 	if (starting_point_agent != NULL) {
-		executeur.set_resume_point(starting_point_agent);
+		executeur->set_resume_point(starting_point_agent);
 	}
-	executeur.set_execution_map(&execution);
-	c.objective1 = -executeur.run();
+	executeur->set_execution_map(&execution);
+	c.objective1 = -executeur->run();
+	delete executeur;
+
 	if (c.objective1 == -1) return false;
 	return true;  // solution is accepted
 }
 
-MySolution mutate(const MySolution& X_base,
+MySolution genetic_optimizer::mutate(const MySolution& X_base,
 				  const std::function<double(void)>& rnd01,
 				  double shrink_scale) {
 	MySolution X_new;
@@ -155,7 +80,7 @@ MySolution mutate(const MySolution& X_base,
 	return X_new;
 }
 
-MySolution crossover(const MySolution& X1, const MySolution& X2,
+MySolution genetic_optimizer::crossover(const MySolution& X1, const MySolution& X2,
 					 const std::function<double(void)>& rnd01) {
 	MySolution X_new;
 	double r;
@@ -171,7 +96,7 @@ MySolution crossover(const MySolution& X1, const MySolution& X2,
 	return X_new;
 }
 
-double calculate_SO_total_fitness(const GA_Type::thisChromosomeType& X) {
+double genetic_optimizer::calculate_SO_total_fitness(const GA_Type::thisChromosomeType& X) {
 	// finalize the cost
 	double final_cost = 0.0;
 	final_cost += X.middle_costs.objective1;
@@ -180,21 +105,21 @@ double calculate_SO_total_fitness(const GA_Type::thisChromosomeType& X) {
 
 std::ofstream output_file;
 
-void SO_report_generation(
+void genetic_optimizer::SO_report_generation(
 	int generation_number,
 	const EA::GenerationType<MySolution, MyMiddleCost>& last_generation,
 	const MySolution& best_genes) {
-	cout << "Problem Id:" << gInstance << ", "
+	cout << "Problem Id:" << instance << ", "
 		 << "Generation [" << generation_number << "], " << setprecision(10)
 		 << "Best=" << -last_generation.best_total_cost << ", "
 		 << "Average=" << -last_generation.average_cost << ", "
-		 << "Best genes=(" << best_genes.to_string() << ")"
+		 << "Best genes=(" << best_genes.to_string(this) << ")"
 		 << ", "
 		 << "Exe_time=" << last_generation.exe_time << endl
 		 << endl;
 
 	if (verbose_chromosomes) {
-		output_file.open("./debug/" + to_string(gInstance) + "/" +
+		output_file.open("./debug/" + to_string(instance) + "/" +
 						 to_string(generation_number) + ".txt");
 		for (auto it = last_generation.chromosomes.begin();
 			 it != last_generation.chromosomes.end(); ++it) {
@@ -206,15 +131,115 @@ void SO_report_generation(
 		}
 		output_file.close();
 	}
-	output_file.open("./results/" + to_string(gInstance) + ".txt",
+	output_file.open(fileName,
 					 std::ofstream::app);
 	output_file << generation_number << "   \t" << std::setw(11)
 				<< -last_generation.average_cost << "   \t" << std::setw(11)
 				<< -last_generation.best_total_cost << "\t" << std::setw(20)
-				<< best_genes.to_string() << "\n";
+				<< best_genes.to_string(this) << "\n";
 	output_file.flush();
 	output_file.close();
 }
+
+genetic_optimizer::genetic_optimizer(int arg_instance, int arg_nb_of_thrusts) {
+	instance = arg_instance;
+	fileName = "./results/" + to_string(instance) + ".txt";
+	agent* base_agent = agent_factory(instance);
+	ifstream file_to_test(fileName);
+	so_far_executed.clear();
+	global_min_time = 0;
+	nb_of_thrusts = arg_nb_of_thrusts;
+	if (!file_to_test.good()) {
+		cout << "file do not exist" << endl;
+		cout << "start from scratch" << endl;
+		output_file.open("./results/" + to_string(instance) + ".txt");
+		output_file << "step"
+					<< "\t"
+					<< "cost_avg"
+					<< "\t"
+					<< "cost_best"
+					<< "\t"
+					<< "solution_best"
+					<< "\n";
+		output_file.close();
+		global_min_time = 0;
+		so_far_executed.clear();
+	} else {
+		so_far_executed = parse_result(fileName);
+		base_agent->set_execution_map(&so_far_executed);
+		base_agent->run();
+		global_min_time = base_agent->last_validated_time;
+
+		// TODO generalize to other agents
+		if (global_min_time > 0 && instance > 4000) {
+			starting_point_agent = new agent4(instance);
+			starting_point_agent->set_execution_map(
+				&so_far_executed);
+			starting_point_agent->run(global_min_time);
+		}
+		executionT::iterator target = so_far_executed.begin();
+		while (target != so_far_executed.end()) {
+			if (target->first > global_min_time) {
+				target = so_far_executed.erase(target);
+			} else {
+				target++;
+			}
+		}
+	}
+	max_fuel = base_agent->vm->get_fuel_max() / 3.;
+	max_time[0] = max(10000., global_min_time / 3.);
+
+	cout << "searching time range : " << global_min_time << " -> "
+			<< global_min_time + max_time[0] << endl;
+
+	for (int k = 1; k < nb_of_thrusts; k++) max_time[k] = 50000;
+	delete base_agent;
+}
+genetic_optimizer::~genetic_optimizer() {
+	delete starting_point_agent;
+}
+
+bool genetic_optimizer::solve(int population_size) {
+	using namespace std::placeholders;
+
+	EA::Chronometer timer;
+	timer.tic();
+
+	GA_Type ga_obj;
+	ga_obj.problem_mode = EA::GA_MODE::SOGA;
+	ga_obj.multi_threading = true;
+	ga_obj.idle_delay_us = 1;  // switch between threads quickly
+	ga_obj.dynamic_threading = false;
+	ga_obj.verbose = false;
+	ga_obj.population = population_size;
+	ga_obj.generation_max = 5000;
+	ga_obj.calculate_SO_total_fitness = std::bind(&genetic_optimizer::calculate_SO_total_fitness, this, _1);
+	ga_obj.init_genes = std::bind(&genetic_optimizer::init_genes, this, _1, _2);
+	ga_obj.eval_solution = std::bind(&genetic_optimizer::eval_solution, this, _1, _2);
+	ga_obj.mutate = std::bind(&genetic_optimizer::mutate, this, _1, _2, _3);
+	ga_obj.crossover = std::bind(&genetic_optimizer::crossover, this, _1, _2, _3);
+	ga_obj.SO_report_generation = std::bind(&genetic_optimizer::SO_report_generation, this, _1, _2, _3);
+	ga_obj.crossover_fraction = 0.7;
+	ga_obj.mutation_rate = 0.3;
+	ga_obj.best_stall_max = nb_of_thrusts * 20;
+	ga_obj.average_stall_max = nb_of_thrusts * 20;
+	ga_obj.elite_count = 10;
+	EA::StopReason reason = ga_obj.solve();
+	cout << "The problem is optimized in " << timer.toc()
+			<< " seconds." << endl;
+	cout << "cause: " << ga_obj.stop_reason_to_string(reason)
+			<< endl;
+
+	agent *base_agent = agent_factory(instance);
+	so_far_executed = parse_result(fileName);
+	base_agent->set_execution_map(&so_far_executed);
+	base_agent->run();
+	global_min_time = base_agent->last_validated_time;
+	bool end = base_agent->non_validated_targets.size() == 0;
+	delete base_agent;
+	return end;
+}
+
 
 static void print_help() {
 	printf(
@@ -232,15 +257,13 @@ static void print_help() {
 
 int main(int argc, char** argv) {
 	bool do_all = false;
-	bool continue_optim = false;
 	int c;
 	bool continue_after_stall = false;
 	int population = 2000;
 	int fuel_factor = 2.;
-	nb_of_thrusts = 1;
-	max_time[0] = 10000;
-	so_far_executed.clear();
-	global_min_time = 0;
+	int nb_of_thrusts = 1;
+	int gInstance = 0;
+	bool verbose_chromosomes = false;
 
 	while ((c = getopt(argc, argv, "vdf:p:n:ahci:")) != -1) switch (c) {
 			case 'i':
@@ -270,120 +293,19 @@ int main(int argc, char** argv) {
 				exit(0);
 		}
 
-	string fileName = "";
-	ifstream file_to_test("./results/" + to_string(gInstance) + ".txt");
-	if (!file_to_test.good()) {
-		cout << "file do not exist" << endl;
-		cout << "start from scratch" << endl;
-		output_file.open("./results/" + to_string(gInstance) + ".txt");
-		output_file << "step"
-					<< "\t"
-					<< "cost_avg"
-					<< "\t"
-					<< "cost_best"
-					<< "\t"
-					<< "solution_best"
-					<< "\n";
-		output_file.close();
-	} else {
-		continue_optim = true;
-	}
-
-	for (int i = 1; i < 4; i++) {
+	for (int i = 1; i < 5; i++) {
 		for (int j = 1; j < 5; j++) {
 			if (do_all) {
 				gInstance = i * 1000 + j;
 			}
 
 			do {
-				agent* base_agent = agent_factory(gInstance);
-				if (continue_optim) {
-					if (fileName == "") fileName = "./results/" + to_string(gInstance) + ".txt";
-					so_far_executed = parse_result(fileName);
-					base_agent->set_execution_map(&so_far_executed);
-					base_agent->run();
-					global_min_time = base_agent->last_validated_time;
+				genetic_optimizer optimizer(gInstance, nb_of_thrusts);
+				optimizer.verbose_chromosomes = verbose_chromosomes;
 
-					// TODO generalize to other agents
-					if (global_min_time > 0 && gInstance > 4000) {
-						starting_point_agent = new agent4(gInstance);
-						starting_point_agent->set_execution_map(
-							&so_far_executed);
-						starting_point_agent->run(global_min_time);
-					}
+				bool solved = optimizer.solve(population);
+				if (solved) break;
 
-					if (base_agent->non_validated_targets.empty()) {
-						break;
-					}
-				}
-				executionT::iterator target = so_far_executed.begin();
-				while (target != so_far_executed.end()) {
-					if (target->first > global_min_time) {
-						target = so_far_executed.erase(target);
-					} else {
-						target++;
-					}
-				}
-				max_fuel = base_agent->vm->get_fuel_max() / (double)fuel_factor;
-				max_time[0] = max(10000., global_min_time / 3.);
-
-				cout << "searching time range : " << global_min_time << " -> "
-					 << global_min_time + max_time[0] << endl;
-
-				for (int k = 1; k < nb_of_thrusts; k++) max_time[k] = 50000;
-
-				delete base_agent;
-				EA::Chronometer timer;
-				timer.tic();
-
-				GA_Type ga_obj;
-				ga_obj.problem_mode = EA::GA_MODE::SOGA;
-				ga_obj.multi_threading = true;
-				ga_obj.idle_delay_us = 1;  // switch between threads quickly
-				ga_obj.dynamic_threading = false;
-				ga_obj.verbose = false;
-				ga_obj.population = population;
-				ga_obj.generation_max = 5000;
-				ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
-				ga_obj.init_genes = init_genes;
-				if (gInstance / 1000 == 1) {
-					ga_obj.eval_solution = eval_solution1;
-				} else if (gInstance / 1000 == 2) {
-					ga_obj.eval_solution = eval_solution2;
-				} else if (gInstance / 1000 == 3) {
-					ga_obj.eval_solution = eval_solution3;
-				} else if (gInstance / 1000 == 4) {
-					ga_obj.eval_solution = eval_solution4;
-				}
-				ga_obj.mutate = mutate;
-				ga_obj.crossover = crossover;
-				ga_obj.SO_report_generation = SO_report_generation;
-				ga_obj.crossover_fraction = 0.7;
-				ga_obj.mutation_rate = 0.3;
-				ga_obj.best_stall_max = nb_of_thrusts * 20;
-				ga_obj.average_stall_max = nb_of_thrusts * 20;
-				ga_obj.elite_count = 10;
-				EA::StopReason reason = ga_obj.solve();
-				cout << "The problem is optimized in " << timer.toc()
-					 << " seconds." << endl;
-				cout << "cause: " << ga_obj.stop_reason_to_string(reason)
-					 << endl;
-
-				if (continue_after_stall) {
-					continue_optim = true;
-					so_far_executed.clear();
-					base_agent = agent_factory(gInstance);
-					so_far_executed = parse_result(fileName);
-					base_agent->set_execution_map(&so_far_executed);
-					base_agent->run();
-					global_min_time = base_agent->last_validated_time;
-					if (base_agent->non_validated_targets.empty()) {
-						break;
-					}
-					delete base_agent;
-					delete starting_point_agent;
-					starting_point_agent = NULL;
-				}
 			} while (continue_after_stall);
 
 			if (!do_all) {
