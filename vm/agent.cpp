@@ -2,8 +2,8 @@
 #include "bin.h"
 #include "complex"
 
-#define ORBIT_PRECISION 1000.
-#define SAT_PRECISION 750.
+#define ORBIT_PRECISION (1000. * abs(vm->get_relative_speed()) / 1000.)
+#define SAT_PRECISION (1000. * abs(vm->get_relative_speed()) / 1000.)
 
 agent::agent(int instance) {
 	vm = bin_factory(instance);

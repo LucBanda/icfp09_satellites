@@ -18,7 +18,7 @@
 #define WHITE_COL al_map_rgb(250, 250, 250)
 #define TO_SCREEN(c) SCREEN_W / 2. + real(c) / SCALE, SCREEN_H / 2. - imag(c) / SCALE
 
-#define SHAPE_SCALE	1.
+#define SHAPE_SCALE	2.
 const int SCREEN_W = 2000. / SHAPE_SCALE;
 const int SCREEN_H = 2000. / SHAPE_SCALE;
 
@@ -108,6 +108,11 @@ void renderer::mainLoop(void *params) {
 
 	if (!al_init()) {
 		fprintf(stderr, "failed to initialize allegro!\n");
+		return;
+	}
+
+	if (!al_init_primitives_addon()) {
+		fprintf(stderr, "failed to initialize primitives!\n");
 		return;
 	}
 

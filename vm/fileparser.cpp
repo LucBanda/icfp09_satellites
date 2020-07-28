@@ -18,12 +18,17 @@ executionT parse_result(string fileName) {
 		std::string line = getLastLine(file);
 		if (line == "") {
 			cout << "empty line at end of file" << endl;
-			exit(-1);
+			return map; // return an empty map to be able to continue
 		}
 		cout << line << endl;
 		// remove beginning
 		std::string delimiter = "{ ";
 		size_t pos = line.find(delimiter);
+		if(pos == std::string::npos)
+		{
+			cout << "file is empty" << endl;
+			return map; // return an empty map to be able to continue
+		}
 		line.erase(0, pos + delimiter.length());
 
 		// remove end

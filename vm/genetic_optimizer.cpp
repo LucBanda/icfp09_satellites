@@ -246,7 +246,7 @@ static void print_help() {
 		"options: \n"
 		"	-h : this help \n"
 		"	-i instance: instance of the problem to display \n"
-		"	-l : load the best solution so far for this problem \n"
+		"	-c : continue after stall \n"
 		"	-a : do all problem\n"
 		"	-n number: number of thrust to optimize (default 1)\n"
 		"	-f factor: divider of fuel max to limit thrust range (default is "
@@ -302,7 +302,9 @@ int main(int argc, char** argv) {
 			do {
 				genetic_optimizer optimizer(gInstance, nb_of_thrusts);
 				optimizer.verbose_chromosomes = verbose_chromosomes;
-
+				if (gInstance / 1000 == 1) {
+					optimizer.max_time[0] = 100; // instance 1 is perfectly symmetric, so we can start thrusting at the very beginning
+				}
 				bool solved = optimizer.solve(population);
 				if (solved) break;
 
